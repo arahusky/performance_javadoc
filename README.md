@@ -1,4 +1,6 @@
-performance_javadoc
+Performance Javadoc
 ===================
 
-Program vypracovany v ramci rocnikoveho projektu tykajici se pridani vykonnostnich mereni do Javadocu
+Program vypracovaný v rámci ročníkového projektu na MFF UK.
+
+Projekt se týká přidání měření rychlosti metod jako rozšíření do standardního Javadocu.
