@@ -26,11 +26,13 @@ import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
 import com.sun.tools.doclets.internal.toolkit.util.DocletConstants;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParamNumException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -85,7 +87,7 @@ public class PerformanceWriterImpl {
             String parameter = e.getMessage();
             configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
             return null;
-        } catch (NoWorkloadException ex) {
+        } catch (NoWorkloadException | NumberFormatException ex) {
             configuration.root.printWarning(ex.getMessage());
             return null;
         } catch (UnsupportedParameterException ex) {
@@ -93,7 +95,11 @@ public class PerformanceWriterImpl {
             String type = ex.getMessage().split("-")[1];
             configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " is of unsupported type " + type + ". Therefore no performance info will be generated.");
             return null;
-        } 
+        } catch (GeneratorParamNumException ex) {
+            String parameter = ex.getMessage();
+            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has number type, but lacks any ParamNum acnnotation. Therefore no performance info will be generated.");
+            return null;
+        }
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
         rightSide.addAttr(HtmlAttr.CLASS, "right");
@@ -115,11 +121,11 @@ public class PerformanceWriterImpl {
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException {
+    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException {
         AnnotationDesc[] annotations = doc.annotations();
 
         //we get the generator annotation of the doc (it was already checked by classparser that it is not null)
-        Generator gen = getGenerator(annotations);
+        Generator gen = AnnotationWorker.getGenerator(annotations);
 
         //first part of the left tree is the generator description
         HtmlTree description = new HtmlTree(HtmlTag.P);
@@ -133,70 +139,35 @@ public class PerformanceWriterImpl {
         content.addContent(configurationTree);
 
         Parameter[] param = doc.parameters();
-        
+
         if (param.length < 2) {
-             throw new NoWorkloadException("Workload " + doc.qualifiedName() + " has not enough arguments (less then 2). Therefore no performance info will be generated.");
+            throw new NoWorkloadException("Workload " + doc.qualifiedName() + " has not enough arguments (less then 2). Therefore no performance info will be generated.");
         }
 
         if (!param[0].type().qualifiedTypeName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")) {
             throw new NoWorkloadException("Workload " + doc.qualifiedName() + " does not contain Workload variable as the first parameter. Therefore no performance info will be generated.");
         }
-        
+
         if (!param[1].type().qualifiedTypeName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload")) {
             throw new NoWorkloadException("Workload " + doc.qualifiedName() + " does not contain ServiceWorkload variable as the second parameter. Therefore no performance info will be generated.");
         }
-        
+
         //the number of parameter
         int number = 0;
-        
-        for (int i = 2; i<param.length; i++)
-        {
+
+        for (int i = 2; i < param.length; i++) {
             addParameterPerfo(param[i], content, workloadName, number);
-            number++;       
-        }        
+            number++;
+        }
 
         //telling controlWriter, that the generator is done and we want him to generate us the submit button with all the control checks and request
         //controlWriter.endButton(content);
         //TODo generate submit button (needs to check, send data, start receiving and possibly also block itself)
     }
+    
 
     /**
-     *
-     * @param annotations The array of annotations that belong to one method
-     * @return the first Generator annotation from the annotations
-     */
-    public Generator getGenerator(AnnotationDesc[] annotations) {
-        for (AnnotationDesc annot : annotations) {
-            if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator".equals(annot.annotationType().toString())) {
-                final String description = AnnotationParser.getAnnotationValueString(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.description()");
-                final String genName = AnnotationParser.getAnnotationValueString(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.genName()");
-
-                return new Generator() {
-
-                    @Override
-                    public String description() {
-                        return description;
-                    }
-
-                    @Override
-                    public String genName() {
-                        return genName;
-                    }
-
-                    @Override
-                    public Class<? extends Annotation> annotationType() {
-                        return Generator.class;
-                    }
-                };
-
-            }
-        }
-
-        return null;
-    }
-
-   
-    /** Method that gets the parameter and content, and to the content adds the
+     * Method that gets the parameter and content, and to the content adds the
      * appropriate element allowing user to select the value
      *
      * @param p the parameter of generator, whose performance part we are
@@ -205,19 +176,18 @@ public class PerformanceWriterImpl {
      * @param doc the methodDoc representing the method to that this parameter
      * belongs
      * @number the number of parameter
-     * @throws GeneratorArgumentException when the param has no annotation and is also not a Workload or ServiceWorkload
-     */ 
-    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException {
+     * @throws GeneratorArgumentException when the param has no annotation and
+     * is also not a Workload or ServiceWorkload
+     */
+    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException {
         AnnotationDesc[] annotations = param.annotations();
 
         if (annotations.length == 0) {
             String type = param.typeName();
-            if (! (type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload") || type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")))
-            {
-               throw new GeneratorParameterException(param.name());
+            if (!(type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload") || type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload"))) {
+                throw new GeneratorParameterException(param.name());
             }
         }
-        
 
         String description = null;
 
@@ -251,33 +221,19 @@ public class PerformanceWriterImpl {
         }
     }
 
-    private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) {
+    private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException {
         AnnotationDesc[] annotations = param.annotations();
-        double min = 0;
-        double max = 0;
-        double step = 0;
-        boolean axis = true;
-
-        //TODO check whether such annotation exists
-        for (AnnotationDesc annot : annotations) {
-            if (annot.annotationType().toString().equals("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum")) {
-                try {
-                    min = AnnotationParser.getAnnotationValueDouble(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.min()");
-                    max = AnnotationParser.getAnnotationValueDouble(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.max()");
-
-                    step = AnnotationParser.getAnnotationValueDouble(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.step()");
-                    //if there is no step specified, we will use default value, which is 1
-                    step = (step == Double.MIN_VALUE) ? 1 : step;
-
-                    axis = AnnotationParser.getAnnotationValueBoolean(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.axis()");
-                } catch (NumberFormatException e) {
-                    System.out.println(e);
-                    //TODO
-                }
-
-                break;
-            }
+              
+        ParamNum paramNum = AnnotationWorker.getParamNum(annotations);
+        if (paramNum == null)
+        {
+            throw new GeneratorParamNumException(param.name());
         }
+        
+        double min = paramNum.min();
+        double max = paramNum.max();
+        double step = paramNum.step();
+        boolean axis = paramNum.axis();
 
         String uniqueSliderName = workloadName + "_slider" + number;
         String uniqueTextboxName = workloadName + "_sliderTextBox" + number;
@@ -325,7 +281,7 @@ public class PerformanceWriterImpl {
      * parameters types. For example for method foo(String, int, float) the
      * result would be "sif"
      */
-    private String getAbbrParams(MethodDoc doc)  {
+    private String getAbbrParams(MethodDoc doc) {
         //the following method returns parameters in the declared order (otherwise, there would be no chance to have it unique)
         Parameter[] params = doc.parameters();
         String abbrParams = "";
@@ -344,7 +300,7 @@ public class PerformanceWriterImpl {
                 case "String":
                     abbrParams += "s";
                     break;
-                default: 
+                default:
                     //TODO check enum!!! (params[i].type() instanceof Enum<?>);                    
                     break;
             }

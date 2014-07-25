@@ -22,6 +22,7 @@ import com.sun.tools.doclets.formats.html.markup.HtmlTag;
 import com.sun.tools.doclets.formats.html.markup.HtmlTree;
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import java.util.ArrayList;
@@ -119,7 +120,7 @@ public abstract class PerformanceWriter {
         ArrayList<String> genNames = new ArrayList<>();
 
         for (MethodDoc m : list) {
-            Generator gen = perfWriter.getGenerator(m.annotations());
+            Generator gen = AnnotationWorker.getGenerator(m.annotations());
 
             String genName = gen.genName();
             if (genNames.contains(genName)) {
@@ -201,7 +202,7 @@ public abstract class PerformanceWriter {
     }
 
     /**
-     * Prepares select html tag with some options, that are given
+     * Prepares select html tag with some given options
      *
      * @param genNames the generator names, that are shown as the possible
      * option values of the select
@@ -254,5 +255,4 @@ public abstract class PerformanceWriter {
         sb.append("}); }); </script>");
         return new RawHtml(sb.toString());
     }
-
 }
