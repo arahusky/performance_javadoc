@@ -15,16 +15,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
+package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
-import com.sun.tools.doclets.internal.toolkit.Content;
-import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author Jakub Naplava
  */
-public class JSControlWriter {
-
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Workloads {
+    //destination enum to represent
+    Workload[] value();
 }
-

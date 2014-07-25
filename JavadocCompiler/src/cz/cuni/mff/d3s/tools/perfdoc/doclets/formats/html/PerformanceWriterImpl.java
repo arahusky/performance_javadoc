@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ Copyright 2014 Jakub Naplava
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
@@ -27,26 +38,6 @@ import java.util.HashMap;
  */
 public class PerformanceWriterImpl {
 
-    //writer for getting configuration information
-    private final HtmlDocletWriter htmlWriter;
-
-    //writer for writing the (JQuery) sliders
-    private JSSliderWriter sliderWriter;
-
-    //writer for writing (JQuery) control check (e.g. whether there's just one axis attribute)
-    private JSWriter controlWriter;
-
-    public PerformanceWriterImpl(HtmlDocletWriter htmlWriter) {
-        this.htmlWriter = htmlWriter;
-
-        try {
-            sliderWriter = new JSSliderWriter("slider.js");
-            controlWriter = new JSWriter("control.js");
-        } catch (IOException e) {
-            //TODO throw some exception
-        }
-    }
-
     /**
      * Method that prepares the title of Performance part
      *
@@ -58,35 +49,8 @@ public class PerformanceWriterImpl {
                 + "</span>" + "</dt>" + "<dd>" + "</dd>");
         return result;
     }
-
-    /**
-     * Method to generate the performance body from one workload
-     *
-     * @param workload the workload in format packageName.className#method
-     * @return new PerformanceOutput that represents the body of generated
-     * performance code
-     */
-    public PerformanceOutput returnPerfoBody(String workload) {
-        PerformanceOutput res = new PerformanceOutputImpl("");
-
-        MethodDoc[] d = ClassParser.findMethods(workload);
-
-        /*for (MethodDoc doc : d)
-         {
-         res.appendOutput(new PerformanceOutputImpl(doc.name()));
-         }*/
-         //return res;
-        return returnOnePerfoDiv(d[0]);
-    }
-
-    public PerformanceOutput returnPerfoBody(String[] workload) {
-        return null;
-    }
-
-    //TODO would be better to return HTML tree with div
-    private PerformanceOutput returnOnePerfoDiv(MethodDoc doc) {
-        //every div must have unique id
-        String uniqueWorkloadName = getUniqueInfo(doc);
+    
+    public HtmlTree returnPerfoDiv(MethodDoc doc, String uniqueWorkloadName) {
 
         //the main HtmlTree, that will contain two subtrees (left and right side), that represent the left part and right part of the performance look
         HtmlTree navList = new HtmlTree(HtmlTag.DIV);
@@ -104,8 +68,7 @@ public class PerformanceWriterImpl {
         navList.addContent(leftSide);
         navList.addContent(rightSide);
 
-        PerformanceOutput p = new PerformanceOutputImpl(navList.toString());
-        return p;
+        return navList;
     }
 
     private void addFormPart(Content content, MethodDoc doc, String workloadName) {
@@ -132,6 +95,9 @@ public class PerformanceWriterImpl {
             addParameterPerfo(p, content, workloadName, number);
             number++;
         }
+        
+        //telling controlWriter, that the generator is done and we want him to generate us the submit button with all the control checks and request
+        //controlWriter.endButton(content);
 
         //TODo generate submit button (needs to check, send data, start receiving and possibly also block itself)
     }
@@ -141,7 +107,7 @@ public class PerformanceWriterImpl {
      * @param annotations The array of annotations that belong to one method
      * @return the first Generator annotation from the annotations
      */
-    private Generator getGenerator(AnnotationDesc[] annotations) {
+    public Generator getGenerator(AnnotationDesc[] annotations) {
         for (AnnotationDesc annot : annotations) {
             if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator".equals(annot.annotationType().toString())) {
                 final String description = AnnotationParser.getAnnotationValueString(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.description()");
@@ -253,10 +219,10 @@ public class PerformanceWriterImpl {
                 break;
             }
         }
-
+        
         String uniqueSliderName = workloadName + "-slider" + number;
         String uniqueTextboxName = workloadName + "-sliderTextBox" + number;
-        sliderWriter.addNewSlider(uniqueSliderName, uniqueTextboxName, min, max, step, axis, content);
+        JSSliderWriter.addNewSlider(uniqueSliderName, uniqueTextboxName, min, max, step, axis);
 
         content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\">" + description + ":   </label>"));
         content.addContent(new RawHtml("<input type=\"text\" id=\"" + uniqueTextboxName + "\" style=\"border:0; color:#f6931f; font-weight:bold;\"> </p>"));
@@ -281,7 +247,7 @@ public class PerformanceWriterImpl {
      * counted
      * @return the unique info (packageName-method-abbreviatedParams)
      */
-    private String getUniqueInfo(MethodDoc doc) {
+    public String getUniqueInfo(MethodDoc doc) {
         String containingPackage = doc.containingPackage().name();
         String methodName = doc.name();
         String abbrParams = getAbbrParams(doc);
@@ -333,7 +299,7 @@ public class PerformanceWriterImpl {
      */
     private static class WorkloadBase {
 
-        private static HashMap<String, Integer> map = new HashMap<String, Integer>();
+        private static HashMap<String, Integer> map = new HashMap<>();
 
         /**
          * Gets a workloadName and returns the appropriate ending, so that the

@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.sun.javadoc.*;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
 
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.*;
@@ -305,7 +306,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
      /**
      * Adds the performance information to the given method
      *
-     * @param doc the MethoDoc that represents the method
+     * @param doc the MethoDoc that represents the method to which the performance info will be added
      * @param htmltree the documentation tree to which the tags will be added
      */
     protected void addPerformanceInfo(MethodDoc doc, Content htmltree) {
@@ -316,7 +317,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         Content dl = new HtmlTree(HtmlTag.DL);
         
         PerformanceOutputImpl output = new PerformanceOutputImpl("");
-        PerformanceWriter.genPerfOutput(this, output, workloadNames);
+        PerformanceWriter.genPerfOutput(doc, output, workloadNames);
         
         String outputString = output.toString().trim();
         if (!outputString.isEmpty()) {
@@ -330,7 +331,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
     /**
      * Returns all the Workload annotations of specified method
      * @param doc the MethodDoc that represents the method
-     * @return the String[] containing the Workload arguments of the specified method; null, if there's no such annotation
+     * @return the String[] containing the Workload (resp. from Workloads all contained Workload) arguments of the specified method; null, if there's no such annotation
      */
     private String[] returnWorkloadNames(MethodDoc doc)
     {                
@@ -339,27 +340,28 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         
         //we go through each annotation
         for (AnnotationDesc annotDesc : annotations)
-        {
-            
-            //if the annotation type is workload
+        {            
+            //if the annotation type is workload 
             if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload".equals(annotDesc.annotationType().toString()))
+            {                         
+                list.add(AnnotationParser.getAnnotationValueString(annotDesc, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload.value()"));              
+            }
+            else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads".equals(annotDesc.annotationType().toString()))
             {
-                //despite there's just one field in the annotation, we have to store it in the variable
-                AnnotationDesc.ElementValuePair[] field = annotDesc.elementValues();
-                              
-                //and then find it
-                for (AnnotationDesc.ElementValuePair e : field)
-                {                    
-                    //just for sure
-                    if (e.element().toString().equals("cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload.value()"))
-                    {                        
-                        String workloadName = e.value().toString();
-                        
-                        //because .toString() method returns the workloadName with beginning and ending character ", we have to trim it
-                        list.add(workloadName.substring(1, workloadName.length() - 1));
-                    }
+                String pom = AnnotationParser.getAnnotationValueString(annotDesc, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads.value()"); 
+                
+                //all annotations will now be splited and every will be in format: @cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload("value")
+                String[] ans = pom.split(", ");
+                
+                int prefixLength = "@cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload(\"".length();
+                int suffixLength = "\")".length();
+                                
+                //we add all annotations contained in the single array annotaion to the list
+                for (String a : ans)
+                {
+                    list.add(a.substring(prefixLength, a.length() - suffixLength));
                 }
-            }        
+            }
         }
         
         if (list.isEmpty()) return null;
@@ -513,12 +515,15 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         
         //TODO better check whether is class .html
         //if there's any performance info
-        if (body.toString().indexOf("$") != -1)
+        //if (body.toString().indexOf("$") != -1)
         {
            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "cascade.css", "Style"));
            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css", "Style"));
            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>"));
-           head.addContent(new RawHtml("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>"));           
+           head.addContent(new RawHtml("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>"));  
+           
+           JSSliderWriter.addToContentAndEmpty(body);
+           //bodyAddContent - add all JSFuck
         }
         
         Content htmlTree = HtmlTree.HTML(configuration.getLocale().getLanguage(),
