@@ -38,7 +38,7 @@ public class ClassParser {
      *
      * @param workloadName the workloadName in format package.className#method
      * @return all methods, that are in the specified package with the specified
-     * method name
+     * method name and contain generator annotation
      */
     public static MethodDoc[] findMethods(String workloadName) {
 

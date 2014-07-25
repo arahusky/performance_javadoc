@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 import com.sun.javadoc.AnnotationDesc;
@@ -28,15 +27,22 @@ import com.sun.tools.doclets.internal.toolkit.Content;
 import com.sun.tools.doclets.internal.toolkit.util.DocletConstants;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Jakub Naplava
  */
 public class PerformanceWriterImpl {
+
+    static ConfigurationImpl configuration = ConfigurationImpl.getInstance();
 
     /**
      * Method that prepares the title of Performance part
@@ -49,31 +55,70 @@ public class PerformanceWriterImpl {
                 + "</span>" + "</dt>" + "<dd>" + "</dd>");
         return result;
     }
-    
-    public HtmlTree returnPerfoDiv(MethodDoc doc, String uniqueWorkloadName) {
 
-        //the main HtmlTree, that will contain two subtrees (left and right side), that represent the left part and right part of the performance look
+    /**
+     * Generates the code that represents one generator
+     *
+     * @param doc the MethodDoc that represents the generator
+     * @param uniqueWorkloadName
+     * @param hidden whether the particular div should be hidden or not
+     * @return HtmlTree that represents the generator or null if some error
+     * occurred
+     */
+    public HtmlTree returnPerfoDiv(MethodDoc doc, String uniqueWorkloadName, boolean hidden) {
+
+        //the main HtmlTree, that will contain two subtrees (left and right), that represent the left part and right part of the performance look
         HtmlTree navList = new HtmlTree(HtmlTag.DIV);
-        navList.addAttr(HtmlAttr.CLASS, "wrapper");
+        if (hidden) {
+            navList.addAttr(HtmlAttr.CLASS, "wrapperHidden");
+        } else {
+            navList.addAttr(HtmlAttr.CLASS, "wrapper");
+        }
         navList.addAttr(HtmlAttr.ID, uniqueWorkloadName);
 
         HtmlTree leftSide = new HtmlTree(HtmlTag.DIV);
         leftSide.addAttr(HtmlAttr.CLASS, "left");
-        addFormPart(leftSide, doc, uniqueWorkloadName);
+
+        try {
+            addFormPart(leftSide, doc, uniqueWorkloadName);
+        } catch (GeneratorParameterException e) {
+            String parameter = e.getMessage();
+            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
+            return null;
+        } catch (NoWorkloadException ex) {
+            configuration.root.printWarning(ex.getMessage());
+            return null;
+        } catch (UnsupportedParameterException ex) {
+            String parameter = ex.getMessage().split("-")[0];
+            String type = ex.getMessage().split("-")[1];
+            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " is of unsupported type " + type + ". Therefore no performance info will be generated.");
+            return null;
+        } 
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
         rightSide.addAttr(HtmlAttr.CLASS, "right");
         rightSide.addContent("Here will be the image / table + checkbox to choose the values");
 
-        navList.addContent(leftSide);
         navList.addContent(rightSide);
+        navList.addContent(leftSide);
 
         return navList;
     }
 
-    private void addFormPart(Content content, MethodDoc doc, String workloadName) {
+    /**
+     * Generates the performance code (workload description, sliders, ...,
+     * submit button) for the particular workload
+     *
+     * @param content the content to which the code should be added
+     * @param doc the MethodDoc that represents the workload
+     * @param workloadName
+     * @throws NoSuchFieldException when the workload does not contain any
+     * generator annotation
+     */
+    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException {
         AnnotationDesc[] annotations = doc.annotations();
 
+        //we get the generator annotation of the doc (it was already checked by classparser that it is not null)
         Generator gen = getGenerator(annotations);
 
         //first part of the left tree is the generator description
@@ -82,23 +127,36 @@ public class PerformanceWriterImpl {
         content.addContent(description);
 
         //then comes the string Configuration finally followed by all sliders/textboxes/...
-        HtmlTree configuration = new HtmlTree(HtmlTag.P);
+        HtmlTree configurationTree = new HtmlTree(HtmlTag.P);
         //configuration.addStyle(HtmlStyle.strong); //TODO why not working?
-        configuration.addContent("Configuration:");
-        content.addContent(configuration);
+        configurationTree.addContent("Configuration:");
+        content.addContent(configurationTree);
 
         Parameter[] param = doc.parameters();
+        
+        if (param.length < 2) {
+             throw new NoWorkloadException("Workload " + doc.qualifiedName() + " has not enough arguments (less then 2). Therefore no performance info will be generated.");
+        }
 
-        //the number of parameter
-        int number = 0;
-        for (Parameter p : param) {
-            addParameterPerfo(p, content, workloadName, number);
-            number++;
+        if (!param[0].type().qualifiedTypeName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")) {
+            throw new NoWorkloadException("Workload " + doc.qualifiedName() + " does not contain Workload variable as the first parameter. Therefore no performance info will be generated.");
         }
         
+        if (!param[1].type().qualifiedTypeName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload")) {
+            throw new NoWorkloadException("Workload " + doc.qualifiedName() + " does not contain ServiceWorkload variable as the second parameter. Therefore no performance info will be generated.");
+        }
+        
+        //the number of parameter
+        int number = 0;
+        
+        for (int i = 2; i<param.length; i++)
+        {
+            addParameterPerfo(param[i], content, workloadName, number);
+            number++;       
+        }        
+
         //telling controlWriter, that the generator is done and we want him to generate us the submit button with all the control checks and request
         //controlWriter.endButton(content);
-
         //TODo generate submit button (needs to check, send data, start receiving and possibly also block itself)
     }
 
@@ -137,8 +195,8 @@ public class PerformanceWriterImpl {
         return null;
     }
 
-    /**
-     * Method that gets the parameter and content, and to the content adds the
+   
+    /** Method that gets the parameter and content, and to the content adds the
      * appropriate element allowing user to select the value
      *
      * @param p the parameter of generator, whose performance part we are
@@ -147,13 +205,19 @@ public class PerformanceWriterImpl {
      * @param doc the methodDoc representing the method to that this parameter
      * belongs
      * @number the number of parameter
-     */
-    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) {
+     * @throws GeneratorArgumentException when the param has no annotation and is also not a Workload or ServiceWorkload
+     */ 
+    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException {
         AnnotationDesc[] annotations = param.annotations();
 
         if (annotations.length == 0) {
-            //TODO must be Workload, or ServiceWorkload or some error
+            String type = param.typeName();
+            if (! (type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload") || type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")))
+            {
+               throw new GeneratorParameterException(param.name());
+            }
         }
+        
 
         String description = null;
 
@@ -165,9 +229,7 @@ public class PerformanceWriterImpl {
                 case "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum":
                     description = AnnotationParser.getAnnotationValueString(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.description()");
                     break;
-                default:
-                    System.out.println(annot.annotationType().toString());
-                    //TODO asi by nemela byt pritomna - error
+                //let's say, we do not abandon user to have there another annotations 
             }
         }
 
@@ -181,12 +243,11 @@ public class PerformanceWriterImpl {
             case "String":
                 addParameterString(param, description, content, workloadName, number);
                 break;
-            case "enum":
+            case "enum": //TODO!!!
                 addParameterEnum(param, description, content, workloadName, number);
                 break;
             default:
-                //TODO some error
-                break;
+                throw new UnsupportedParameterException(param.name() + "-" + param.typeName());
         }
     }
 
@@ -197,9 +258,7 @@ public class PerformanceWriterImpl {
         double step = 0;
         boolean axis = true;
 
-         //TODO check whether such annotation exists
-         //TODO if axis, if not axis - range slider, classic slider
-         
+        //TODO check whether such annotation exists
         for (AnnotationDesc annot : annotations) {
             if (annot.annotationType().toString().equals("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum")) {
                 try {
@@ -219,9 +278,9 @@ public class PerformanceWriterImpl {
                 break;
             }
         }
-        
-        String uniqueSliderName = workloadName + "-slider" + number;
-        String uniqueTextboxName = workloadName + "-sliderTextBox" + number;
+
+        String uniqueSliderName = workloadName + "_slider" + number;
+        String uniqueTextboxName = workloadName + "_sliderTextBox" + number;
         JSSliderWriter.addNewSlider(uniqueSliderName, uniqueTextboxName, min, max, step, axis);
 
         content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\">" + description + ":   </label>"));
@@ -245,17 +304,17 @@ public class PerformanceWriterImpl {
      *
      * @param doc the methodDoc of method, for which the unique ID will be
      * counted
-     * @return the unique info (packageName-method-abbreviatedParams)
+     * @return the unique info (packageName_method_babreviatedParams)
      */
     public String getUniqueInfo(MethodDoc doc) {
         String containingPackage = doc.containingPackage().name();
         String methodName = doc.name();
         String abbrParams = getAbbrParams(doc);
 
-        String fullMethodName = (containingPackage + "-" + methodName + "-" + abbrParams);
+        String fullMethodName = (containingPackage + "_" + methodName + "_" + abbrParams);
         String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
 
-        return fullMethodName + "-" + number;
+        return fullMethodName + "_" + number;
     }
 
     /**
@@ -266,7 +325,7 @@ public class PerformanceWriterImpl {
      * parameters types. For example for method foo(String, int, float) the
      * result would be "sif"
      */
-    private String getAbbrParams(MethodDoc doc) {
+    private String getAbbrParams(MethodDoc doc)  {
         //the following method returns parameters in the declared order (otherwise, there would be no chance to have it unique)
         Parameter[] params = doc.parameters();
         String abbrParams = "";
@@ -285,7 +344,8 @@ public class PerformanceWriterImpl {
                 case "String":
                     abbrParams += "s";
                     break;
-                default: //TODO check enum (params[i].type() instanceof Enum<?>);
+                default: 
+                    //TODO check enum!!! (params[i].type() instanceof Enum<?>);                    
                     break;
             }
         }
@@ -328,4 +388,3 @@ public class PerformanceWriterImpl {
         }
     }
 }
-
