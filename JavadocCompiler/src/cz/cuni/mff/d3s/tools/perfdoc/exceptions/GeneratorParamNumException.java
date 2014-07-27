@@ -18,7 +18,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
 
 /**
- *
+ * This exception stands for the number (int, float, double) parameter, that lacks any ParamNum annotation
  * @author arahusky
  */
 public class GeneratorParamNumException extends Exception {

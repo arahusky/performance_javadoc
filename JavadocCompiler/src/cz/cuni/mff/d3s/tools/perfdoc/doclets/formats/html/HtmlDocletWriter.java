@@ -515,7 +515,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         
         //TODO better check whether is class .html
         //if there's any performance info
-        //if (body.toString().indexOf("$") != -1)
+        if (body.toString().indexOf("Performance") != -1)
         {
            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "cascade.css", "Style"));
            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css", "Style"));
@@ -523,6 +523,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>"));  
            
            JSSliderWriter.addToContentAndEmpty(body);
+           JSControlWriter.addToContentAndEmpty(body);
            //bodyAddContent - add all JSFuck
         }
         

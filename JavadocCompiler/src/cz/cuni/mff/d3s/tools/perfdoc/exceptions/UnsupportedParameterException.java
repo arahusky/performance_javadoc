@@ -18,7 +18,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
 
 /**
- *
+ * This exception stands for the parameter in generator, that is not supported (the list of supported parameters can be find in the documentation).
  * @author arahusky
  */
 public class UnsupportedParameterException extends Exception {

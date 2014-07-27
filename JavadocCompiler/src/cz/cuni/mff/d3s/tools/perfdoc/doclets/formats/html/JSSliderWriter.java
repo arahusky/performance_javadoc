@@ -24,7 +24,18 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
  */
 public class JSSliderWriter {
 
-    private static StringBuilder sb = new StringBuilder();
+    private static StringBuilder jsGlobalCode = new StringBuilder("<script> $(function() {");
+    
+    private static StringBuilder temporaryGeneratorCode;
+    
+    /**
+     * Starts a new temporary code
+     */
+    public static void startNewGeneratorCode()
+    {
+        temporaryGeneratorCode = new StringBuilder();
+    }
+    
     /**
      * Adds new slider into code (if axis is true, then the range slider will be
      * added, otherwise normal slider)
@@ -32,26 +43,34 @@ public class JSSliderWriter {
     public static void addNewSlider(String uniqueSliderName, String uniqueTextboxName, double minValue, double maxValue, double step, boolean axis) {
         String script = "";
         if (axis) {
-            script = "<script> $(function() { $( \"#slider-range\" ).slider({ range: true, min:" + minValue + ", max: " + maxValue + ", step:" + step
+            script = " $( \"#slider-range\" ).slider({ range: true, min:" + minValue + ", max: " + maxValue + ", step:" + step
                     + ",slide: function( event, ui ) { if (ui.values[1] - ui.values[0] ==0) "
-                    + " { $( \"#amount\" ).val( ui.values[ 0 ]); } else { $( \"#amount\" ).val( ui.values[ 0 ] + \" - \" + ui.values[ 1 ] ); };	} });"
-                    + "$( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"values\", 0 ) + \" - \" + $( \"#slider-range\" ).slider( \"values\", 1 ) ); }); </script>";
+                    + " { $( \"#amount\" ).val( ui.values[ 0 ]); } else { $( \"#amount\" ).val( ui.values[ 0 ] + \" to \" + ui.values[ 1 ] ); };	} });"
+                    + "\n $( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"values\", 0 ) + \" to \" + $( \"#slider-range\" ).slider( \"values\", 1 ) );  ";
         } else {
-            script = "<script> $(function() { $( \"#slider-range\" ).slider({ min:" + minValue + ", max:" + maxValue + ", step:" + step + ", slide: function( event, ui ) {"
-                    + "$( \"#amount\" ).val( ui.value ); } }); $( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"value\" ) ); }); </script>";
+            script = " $( \"#slider-range\" ).slider({ min:" + minValue + ", max:" + maxValue + ", step:" + step + ", slide: function( event, ui ) {"
+                    + "$( \"#amount\" ).val( ui.value ); } }); \n $( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"value\" ) );  ";
         }
 
         script = script.replaceAll("slider-range", uniqueSliderName);
         script = script.replaceAll("amount", uniqueTextboxName);
 
-        sb.append(script).append("\n");
+        temporaryGeneratorCode.append(script).append("\n");
+    }
+    
+    /**
+     * Adds the temporary code to the JSCode that will be added to the page
+     */
+    public static void endGeneratorCode()
+    {
+        jsGlobalCode.append(temporaryGeneratorCode);
     }
     
     public static void addToContentAndEmpty(cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.Content content)
     {
-        content.addContent(new cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.RawHtml(sb.toString()));
-        sb = new StringBuilder();
+        jsGlobalCode.append("});</script>");
+        content.addContent(new cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.RawHtml(jsGlobalCode.toString()));
+        jsGlobalCode = new StringBuilder("<script>");
     }
-    
 }
 

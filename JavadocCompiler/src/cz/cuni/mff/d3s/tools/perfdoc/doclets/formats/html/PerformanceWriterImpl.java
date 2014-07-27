@@ -33,10 +33,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParamNumException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -53,7 +50,7 @@ public class PerformanceWriterImpl {
      */
     public PerformanceOutput returnTitleOutput() {
         PerformanceOutput result = new PerformanceOutputImpl(DocletConstants.NL + "<dt>"
-                + "<span class=\"strong\">" + "Performace:"
+                + "<span class=\"strong\">" + "Performance:"
                 + "</span>" + "</dt>" + "<dd>" + "</dd>");
         return result;
     }
@@ -155,16 +152,23 @@ public class PerformanceWriterImpl {
         //the number of parameter
         int number = 0;
 
+        //telling JSSlider to begin generating JS
+        JSSliderWriter.startNewGeneratorCode();
+        JSControlWriter.startNewControlButton(workloadName);
+
         for (int i = 2; i < param.length; i++) {
             addParameterPerfo(param[i], content, workloadName, number);
             number++;
         }
 
-        //telling controlWriter, that the generator is done and we want him to generate us the submit button with all the control checks and request
-        //controlWriter.endButton(content);
-        //TODo generate submit button (needs to check, send data, start receiving and possibly also block itself)
+        //telling JSSlider, that there's no error in generator and he can add it to the JS code
+        JSSliderWriter.endGeneratorCode();
+
+        //telling controlWriter, that there's not error in the generator so that he can add the control code to his global code
+        JSControlWriter.endCurrentButton();
+
+        content.addContent(JSControlWriter.returnButton(workloadName));
     }
-    
 
     /**
      * Method that gets the parameter and content, and to the content adds the
@@ -217,19 +221,23 @@ public class PerformanceWriterImpl {
                 addParameterEnum(param, description, content, workloadName, number);
                 break;
             default:
+                //TODO zkontrolovat zda nejde o enum *ten horni pak smazat*
+                //vzit si jmeno typu, pokud obsahuje tecku, tak obsahuje snad i package, jinak doplnit nas package
+                //narvat to nejakemu classparserovi, ten at to zkusi ocheckovat na enum (.enumConstants())
+                System.out.println(param.type().typeName());
+                System.out.println(param.type().qualifiedTypeName());
                 throw new UnsupportedParameterException(param.name() + "-" + param.typeName());
         }
     }
 
     private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException {
         AnnotationDesc[] annotations = param.annotations();
-              
+
         ParamNum paramNum = AnnotationWorker.getParamNum(annotations);
-        if (paramNum == null)
-        {
+        if (paramNum == null) {
             throw new GeneratorParamNumException(param.name());
         }
-        
+
         double min = paramNum.min();
         double max = paramNum.max();
         double step = paramNum.step();
@@ -242,16 +250,29 @@ public class PerformanceWriterImpl {
         content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\">" + description + ":   </label>"));
         content.addContent(new RawHtml("<input type=\"text\" id=\"" + uniqueTextboxName + "\" style=\"border:0; color:#f6931f; font-weight:bold;\"> </p>"));
         content.addContent(new RawHtml("<div id=\"" + uniqueSliderName + "\" style=\"margin:10\"></div>"));
+
+        //registering this slider to the control
+        if (axis) {
+            JSControlWriter.addDoubleSliderControl(uniqueTextboxName, uniqueSliderName, description);
+        } else {
+            JSControlWriter.addSliderControl(uniqueTextboxName, uniqueSliderName, description);
+        }
     }
 
     private void addParameterString(Parameter param, String description, Content content, String workloadName, int number) {
         String uniqueTextboxName = workloadName + "-" + number;
         String input = "<p><label for=\"" + uniqueTextboxName + "\">" + description + "</label>: <input type=\"text\" id=\"" + uniqueTextboxName + "\"> </p>";
         content.addContent(new RawHtml(input));
+
+        //registering this textbox to the control
+        JSControlWriter.addStringControl(uniqueTextboxName, description);
     }
 
     private void addParameterEnum(Parameter param, String description, Content content, String workloadName, int number) {
         //TODO
+
+        //registering this textbox to the control
+        //JSControlWriter.addStringControl();
     }
 
     /**

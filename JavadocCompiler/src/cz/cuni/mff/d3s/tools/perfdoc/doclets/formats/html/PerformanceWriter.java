@@ -187,7 +187,12 @@ public abstract class PerformanceWriter {
         tree.addAttr(HtmlAttr.ID, uniqueMethodID);
 
         //second we add the select content
-        output.appendOutput(new PerformanceOutputImpl(returnSelect(genNames, generatorDivsIDs, uniqueMethodID).toString()));
+        HtmlTree selectButton = new HtmlTree(HtmlTag.UL);
+        HtmlTree contentLI = new HtmlTree(HtmlTag.LI);
+        contentLI.addContent("Workload: ");
+        contentLI.addContent(returnSelect(genNames, generatorDivsIDs, uniqueMethodID));
+        selectButton.addContent(contentLI);
+        output.appendOutput(new PerformanceOutputImpl(selectButton.toString()));
 
         //then we add all the workloads (divs)
         for (int i = 0; i < generatorDivs.size(); i++) {
