@@ -81,7 +81,7 @@ public class ClassParser {
             ArrayList<MethodDoc> list = new ArrayList<>();
 
             ClassDoc classDoc = root.classes()[0];
-
+            
             for (MethodDoc methodDoc : classDoc.methods()) {
                 if (methodDoc.name().equals(methodName) && checkAnnotation(methodDoc)) {
                     list.add(methodDoc);
