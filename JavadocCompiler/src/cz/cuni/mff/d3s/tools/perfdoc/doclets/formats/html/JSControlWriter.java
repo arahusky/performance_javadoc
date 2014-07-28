@@ -312,11 +312,10 @@ public class JSControlWriter {
      */
     private static String returnIsDivisibleFunction() {
         return "function isDivisible(u, d) {"
-                + "var a = u.toString().replace(/^\\d+\\./, '').length;"
-                + "var b = d.toString().replace(/^\\d+\\./, '').length;"
-                + "if (a>b) { u = u * Math.pow(10, a); d = d * Math.pow(10, a); }"
-                + "else { u = u * Math.pow(10, b); d = d * Math.pow(10, b); }"
-                + "u = Math.round(u); d = Math.round(d);"
+                + "var numD = Math.max(u.toString().replace(/^\\d+\\./, '').length,"
+                + "d.toString().replace(/^\\d+\\./, '').length);"
+                + "u = Math.round(u * Math.pow(10, numD));"
+                + "d = Math.round(d * Math.pow(10, numD));"
                 + "return (u % d) === 0; }";
     }
 
