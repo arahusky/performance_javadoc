@@ -14,13 +14,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
-
 
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.ClassDoc;
 import com.sun.javadoc.Doclet;
+import com.sun.javadoc.FieldDoc;
+import com.sun.javadoc.LanguageVersion;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.RootDoc;
 import com.sun.tools.javadoc.Main;
@@ -55,6 +55,19 @@ public class ClassParser {
     }
 
     /**
+     * Method that finds all the possible value of the given (enum) class
+     *
+     * @param workloadName the name of the .java file (without .java)
+     * @return the FieldDoc[] containing all enum values of given enum or null
+     * if the given name is not an enum
+     */
+    public static FieldDoc[] findEnums(String className1) {
+        String className = className1.replaceAll("\\.", "/") + ".java";
+        Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
+        return EnumAnalyzer.enumValues;
+    }
+
+    /**
      * doclet class, that gets the RootDoc from the javadoc and searches for the
      * right methods in the specified class
      */
@@ -81,7 +94,7 @@ public class ClassParser {
             ArrayList<MethodDoc> list = new ArrayList<>();
 
             ClassDoc classDoc = root.classes()[0];
-            
+
             for (MethodDoc methodDoc : classDoc.methods()) {
                 if (methodDoc.name().equals(methodName) && checkAnnotation(methodDoc)) {
                     list.add(methodDoc);
@@ -113,5 +126,33 @@ public class ClassParser {
             return (numberOfGenerators == 1);
         }
     }
-}
 
+    /**
+     * doclet class, that gets the RootDoc from the javadoc and searches for the
+     * enum values
+     */    
+    public static class EnumAnalyzer extends Doclet {
+
+        public static FieldDoc[] enumValues = null;
+
+        public static boolean start(RootDoc root) {
+            ClassDoc[] classes = root.classes();
+            ClassDoc cd = classes[0];
+
+            if (cd.isEnum()) {
+                enumValues = cd.enumConstants();
+            }
+
+            return true;
+        }
+
+        /**
+         * needs to be added because otherwise it is working in pre-5.0
+         * compatibility mode which makes some methods behave unexpected, mostly
+         * because enum was added in Java 5.0
+         */
+        public static LanguageVersion languageVersion() {
+            return LanguageVersion.JAVA_1_5;
+        }
+    }
+}

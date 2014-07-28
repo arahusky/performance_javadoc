@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 import com.sun.javadoc.AnnotationDesc;
+import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.Parameter;
 import com.sun.tools.doclets.formats.html.markup.HtmlAttr;
@@ -31,9 +32,12 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParamNumException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -96,6 +100,10 @@ public class PerformanceWriterImpl {
             String parameter = ex.getMessage();
             configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has number type, but lacks any ParamNum acnnotation. Therefore no performance info will be generated.");
             return null;
+        } catch (NoEnumValueException ex) {
+           String parameter = ex.getMessage();
+           configuration.root.printWarning("The enum parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has got no possible value defined. Therefore no performance info will be generated.");
+           return null;
         }
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
@@ -118,7 +126,7 @@ public class PerformanceWriterImpl {
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException {
+    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
         AnnotationDesc[] annotations = doc.annotations();
 
         //we get the generator annotation of the doc (it was already checked by classparser that it is not null)
@@ -183,7 +191,7 @@ public class PerformanceWriterImpl {
      * @throws GeneratorArgumentException when the param has no annotation and
      * is also not a Workload or ServiceWorkload
      */
-    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException {
+    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
         AnnotationDesc[] annotations = param.annotations();
 
         if (annotations.length == 0) {
@@ -215,21 +223,38 @@ public class PerformanceWriterImpl {
                 addParameterNum(param, description, content, workloadName, number);
                 break;
             case "String":
-                addParameterString(param, description, content, workloadName, number);
-                break;
-            case "enum": //TODO!!!
-                addParameterEnum(param, description, content, workloadName, number);
+                addParameterString(description, content, workloadName, number);
                 break;
             default:
-                //TODO zkontrolovat zda nejde o enum *ten horni pak smazat*
-                //vzit si jmeno typu, pokud obsahuje tecku, tak obsahuje snad i package, jinak doplnit nas package
-                //narvat to nejakemu classparserovi, ten at to zkusi ocheckovat na enum (.enumConstants())
-                System.out.println(param.type().typeName());
-                System.out.println(param.type().qualifiedTypeName());
-                throw new UnsupportedParameterException(param.name() + "-" + param.typeName());
+                FieldDoc[] enumValues = ClassParser.findEnums(param.type().qualifiedTypeName());
+
+                //if it is not enum, or the enum has no possible values
+                if (enumValues == null) {
+                    throw new UnsupportedParameterException(param.name() + "-" + param.typeName());
+                } else if (enumValues.length == 0) {
+                    throw new NoEnumValueException(param.name());
+                }                
+                else {
+                    addParameterEnum(enumValues, description, content, workloadName, number);
+                }
+
+                break;
         }
     }
 
+    /**
+     * Adds the slider to the content
+     *
+     * @param param the Parameter
+     * @param description the parameter description
+     * @param content the Content to which the slider will be added
+     * @param workloadName the workloadName from which (with number) the unique
+     * ID will be counted
+     * @param number the number of parameter in the generator
+     * @throws NumberFormatException
+     * @throws GeneratorParamNumException if there is no ParamNum annotation
+     * associated with this parameter
+     */
     private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException {
         AnnotationDesc[] annotations = param.annotations();
 
@@ -259,7 +284,16 @@ public class PerformanceWriterImpl {
         }
     }
 
-    private void addParameterString(Parameter param, String description, Content content, String workloadName, int number) {
+    /**
+     * Adds the select textbox to the content
+     *
+     * @param description description of the select tag
+     * @param content the Content to which the select tag should be added
+     * @param workloadName the workloadName from which (with number) the unique
+     * ID will be counted
+     * @param number the number of parameter in the generator
+     */
+    private void addParameterString(String description, Content content, String workloadName, int number) {
         String uniqueTextboxName = workloadName + "-" + number;
         String input = "<p><label for=\"" + uniqueTextboxName + "\">" + description + "</label>: <input type=\"text\" id=\"" + uniqueTextboxName + "\"> </p>";
         content.addContent(new RawHtml(input));
@@ -268,11 +302,32 @@ public class PerformanceWriterImpl {
         JSControlWriter.addStringControl(uniqueTextboxName, description);
     }
 
-    private void addParameterEnum(Parameter param, String description, Content content, String workloadName, int number) {
-        //TODO
+    /**
+     * Adds the select html select tag with given enumValues and id to the
+     * content
+     *
+     * @param enumValues the options of the select tag
+     * @param description description of the select tag
+     * @param content the Content to which the select tag should be added
+     * @param workloadName the workloadName from which (with number) the unique
+     * ID will be counted
+     * @param number the number of parameter in the generator
+     */
+    private void addParameterEnum(FieldDoc[] enumValues, String description, Content content, String workloadName, int number) {
+        String uniqueTextboxName = workloadName + "-" + number;
 
-        //registering this textbox to the control
-        //JSControlWriter.addStringControl();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<p><label for=\"" + uniqueTextboxName + "\">" + description + "</label>: <select id=\"" + uniqueTextboxName + "\">");
+
+        for (FieldDoc f : enumValues) {
+            sb.append("<option>" + f.name() + "</option>");
+        }
+
+        sb.append("</select> </p>");
+        content.addContent(new RawHtml(sb.toString()));
+
+        //registering this select to the control
+        JSControlWriter.addEnumControl(workloadName, description);
     }
 
     /**
