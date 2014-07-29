@@ -26,6 +26,11 @@ public class JSSliderWriter {
 
     private static StringBuilder jsGlobalCode = new StringBuilder("<script> $(function() {");
     
+    public static boolean isEmpty()
+    {
+        return (jsGlobalCode.toString().equals("<script> $(function() {"));
+    }
+    
     private static StringBuilder temporaryGeneratorCode;
     
     /**
@@ -70,7 +75,7 @@ public class JSSliderWriter {
     {
         jsGlobalCode.append("});</script>");
         content.addContent(new cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.RawHtml(jsGlobalCode.toString()));
-        jsGlobalCode = new StringBuilder("<script>");
+        jsGlobalCode = new StringBuilder("<script> $(function() {");
     }
 }
 

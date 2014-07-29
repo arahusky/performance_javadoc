@@ -99,7 +99,7 @@ public class HtmlDoclet extends AbstractDoclet {
                     root, DocletConstants.SOURCE_OUTPUT_DIR_NAME);
             }
         }
-
+        
         if (configuration.topFile.length() == 0) {
             configuration.standardmessage.
                 error("doclet.No_Non_Deprecated_Classes_To_Document");
@@ -152,6 +152,10 @@ public class HtmlDoclet extends AbstractDoclet {
         // and replace newline with platform-specific newline.
         if (configuration.stylesheetfile.length() == 0) {
             Util.copyFile(configuration, "stylesheet.css", Util.RESOURCESDIR,
+                    (configdestdir.isEmpty()) ?
+                        System.getProperty("user.dir") : configdestdir, false, true);
+            
+            Util.copyFile(configuration, "perfoStylesheet.css", Util.RESOURCESDIR,
                     (configdestdir.isEmpty()) ?
                         System.getProperty("user.dir") : configdestdir, false, true);
         }

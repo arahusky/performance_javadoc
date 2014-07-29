@@ -92,7 +92,10 @@ public class ClassParser {
             }
 
             ArrayList<MethodDoc> list = new ArrayList<>();
-
+            
+            if (root.classes().length == 0)
+                return false;
+            
             ClassDoc classDoc = root.classes()[0];
 
             for (MethodDoc methodDoc : classDoc.methods()) {
@@ -137,6 +140,10 @@ public class ClassParser {
 
         public static boolean start(RootDoc root) {
             ClassDoc[] classes = root.classes();
+            
+            if (classes.length == 0)
+                return false;
+            
             ClassDoc cd = classes[0];
 
             if (cd.isEnum()) {

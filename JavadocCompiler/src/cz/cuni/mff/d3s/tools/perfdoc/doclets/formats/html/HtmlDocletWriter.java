@@ -513,18 +513,27 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         }
         head.addContent(getStyleSheetProperties());
         
-        //TODO better check whether is class .html
-        //if there's any performance info
-        if (body.toString().indexOf("Performance") != -1)
-        {
-           head.addContent(HtmlTree.LINK("stylesheet", "text/css", "cascade.css", "Style"));
+        //if there's any performance info, there must be some controling text 
+        if (!JSControlWriter.isEmpty())
+        {           
            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css", "Style"));
            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>"));
            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>"));  
+          
+           //counting the relative position of perfoStylesheet to our class
+           int lengthFromMainFolder = configuration.currentcd.toString().split("\\.").length - 1;
+           String pre = ""; 
            
+           for (int i = 0; i<lengthFromMainFolder; i++)
+           {
+               pre += "../";
+           }
+           
+           head.addContent(HtmlTree.LINK("stylesheet", "text/css", pre + "perfoStylesheet.css", "Style"));
+           
+           //add sliders javascript and all control javascript code to the current body
            JSSliderWriter.addToContentAndEmpty(body);
            JSControlWriter.addToContentAndEmpty(body);
-           //bodyAddContent - add all JSFuck
         }
         
         Content htmlTree = HtmlTree.HTML(configuration.getLocale().getLanguage(),

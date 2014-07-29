@@ -30,6 +30,11 @@ import java.util.ArrayList;
 public class JSControlWriter {
 
     private static StringBuilder jsGlobalCode = new StringBuilder("<script> $(function() {");
+    
+    public static boolean isEmpty()
+    {
+        return (jsGlobalCode.toString().equals("<script> $(function() {"));
+    }
 
     static {
         //importing functions that can be used by every control method
@@ -160,7 +165,7 @@ public class JSControlWriter {
     public static void addToContentAndEmpty(cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.Content content) {
         jsGlobalCode.append("});</script>");
         content.addContent(new cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.RawHtml(jsGlobalCode.toString()));
-        jsGlobalCode = new StringBuilder();
+        jsGlobalCode = new StringBuilder("<script> $(function() {");
     }
 
     /**
@@ -217,12 +222,14 @@ public class JSControlWriter {
 
     private static Content addEnumControl(InfoItem it) {
         //there is just no limitation for enums given
-        return new RawHtml("");
+        //important is to put there just a space, so that the JSControlWriter.isEmpty() will now return false
+        return new RawHtml(" ");
     }
 
     private static Content addStringControl(InfoItem it) {
         //there is just no limitation for strings given
-        return new RawHtml("");
+        //important is to put there just a space, so that the JSControlWriter.isEmpty() will now return false
+        return new RawHtml(" ");
     }
 
     /**
