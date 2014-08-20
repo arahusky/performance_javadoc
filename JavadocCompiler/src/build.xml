@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." name="JavaPerfDoc" default="main">
+	<property name="doclet.src.dir" location="src/java-doclet" />
+	<property name="demo.src.dir" location="src/java-demo" />
+	
+	<property name="build.dir" location="out" />
+	<property name="javadoc.build.dir" location="${build.dir}/javadoc" />
+	<property name="doclet.build.dir" location="${build.dir}/classes/java-doclet" />
+	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
+	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
+	
+	<!-- FIXME: make this platform independent. -->
+	<property name="jdk.tools.jar" location="/opt/java/lib/tools.jar" />
+	
+	<target name="main" depends="compile-doclet,compile-demo" description="Main target: compiles everything.">
+	</target>
+	
+	<target name="compile-doclet" description="Compile the PerfDoc doclet.">
+		<mkdir dir="${doclet.build.dir}" />
+		<javac srcdir="${doclet.src.dir}" destdir="${doclet.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+			<classpath>
+				<pathelement path="${jdk.tools.jar}"/>
+			</classpath>
+		</javac>
+		<copy todir="${doclet.build.dir}">
+			<fileset dir="${doclet.src.dir}" includes="**/resources/**" erroronmissingdir="false"/>
+		</copy>
+	</target>
+	
+	<target name="compile-demo" depends="compile-doclet" description="Compile the doclet demo.">
+		<mkdir dir="${demo.build.dir}" />
+		<javac srcdir="${demo.src.dir}" destdir="${demo.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+			<classpath>
+				<pathelement path="${doclet.build.dir}"/>
+				<pathelement path="${jdk.tools.jar}"/>
+			</classpath>
+		</javac>
+	</target>
+			
+	<target name="refdoc" description="Build JavaDoc documentation of the project.">
+		<mkdir dir="${javadoc.build.dir}" />
+		<echo message="Running JavaDoc..." />
+		<javadoc
+				destdir="${javadoc.build.dir}"
+				author="true"
+				windowtitle="${ant.project.name}">
+			<packageset
+				dir="${doclet.src.dir}"
+				defaultexcludes="yes" />
+		</javadoc>
+		<echo message="Copying extra files..." />
+		<copy todir="${javadoc.build.dir}">
+			<fileset dir="${java.src.dir}" includes="**/doc-files/**" erroronmissingdir="false"/>
+		</copy>
+	</target>
+	
+	
+	<target name="run-demo" depends="compile-demo,compile-doclet" description="Run doclet demo.">
+		<mkdir dir="${demo.build.javadoc.dir}" />
+		<javadoc destdir="${demo.build.javadoc.dir}">
+			<fileset dir="${demo.src.dir}" defaultexcludes="yes">
+				<include name="**/SimpleHTMLDoclet.java"/>
+			</fileset>
+			<doclet
+				name="cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard"
+				path="${doclet.build.dir}"
+			/>
+			<classpath>
+				<pathelement path="${doclet.build.dir}"/>
+			</classpath>
+		</javadoc>
+	</target>
+		
+	<target name="clean" description="Remove all the generated files.">
+		<delete dir="${build.dir}" />
+	</target>
+</project>

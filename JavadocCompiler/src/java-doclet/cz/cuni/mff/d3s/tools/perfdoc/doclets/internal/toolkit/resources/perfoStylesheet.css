@@ -1,0 +1,18 @@
+.wrapper{position:relative;}
+.wrapperHidden{position:relative; display: none;}
+    .right,.left{width:50%; position:relative;}
+    .right{float: right;}
+    .left{float:left;}
+
+/*says the parent to surround all my content*/
+.wrapper:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.wrapperHidden:after {
+  content: "";
+  display: table;
+  clear: both;
+}
