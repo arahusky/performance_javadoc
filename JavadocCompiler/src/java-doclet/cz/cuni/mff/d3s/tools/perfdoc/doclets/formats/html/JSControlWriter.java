@@ -90,8 +90,7 @@ public class JSControlWriter {
         //if there are no errors
         sb.append("if ( error[0] == \"\") {");
         
-        sb.append("alert(\"All parameteres checked succesfully. Trying to communicate with server.\"); ");
-        sb.append("alert(error[1]);");
+        sb.append("alert(\"All parameteres checked succesfully. Sending request to the server. \\n Please wait...\"); ");
         
         JSAjaxHandler.generator = workloadName;
         JSAjaxHandler.addSuccessFunction();

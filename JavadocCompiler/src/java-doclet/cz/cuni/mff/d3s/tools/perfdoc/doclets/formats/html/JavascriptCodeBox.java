@@ -55,8 +55,8 @@ public class JavascriptCodeBox {
      * adds all the needed functions to the global code 
      */
     private static void addGlobalCode() {
-        globalCode.append(JSAjaxHandler.addCallServerFunction("http://localhost:8080"));
-        globalCode.append(JSAjaxHandler.addErrorFunction());
+        globalCode.append(JSAjaxHandler.returnCallServerFunction("http://localhost:8080"));
+        globalCode.append(JSAjaxHandler.returnErrorFunction());
 
         globalCode.append(JSControlWriter.returnIsDivisibleFunction());
         globalCode.append(JSControlWriter.returnIsIntervalFunction());
