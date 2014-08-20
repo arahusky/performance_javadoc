@@ -1,5 +1,0 @@
-Jako build.xml jsem pouze zkopiroval tu z Netbeansu. Nevim, jestli to bude fungovat (samotnemu se mi zatim nepovedlo ant rozchodit).
-
-Kdyby ne, tak:
-javac cz/cuni/mff/d3s/tools/perfdoc/doclets/standard/Standard.java
-javadoc -doclet cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard simplehtmldoclet/SimpleHTMLDoclet.java
