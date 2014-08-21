@@ -335,15 +335,16 @@ public class PerformanceWriterImpl {
      *
      * @param doc the methodDoc of method, for which the unique ID will be
      * counted
-     * @return the unique info (packageName_method_babreviatedParams)
+     * @return the unique info (packageName_className_method_babreviatedParams)
      */
     public String getUniqueInfo(MethodDoc doc) {
         //TODO replace the dots in the package name
         String containingPackage = doc.containingPackage().name();
+        String className = doc.containingClass().name();
         String methodName = doc.name();
         String abbrParams = getAbbrParams(doc);
 
-        String fullMethodName = (containingPackage + "_" + methodName + "_" + abbrParams);
+        String fullMethodName = (containingPackage + "_" + className + "_" + methodName + "_" + abbrParams);
         String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
 
         return (fullMethodName + "_" + number);

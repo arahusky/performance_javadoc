@@ -38,7 +38,7 @@ public class JSAjaxHandler {
                 + "   url: \"" + serverAddress + "\","
                 + "   data: data,"
                 + "   type: \"POST\","
-                + "   success: function(json) {successFunc(json)},"
+                + "   success: function(json) {successFunc(json, data, successFunc, graphName)},"
                 + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, errorThrown); }"
                 + "});"
                 + "  }\n";
@@ -69,7 +69,7 @@ public class JSAjaxHandler {
 
         String success = "function " + successFunctionName + "(json, data, myName, graphName) {"
                 + "  	//show in appropriate format to user \n"
-                + "    alert(data);"
+                + "    alert(json);"
                 + "    //if not enough data\n"
                 + "    //callServer(data, myName, graphName);}\n "
                 + " }\n";
@@ -109,7 +109,7 @@ public class JSAjaxHandler {
         StringBuilder sb = new StringBuilder();
 
         sb.append("{");
-        sb.append("\"testedMethod\" : \"" + returnSuccesFunctionName() + "\",");
+        sb.append("\"testedMethod\" : \"" + testedMethod + "\",");
         sb.append("\"generator\" : \"" + generator + "\",");
         sb.append("\"rangeValue\" : error[2],");
 
