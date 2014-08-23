@@ -17,6 +17,7 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

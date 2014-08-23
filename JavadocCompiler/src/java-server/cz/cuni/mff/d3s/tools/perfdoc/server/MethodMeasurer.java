@@ -16,6 +16,10 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,15 +30,16 @@ import org.json.JSONObject;
  */
 public class MethodMeasurer {
 
-    private String method;
+    private Method method;
 
-    private String generator;
+    private Class<?> generatorClass;
+    private Method generatorMethod;
 
     private int rangeValue;
 
     private ArrayList<Object> data = new ArrayList<Object>();
 
-    public MethodMeasurer(String data) {
+    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
         
@@ -44,15 +49,18 @@ public class MethodMeasurer {
         }
     }
 
-    public MethodMeasurer(String method, String generator, int rangeValue, ArrayList<Object> data) {
+    public MethodMeasurer(Method method, Method generator, int rangeValue, ArrayList<Object> data) {
         this.method = method;
-        this.generator = generator;
+        this.generatorMethod = generator;
         this.rangeValue = rangeValue;
         this.data = data;
     }
 
     public JSONObject measureTime()
     {
+        WorkloadImpl workloadImpl = new WorkloadImpl();
+        ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();        
+        serviceImpl.setNumberResults(3);
         
         return new JSONObject();
     }
@@ -63,11 +71,14 @@ public class MethodMeasurer {
      */
     private class JSONParser {
 
-        private void parseData(String parseData) {
+        private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException {
             JSONObject obj = new JSONObject(parseData);
-
-            method = obj.getString("testedMethod");
-            generator = obj.getString("generator");
+            
+            String methodName = obj.getString("testedMethod");
+            String generatorName = obj.getString("generator");    
+            
+            findMethods(methodName, generatorName);
+            
             rangeValue = obj.getInt("rangeValue");
 
             JSONArray dataArray = obj.getJSONArray("data");
@@ -77,6 +88,34 @@ public class MethodMeasurer {
             }
             
             normalize();
+        }
+        
+        private void findMethods(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException
+        {
+            String[] testedMethodInfo = parseMethod(testedMethodString);
+            method = new ClassParser(testedMethodInfo[0]).findMethod(testedMethodInfo[1], testedMethodInfo[2]);
+            
+            String[] generatorMethodInfo = parseMethod(generatorMethodString);
+            
+            ClassParser generatorClassParser = new ClassParser(generatorMethodInfo[0]);
+            generatorClass = generatorClassParser.clazz;
+            generatorMethod = generatorClassParser.findMethod(generatorMethodInfo[1], generatorMethodInfo[2]);
+        }
+        
+        private String[] parseMethod(String method)
+        {
+            String[] subs = method.split("_");
+            
+            String abbrParams = subs[subs.length - 2];
+            String methodName = subs[subs.length - 3];
+            
+            StringBuilder className = new StringBuilder();
+            for (int i = 0; i<subs.length - 4; i++) {
+                className.append(subs[i] + ".");
+            }            
+            className.append(subs[subs.length - 4]);
+           
+            return new String[] {className.toString(), methodName, abbrParams};
         }
         
         /**

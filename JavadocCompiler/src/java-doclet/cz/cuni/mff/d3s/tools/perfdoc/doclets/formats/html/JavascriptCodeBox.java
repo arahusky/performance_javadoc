@@ -31,6 +31,11 @@ public class JavascriptCodeBox {
     private static StringBuilder localCode = new StringBuilder("<script>");
 
     /**
+     * indicates, whether the code was already printed out on the page
+     */
+    public static boolean isUsedOnThePage = false;
+    
+    /**
      * Adds the code to the local code
      * @param code The code that will be added to the current local code
      */

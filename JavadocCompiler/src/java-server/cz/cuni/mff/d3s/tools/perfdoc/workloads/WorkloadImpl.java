@@ -17,10 +17,24 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
+import java.util.ArrayList;
+
 /**
  *
  * @author arahusky
  */
-public interface Workload {
-    public void addCall(Object obj, Object... args);
+public class WorkloadImpl implements Workload{
+
+    private ArrayList<Object[]> list = new ArrayList<>();
+    
+    @Override
+    public void addCall(Object obj, Object... args) {
+        list.add(new Object[] {obj, args});
+    }
+    
+    public Object[] getCall()
+    {
+        return list.remove(list.size() - 1);
+    }
+    
 }

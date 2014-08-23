@@ -21,6 +21,17 @@ package cz.cuni.mff.d3s.tools.perfdoc.workloads;
  *
  * @author arahusky
  */
-public interface Workload {
-    public void addCall(Object obj, Object... args);
+public class ServiceWorkloadImpl implements ServiceWorkload{
+
+    private int numberResults;
+    
+    @Override
+    public int getNumberResults() {
+        return numberResults;
+    }
+    
+    public void setNumberResults(int i) {
+        numberResults = i;
+    }
+    
 }
