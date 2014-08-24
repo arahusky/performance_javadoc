@@ -526,7 +526,8 @@ public class HtmlDocletWriter extends HtmlDocWriter {
             for (int i = 0; i < lengthFromMainFolder; i++) {
                 pre += "../";
             }
-
+            
+            head.addContent(new RawHtml("<script src=\"" + pre + "dygraph-combined.js\"></script>"));
             head.addContent(HtmlTree.LINK("stylesheet", "text/css", pre + "perfoStylesheet.css", "Style"));
 
             //add sliders javascript and all control javascript code to the current body

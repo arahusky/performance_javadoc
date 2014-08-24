@@ -70,6 +70,7 @@ public class JSAjaxHandler {
         String success = "function " + successFunctionName + "(json, data, myName, graphName) {"
                 + "  	//show in appropriate format to user \n"
                 + "    alert(json);"
+                +       returnStartGraphCode(returnGraphName(), "some x-value")
                 + "    //if not enough data\n"
                 + "    //callServer(data, myName, graphName);}\n "
                 + " }\n";
@@ -78,11 +79,13 @@ public class JSAjaxHandler {
     }
 
     public static String returnSuccesFunctionName() {
-        return generator + "success";
+        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
+        return perfWriter.getUniqueInfo(generator) + "success";
     }
 
     public static String returnGraphName() {
-        return generator + "graph";
+        PerformanceWriterImpl perfwWriter = new PerformanceWriterImpl();
+        return perfwWriter.getUniqueInfo(generator);
     }
 
     /**
@@ -97,7 +100,25 @@ public class JSAjaxHandler {
 
         StringBuilder sb = new StringBuilder();
         sb.append("var json = JSON.stringify(" + data + ", null, 2); ");
+
+        //create graph
+        //sb.append(returnStartGraphCode(graphName, "Some x-value"));
+        
         sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\");");
+
+        return sb.toString();
+    }
+
+    private static String returnStartGraphCode(String graphName, String xAxisName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("var graph = new Dygraph("
+                + "    document.getElementById(\""+ graphName + "\").getElementsByClassName(\"right\")[0], "
+                + "    JSON.parse(json).data," 
+                + "    {"
+                + "      ylabel: 'Search time (ms)',"
+                + "      xlabel: '" + xAxisName + "'"
+                + "    }"
+                + "  );");
 
         return sb.toString();
     }

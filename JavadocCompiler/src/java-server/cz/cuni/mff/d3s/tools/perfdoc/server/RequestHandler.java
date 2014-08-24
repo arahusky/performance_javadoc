@@ -53,11 +53,13 @@ class RequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
+            System.out.println(requestBody);
+            
             MethodMeasurer m = new MethodMeasurer(requestBody); 
             JSONObject obj = m.measureTime();
             
             exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
-            responseBody.write(requestBody.getBytes());
+            responseBody.write(obj.toString().getBytes());
             
 
         } catch (Exception e) {

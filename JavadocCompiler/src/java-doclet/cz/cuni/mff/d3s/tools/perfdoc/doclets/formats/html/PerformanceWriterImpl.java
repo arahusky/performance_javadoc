@@ -36,8 +36,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -68,7 +66,7 @@ public class PerformanceWriterImpl {
      * @return HtmlTree that represents the generator or null if some error
      * occurred
      */
-    public HtmlTree returnPerfoDiv(MethodDoc doc, String uniqueWorkloadName, boolean hidden) {
+    public HtmlTree returnPerfoDiv(MethodDoc doc, String uniqueWorkloadName, String workladFullName, boolean hidden) {
 
         //the main HtmlTree, that will contain two subtrees (left and right), that represent the left part and right part of the performance look
         HtmlTree navList = new HtmlTree(HtmlTag.DIV);
@@ -83,7 +81,7 @@ public class PerformanceWriterImpl {
         leftSide.addAttr(HtmlAttr.CLASS, "left");
 
         try {
-            addFormPart(leftSide, doc, uniqueWorkloadName);
+            addFormPart(leftSide, doc, uniqueWorkloadName, workladFullName);
         } catch (GeneratorParameterException e) {
             String parameter = e.getMessage();
             configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
@@ -126,7 +124,7 @@ public class PerformanceWriterImpl {
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, MethodDoc doc, String workloadName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
+    private void addFormPart(Content content, MethodDoc doc, String workloadName, String workloadFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
         AnnotationDesc[] annotations = doc.annotations();
 
         //we get the generator annotation of the doc (it was already checked by classparser that it is not null)
@@ -162,7 +160,7 @@ public class PerformanceWriterImpl {
 
         //telling JSSlider to begin generating JS
         JSSliderWriter.startNewGeneratorCode();
-        JSControlWriter.startNewControlButton(workloadName);
+        JSControlWriter.startNewControlButton(workloadName, workloadFullName);
 
         for (int i = 2; i < param.length; i++) {
             addParameterPerfo(param[i], content, workloadName, number);
@@ -335,19 +333,22 @@ public class PerformanceWriterImpl {
      *
      * @param doc the methodDoc of method, for which the unique ID will be
      * counted
-     * @return the unique info (packageName_className_method_babreviatedParams)
+     * @return the unique info (packageName#className#method#abbreviatedParams)
      */
-    public String getUniqueInfo(MethodDoc doc) {
-        //TODO replace the dots in the package name
+    public String getUniqueFullInfo(MethodDoc doc) {
         String containingPackage = doc.containingPackage().name();
         String className = doc.containingClass().name();
         String methodName = doc.name();
         String abbrParams = getAbbrParams(doc);
 
-        String fullMethodName = (containingPackage + "_" + className + "_" + methodName + "_" + abbrParams);
+        String fullMethodName = (containingPackage + "#" + className + "#" + methodName + "#" + abbrParams);
         String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
 
-        return (fullMethodName + "_" + number);
+        return (fullMethodName + "#" + number);
+    }
+    
+    public String getUniqueInfo(String fullMethodInfo) {
+        return fullMethodInfo.replaceAll("\\.", "_").replaceAll("#", "_");
     }
 
     /**

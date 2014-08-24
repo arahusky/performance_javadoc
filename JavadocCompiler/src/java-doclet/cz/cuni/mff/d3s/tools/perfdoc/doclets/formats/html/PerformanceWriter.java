@@ -27,8 +27,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -57,7 +55,7 @@ public abstract class PerformanceWriter {
 
         //passing full method name to the ajax handler
         PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();        
-        JSAjaxHandler.testedMethod = perfWriter.getUniqueInfo(doc);
+        JSAjaxHandler.testedMethod = perfWriter.getUniqueFullInfo(doc);
         
         //list, that will contain all generators for the given method (doc) 
         ArrayList<MethodDoc> list = new ArrayList<>();
@@ -89,9 +87,10 @@ public abstract class PerformanceWriter {
      */
     private static void addPerfoInfoOneDiv(MethodDoc method, PerformanceOutput output) {
         PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
-
-        String uniqueWorkloadName = perfWriter.getUniqueInfo(method);
-        HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueWorkloadName, false);
+       
+        String workloadFullName = perfWriter.getUniqueFullInfo(method);
+        String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
+        HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueWorkloadName, workloadFullName, false);
 
         if (tree != null) {
             //if the tree was succesfully built, we can add the performance title and then the tree
@@ -145,11 +144,13 @@ public abstract class PerformanceWriter {
         for (int i = 0; i < list.size(); i++) {
             //the i-th generator
             MethodDoc m = list.get(i);
-            String uniqueWorkloadName = perfWriter.getUniqueInfo(m);
+            
+            String workloadFullName = perfWriter.getUniqueFullInfo(m);
+            String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
 
             if (i == 0) {
                 //if it is the first workload, we do not want it to be hidden
-                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, false);
+                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, false);
 
                 //if there was an error, we call ourselves, but without the first (= bad) method
                 if (t == null) {
@@ -159,7 +160,7 @@ public abstract class PerformanceWriter {
                     generatorDivs.add(t);
                 }
             } else {
-                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, true);
+                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, true);
 
                 //if there was an error, we call ourselves, but without the bad method (i-th), which we have to first locate
                 if (t == null) {
@@ -187,7 +188,7 @@ public abstract class PerformanceWriter {
         HtmlTree tree = new HtmlTree(HtmlTag.DIV);
         //we need to give this div an unique id in order to be able to find it and replace it content
         //in this case the uniqueMethodID is generated from the package + methodName + its argument + just for sure (should never happen) there's also hashmap to remember, whether there was no such id before
-        String uniqueMethodID = perfWriter.getUniqueInfo(doc);
+        String uniqueMethodID = perfWriter.getUniqueInfo(perfWriter.getUniqueFullInfo(doc));
         tree.addAttr(HtmlAttr.ID, uniqueMethodID);
 
         //second we add the select content

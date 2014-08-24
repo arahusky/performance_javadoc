@@ -33,9 +33,12 @@ public class JSControlWriter {
     private static String buttonName;
     
     private static String workloadName;
+    private static String fullGeneratorName;
 
-    public static void startNewControlButton(String workloadName) {
+    public static void startNewControlButton(String workloadName, String fullGeneratorName) {
         JSControlWriter.workloadName = workloadName;
+        JSControlWriter.fullGeneratorName = fullGeneratorName;
+        
         buttonName = returnButtonName(workloadName);
         list = new ArrayList<>();
     }
@@ -92,7 +95,7 @@ public class JSControlWriter {
         
         sb.append("alert(\"All parameteres checked succesfully. Sending request to the server. \\n Please wait...\"); ");
         
-        JSAjaxHandler.generator = workloadName;
+        JSAjaxHandler.generator = fullGeneratorName;
         JSAjaxHandler.addSuccessFunction();
         
         sb.append(JSAjaxHandler.returnSuccessButtonHandleFunction());

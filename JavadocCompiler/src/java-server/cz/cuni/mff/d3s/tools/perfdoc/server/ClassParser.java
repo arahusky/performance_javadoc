@@ -94,10 +94,13 @@ public class ClassParser {
                 boolean isCorrect = true;
 
                 for (int i = 0; i < parameters.length; i++) {
-                    if (parameters[i].getType().getTypeName().charAt(0) != abbrParams.charAt(i)) {
-                        isCorrect = false;
-                        break;
-                    }
+                    //TODO repair!!!
+//                    if (parameters[i].getType().getTypeName().charAt(0) != abbrParams.charAt(i)) {
+//                        System.out.println("---------");
+//                        System.out.println(parameters[i].getType().getTypeName());
+//                        isCorrect = false;
+//                        break;
+//                    }
                 }
 
                 if (isCorrect) {

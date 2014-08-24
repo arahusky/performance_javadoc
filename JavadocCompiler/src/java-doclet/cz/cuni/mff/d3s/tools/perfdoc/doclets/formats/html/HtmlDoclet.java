@@ -158,6 +158,9 @@ public class HtmlDoclet extends AbstractDoclet {
             Util.copyFile(configuration, "perfoStylesheet.css", Util.RESOURCESDIR,
                     (configdestdir.isEmpty()) ?
                         System.getProperty("user.dir") : configdestdir, false, true);
+            Util.copyFile(configuration, "dygraph-combined.js", Util.RESOURCESDIR,
+                    (configdestdir.isEmpty()) ?
+                        System.getProperty("user.dir") : configdestdir, false, true);
         }
     }
 
