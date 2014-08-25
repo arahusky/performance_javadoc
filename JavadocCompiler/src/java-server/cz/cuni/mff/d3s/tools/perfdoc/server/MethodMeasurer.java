@@ -42,7 +42,7 @@ public class MethodMeasurer {
 
     private Class<?> generatorClass;
     private Method generatorMethod;
-    private String generatorAbbrParams;
+    private ArrayList<String> generatorParamTypes;
 
     private int rangeValue;
 
@@ -84,7 +84,8 @@ public class MethodMeasurer {
 
         for (int i = 0; i < valuesToMeasure.length; i++) {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
-            //debugInfo(args);
+            System.out.println("heree");
+            
             generatorMethod.invoke(generatorClass.newInstance(), args);
 
             Object[] objs;
@@ -148,12 +149,14 @@ public class MethodMeasurer {
     }
 
     /**
-     * Method that helps method getValuesToMeasure to find the right data in interval
-     * @param step 
+     * Method that helps method getValuesToMeasure to find the right data in
+     * interval
+     *
+     * @param step
      * @param minVal
      * @param maxVal
      * @param howMany
-     * @return 
+     * @return
      */
     private double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
         if (howMany < 1) {
@@ -185,16 +188,17 @@ public class MethodMeasurer {
     }
 
     /**
-     * Finds the highest number smaller than the value that can be achieved by step
+     * Finds the highest number smaller than the value that can be achieved by
+     * step
      */
     private double findNearestSmallerPossibleValue(double value, double min, double step) {
         double actualValue = 0;
 
         //System.out.println("calue:" + value + ", min:" + min + ", step: " + step);
-        while (actualValue + step <= value ) {
+        while (actualValue + step <= value) {
             actualValue += step;
         }
-        
+
         return roundToNextPossibleValue(actualValue);
     }
 
@@ -240,19 +244,24 @@ public class MethodMeasurer {
         }
 
         //all values have already good type (method normalize in JSONParser) except for the range value
-        switch (generatorAbbrParams.charAt(rangeValue + 2)) {
-            case 'i':
+        String parameter = getGenParameterName(rangeValue);
+        switch (parameter) {
+            case "int":
                 args[rangeValue + 2] = (int) rangeVal;
                 break;
-            case 'f':
+            case "float":
                 args[rangeValue + 2] = (float) rangeVal;
                 break;
-            case 'd':
+            case "double":
                 args[rangeValue + 2] = rangeVal;
                 break;
         }
 
         return args;
+    }
+
+    private String getGenParameterName(int i) {
+        return generatorParamTypes.get(i + 2);
     }
 
     /**
@@ -263,9 +272,12 @@ public class MethodMeasurer {
 
         /**
          * Parses data and the result saves in the MethodMeasurer variables
+         *
          * @param parseData
-         * @throws ClassNotFoundException when tested method or generator method were not found
-         * @throws MalformedURLException when files in which to search the files are in a bad format
+         * @throws ClassNotFoundException when tested method or generator method
+         * were not found
+         * @throws MalformedURLException when files in which to search the files
+         * are in a bad format
          */
         private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException {
             JSONObject obj = new JSONObject(parseData);
@@ -287,37 +299,62 @@ public class MethodMeasurer {
         }
 
         /**
-         * Finds and saves (in MethodMeasurer variables) tested method and generator class and generator method
+         * Finds and saves (in MethodMeasurer variables) tested method and
+         * generator class and generator method
+         *
          * @param testedMethodString
          * @param generatorMethodString
-         * @throws ClassNotFoundException when tested method or generator method were not found
-         * @throws MalformedURLException when files in which to search the files are in a bad format
+         * @throws ClassNotFoundException when tested method or generator method
+         * were not found
+         * @throws MalformedURLException when files in which to search the files
+         * are in a bad format
          */
         private void findAndSaveMethodsAndClassses(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException {
             String[] testedMethodInfo = parseMethod(testedMethodString);
-            method = new ClassParser(testedMethodInfo[0]).findMethod(testedMethodInfo[1], testedMethodInfo[2]);
+            ArrayList<String> testedParamNames = getParamNames(testedMethodInfo[2]);
+
+            method = new ClassParser(testedMethodInfo[0]).findMethod(testedMethodInfo[1], testedParamNames);
 
             String[] generatorMethodInfo = parseMethod(generatorMethodString);
 
             ClassParser generatorClassParser = new ClassParser(generatorMethodInfo[0]);
             generatorClass = generatorClassParser.clazz;
 
-            generatorMethod = generatorClassParser.findMethod(generatorMethodInfo[1], generatorMethodInfo[2]);
+            generatorParamTypes = getParamNames(generatorMethodInfo[2]);
+            generatorMethod = generatorClassParser.findMethod(generatorMethodInfo[1], generatorParamTypes);
+        }
+
+        private ArrayList<String> getParamNames(String params) {
+            String[] paramNames = params.split("@");
+            ArrayList<String> res = new ArrayList<>();
+
+            for (String s : paramNames) {
+                if (!s.isEmpty()) {
+                res.add(s);
+                }
+            }
+
+            return res;
         }
 
         /**
-         * Parses the method that we get from incoming JSON.         *
+         * Parses the method that we get from incoming JSON.
+         *
+         *
          * @param method the incoming method name
-         * @return String array containing the className,  methodName and abbrParams
+         * @return String array containing the className, methodName and
+         * abbrParams
          */
         private String[] parseMethod(String method) {
             String[] subs = method.split("#");
 
             String className = subs[0] + "." + subs[1];
             String methodName = subs[2];
-            String abbrParams = subs[3];
+            String params = subs[3];
+            
+            System.out.println(params);
 
-            return new String[]{className.toString(), methodName, abbrParams};
+            return new String[]{className.toString(), methodName, params};
         }
 
         /**
@@ -326,39 +363,38 @@ public class MethodMeasurer {
          * the corresponding types (int, float, double)
          */
         private void normalize(String generatorName) {
-            generatorAbbrParams = parseMethod(generatorName)[2];
 
             for (int i = 0; i < data.size(); i++) {
                 if (i != rangeValue) {
                     Object item = data.get(i);
-
+                    
+                    String parameter = getGenParameterName(i);                    
                     //if it is a number, it must be on it converted
-                    if (generatorAbbrParams.charAt(i + 2) == 'i' || generatorAbbrParams.charAt(i + 2) == 'd' || generatorAbbrParams.charAt(i + 2) == 'f') {
+                    if (parameter.equals("int") || parameter.equals("float") || parameter.equals("double")) {
                         if (((String) item).contains(" to ")) {
                             String[] chunks = ((String) item).split(" to ");
                             if (chunks.length == 2 && (chunks[0].equals(chunks[1]))) {
-                                System.out.println(generatorAbbrParams.charAt(i + 2));
-                                switch (generatorAbbrParams.charAt(i + 2)) {
-                                    case 'i':
+                                switch (parameter) {
+                                    case "int":
                                         data.set(i, Integer.parseInt(chunks[0]));
                                         break;
-                                    case 'f':
+                                    case "float":
                                         data.set(i, Float.parseFloat(chunks[0]));
                                         break;
-                                    case 'd':
+                                    case "double":
                                         data.set(i, Double.parseDouble(chunks[0]));
                                         break;
                                 }
                             }
                         } else {
-                            switch (generatorAbbrParams.charAt(i + 2)) {
-                                case 'i':
+                            switch (parameter) {
+                                case "int":
                                     data.set(i, Integer.parseInt((String) item));
                                     break;
-                                case 'f':
+                                case "float":
                                     data.set(i, Float.parseFloat((String) item));
                                     break;
-                                case 'd':
+                                case "double":
                                     data.set(i, Double.parseDouble((String) item));
                                     break;
                             }

@@ -42,6 +42,5 @@ public class ServiceWorkloadImpl implements ServiceWorkload{
     
     public void setPriority(int priority) {
         this.priority = priority;
-    }
-    
+    }    
 }

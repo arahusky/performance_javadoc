@@ -22,6 +22,7 @@ import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 
 /**
  *
@@ -43,9 +44,9 @@ public class ClassParser {
             
             System.out.println("finding method");
             
-            Method m = cp.findMethod("main", "j");
+            //Method m = cp.findMethod("main", "j");
             
-            System.out.println(m.getName());
+            //System.out.println(m.getName());
         } catch (MalformedURLException ex) {
             System.out.println("malformed url");;
         } catch (ClassNotFoundException ex) {
@@ -85,31 +86,28 @@ public class ClassParser {
     /**
      * Finds specified method
      * @param methodName
-     * @param abbrParams 
+     * @param params 
      * @return the Method instance if found, otherwise null
      * @throws ClassNotFoundException 
      */
-    public Method findMethod(String methodName, String abbrParams) throws ClassNotFoundException {
+    public Method findMethod(String methodName, ArrayList<String> params) throws ClassNotFoundException {
 
         Method[] methods = clazz.getMethods();
 
         for (Method m : methods) {
-            if (m.getName().equals(methodName) && (m.getParameterCount() == abbrParams.length())) {
+            if (m.getName().equals(methodName) && (m.getParameterCount() == params.size())) {
                 Parameter[] parameters = m.getParameters();
 
                 boolean isCorrect = true;
 
                 for (int i = 0; i < parameters.length; i++) {
-                    //TODO repair!!!
-//                    if (parameters[i].getType().getTypeName().charAt(0) != abbrParams.charAt(i)) {
-//                        System.out.println("---------");
-//                        System.out.println(parameters[i].getType().getTypeName());
-//                        isCorrect = false;
-//                        break;
-//                    }
+                    if (! parameters[i].getType().getCanonicalName().equals(params.get(i))) {
+                        isCorrect = false;
+                        break;
+                    }
                 }
 
-                if (isCorrect) {
+                if (isCorrect) {    
                     return m;
                 }
             }

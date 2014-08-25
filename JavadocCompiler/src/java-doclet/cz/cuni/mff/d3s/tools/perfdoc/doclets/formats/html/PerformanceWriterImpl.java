@@ -335,7 +335,7 @@ public class PerformanceWriterImpl {
      *
      * @param doc the methodDoc of method, for which the unique ID will be
      * counted
-     * @return the unique info (packageName#className#method#abbreviatedParams)
+     * @return the unique info (packageName#className#method#Params#Number)
      */
     public String getUniqueFullInfo(MethodDoc doc) {
         String containingPackage = doc.containingPackage().name();
@@ -343,14 +343,17 @@ public class PerformanceWriterImpl {
         String methodName = doc.name();
         String abbrParams = getAbbrParams(doc);
 
-        String fullMethodName = (containingPackage + "#" + className + "#" + methodName + "#" + abbrParams);
+        String fullMethodName = (containingPackage + "#" + className + "#" + methodName);
         String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
 
-        return (fullMethodName + "#" + number);
+        return (fullMethodName + "#" + abbrParams + "#" + number);
     }
 
     public String getUniqueInfo(String fullMethodInfo) {
-        return fullMethodInfo.replaceAll("\\.", "_").replaceAll("#", "_");
+        String[] chunks = fullMethodInfo.split("#");
+        String result = chunks[0] + "#" + chunks[1] + "#" + chunks[2] + "#" + chunks[4];
+        
+        return result.replaceAll("\\.", "_").replaceAll("#", "_");
     }
 
     /**
@@ -369,20 +372,20 @@ public class PerformanceWriterImpl {
         for (int i = 0; i < params.length; i++) {
             switch (params[i].typeName()) {
                 case "int":
-                    abbrParams += "i";
+                    abbrParams += "@int";
                     break;
                 case "double":
-                    abbrParams += "d";
+                    abbrParams += "@double";
                     break;
                 case "float":
-                    abbrParams += "f";
+                    abbrParams += "@float";
                     break;
                 case "String":
-                    abbrParams += "s";
+                    abbrParams += "@java.lang.String";
                     break;
                 default:
                     //enum situation
-                    abbrParams += params[i].typeName().charAt(0);
+                    abbrParams += "@" + params[i].type().toString();
                     break;
             }
         }
