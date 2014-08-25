@@ -63,6 +63,12 @@ public class ClassParser {
         loadClass(className);
     }
 
+    /**
+     * Loads and saves the specified class
+     * @param className
+     * @throws ClassNotFoundException when tested method or generator method were not found
+     * @throws MalformedURLException when files in which to search the files are in a bad format 
+     */
     private void loadClass(String className) throws ClassNotFoundException, MalformedURLException {
         File file = new File("C:\\Users\\arahusky\\Google Drive\\Rocnikac\\SimpleHTMLDoclet\\build\\classes");
 

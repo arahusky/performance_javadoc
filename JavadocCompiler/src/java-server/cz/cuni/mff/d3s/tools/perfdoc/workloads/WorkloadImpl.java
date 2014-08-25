@@ -34,6 +34,9 @@ public class WorkloadImpl implements Workload{
     
     public Object[] getCall()
     {
+        if (list.isEmpty())
+            return null;
+        
         return list.remove(list.size() - 1);
     }
     

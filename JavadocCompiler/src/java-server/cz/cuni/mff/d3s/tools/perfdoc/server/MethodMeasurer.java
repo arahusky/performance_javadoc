@@ -16,13 +16,18 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.math.RoundingMode;
 import java.net.MalformedURLException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,10 +42,11 @@ public class MethodMeasurer {
 
     private Class<?> generatorClass;
     private Method generatorMethod;
+    private String generatorAbbrParams;
 
     private int rangeValue;
 
-    private ArrayList<Object> data = new ArrayList<Object>();
+    private ArrayList<Object> data = new ArrayList<>();
 
     public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException {
         JSONParser parser = new JSONParser();
@@ -58,36 +64,47 @@ public class MethodMeasurer {
         this.data = data;
     }
 
+    /**
+     * measures the time duration of the method for given data and rangeValue
+     *
+     * @return JSONObject containg measured values with their time durations
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
     public JSONObject measureTime() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
-        serviceImpl.setNumberResults(3);
-        
-        ArrayList<Object []> result = new ArrayList<>();
+        serviceImpl.setNumberResults(1);
 
-        int[] valuesToMeasure = getRangeValues(1);
+        ArrayList<Object[]> result = new ArrayList<>();
+
+        double[] valuesToMeasure = getValuesToMeasure(5);
 
         for (int i = 0; i < valuesToMeasure.length; i++) {
-            Object[] args = getArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
-
+            Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
+            //debugInfo(args);
             generatorMethod.invoke(generatorClass.newInstance(), args);
 
-            Object[] objs = workloadImpl.getCall();
-            long before = System.nanoTime();
-            method.invoke(objs[0], objs[1]);
-            long after = System.nanoTime();
-            
-            result.add(new Object[] {valuesToMeasure[i], ((after - before) / 1000000)});
+            Object[] objs;
+            while ((objs = workloadImpl.getCall()) != null) {
+                long before = System.nanoTime();
+                method.invoke(objs[0], objs[1]);
+                long after = System.nanoTime();
+
+                result.add(new Object[]{valuesToMeasure[i], ((after - before) / 1000000)});
+            }
         }
 
-        JSONObject obj = new JSONObject();
-        
-        for (int i = 0; i<result.size(); i++) {
-            obj.accumulate("data", result.get(i));
+        //create new JSONObject containing measured results
+        JSONObject jsonResults = new JSONObject();
+        for (int i = 0; i < result.size(); i++) {
+            jsonResults.accumulate("data", result.get(i));
             System.out.println(result.get(i)[0] + ":" + result.get(i)[1]);
         }
-        
-        return obj;
+
+        return jsonResults;
     }
 
     private void debugInfo(Object[] args) {
@@ -100,16 +117,120 @@ public class MethodMeasurer {
         }
     }
 
-    private int[] getRangeValues(int howMany) {
-        int[] arr = new int[2];
+    /**
+     * Chooses the right data from rangeValue which will be passed to generator,
+     * the data are chosen to divide the interval to the very same pieces
+     *
+     * @param howMany how many data will be chosen
+     * @return the double array containing chosen values
+     */
+    private double[] getValuesToMeasure(int howMany) {
+        double[] values = new double[howMany];
+
+        //the endpoints will be always contained in the values 
         String[] oarr = ((String) data.get(rangeValue)).split(" to ");
-        arr[0] = Integer.parseInt(oarr[0]);
-        arr[1] = Integer.parseInt(oarr[1]);
+        double min = Double.parseDouble(oarr[0]);
+        double max = Double.parseDouble(oarr[1]);
+
+        //the distance of two measured values
+        double step = findStepValue();
+
+        values[0] = min;
+        values[values.length - 1] = max;
+
+        double[] otherVals = findOtherValues(step, min, max, howMany - 2);
+
+        for (int i = 1; i < values.length - 1; i++) {
+            values[i] = otherVals[i - 1];
+        }
+
+        return values;
+    }
+
+    /**
+     * Method that helps method getValuesToMeasure to find the right data in interval
+     * @param step 
+     * @param minVal
+     * @param maxVal
+     * @param howMany
+     * @return 
+     */
+    private double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
+        if (howMany < 1) {
+            return new double[0];
+        }
+
+        double distance = maxVal - minVal;
+        //how many units are between the endpoints
+        double numberOfPossibleSteps = Math.floor(distance / step);
+
+        //the candidate for the step
+        double possibleStep = (numberOfPossibleSteps / (howMany + 1)) * step;
+        System.out.println("---------------");
+        System.out.println("Poss step:" + possibleStep);
+
+        //the candidate for the step must be normalized = we need to find the highest smaller (or equal) value that can be reached be adding the step to the min
+        double myStep = findNearestSmallerPossibleValue(possibleStep, minVal, step);
+        System.out.println("------------");
+        System.out.println("Mystep:" + myStep);
+
+        //TODO check whether is it possible to find so many values in the interval
+        double[] arr = new double[howMany];
+
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = roundToNextPossibleValue(minVal + ((i + 1) * myStep));
+        }
 
         return arr;
     }
 
-    private Object[] getArgsToCall(int rangeVal, Workload workload, ServiceWorkload serviceWorkload) {
+    /**
+     * Finds the highest number smaller than the value that can be achieved by step
+     */
+    private double findNearestSmallerPossibleValue(double value, double min, double step) {
+        double actualValue = 0;
+
+        //System.out.println("calue:" + value + ", min:" + min + ", step: " + step);
+        while (actualValue + step <= value ) {
+            actualValue += step;
+        }
+        
+        return roundToNextPossibleValue(actualValue);
+    }
+
+    /**
+     * Rounds the value (slices inaccurate data)
+     */
+    private double roundToNextPossibleValue(double value) {
+        //TODO FIXME to be more precise according to step (which would be better in string format - it seems impossible)
+        DecimalFormat df = new DecimalFormat("0.#####");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+        return Double.parseDouble(df.format(value));
+    }
+
+    /**
+     * Finds the step value in the generator for given rangeValue
+     */
+    private double findStepValue() {
+        //first two parameters are workload and serviceWorkload
+        int numInParams = rangeValue + 2;
+        Parameter[] params = generatorMethod.getParameters();
+
+        Annotation[] annotations = params[numInParams].getAnnotations();
+
+        for (Annotation a : annotations) {
+            if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
+                return ((ParamNum) a).step();
+            }
+        }
+
+        return -1; //some value to indicate non-succes
+    }
+
+    /**
+     * Creates object[] to pass to .invoke method of generator
+     */
+    private Object[] prepareArgsToCall(double rangeVal, Workload workload, ServiceWorkload serviceWorkload) {
         Object[] args = new Object[data.size() + 2];
         args[0] = workload;
         args[1] = serviceWorkload;
@@ -118,7 +239,18 @@ public class MethodMeasurer {
             args[i + 2] = data.get(i);
         }
 
-        args[rangeValue + 2] = rangeVal;
+        //all values have already good type (method normalize in JSONParser) except for the range value
+        switch (generatorAbbrParams.charAt(rangeValue + 2)) {
+            case 'i':
+                args[rangeValue + 2] = (int) rangeVal;
+                break;
+            case 'f':
+                args[rangeValue + 2] = (float) rangeVal;
+                break;
+            case 'd':
+                args[rangeValue + 2] = rangeVal;
+                break;
+        }
 
         return args;
     }
@@ -129,13 +261,19 @@ public class MethodMeasurer {
      */
     private class JSONParser {
 
+        /**
+         * Parses data and the result saves in the MethodMeasurer variables
+         * @param parseData
+         * @throws ClassNotFoundException when tested method or generator method were not found
+         * @throws MalformedURLException when files in which to search the files are in a bad format
+         */
         private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException {
             JSONObject obj = new JSONObject(parseData);
 
             String methodName = obj.getString("testedMethod");
             String generatorName = obj.getString("generator");
 
-            findMethods(methodName, generatorName);
+            findAndSaveMethodsAndClassses(methodName, generatorName);
 
             rangeValue = obj.getInt("rangeValue");
 
@@ -148,7 +286,14 @@ public class MethodMeasurer {
             normalize(generatorName);
         }
 
-        private void findMethods(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException {
+        /**
+         * Finds and saves (in MethodMeasurer variables) tested method and generator class and generator method
+         * @param testedMethodString
+         * @param generatorMethodString
+         * @throws ClassNotFoundException when tested method or generator method were not found
+         * @throws MalformedURLException when files in which to search the files are in a bad format
+         */
+        private void findAndSaveMethodsAndClassses(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException {
             String[] testedMethodInfo = parseMethod(testedMethodString);
             method = new ClassParser(testedMethodInfo[0]).findMethod(testedMethodInfo[1], testedMethodInfo[2]);
 
@@ -156,9 +301,15 @@ public class MethodMeasurer {
 
             ClassParser generatorClassParser = new ClassParser(generatorMethodInfo[0]);
             generatorClass = generatorClassParser.clazz;
+
             generatorMethod = generatorClassParser.findMethod(generatorMethodInfo[1], generatorMethodInfo[2]);
         }
 
+        /**
+         * Parses the method that we get from incoming JSON.         *
+         * @param method the incoming method name
+         * @return String array containing the className,  methodName and abbrParams
+         */
         private String[] parseMethod(String method) {
             String[] subs = method.split("#");
 
@@ -175,19 +326,19 @@ public class MethodMeasurer {
          * the corresponding types (int, float, double)
          */
         private void normalize(String generatorName) {
-            String abbrParams = parseMethod(generatorName)[2];
+            generatorAbbrParams = parseMethod(generatorName)[2];
 
             for (int i = 0; i < data.size(); i++) {
                 if (i != rangeValue) {
                     Object item = data.get(i);
 
                     //if it is a number, it must be on it converted
-                    if (abbrParams.charAt(i + 2) == 'i' || abbrParams.charAt(i + 2) == 'd' || abbrParams.charAt(i + 2) == 'f') {
+                    if (generatorAbbrParams.charAt(i + 2) == 'i' || generatorAbbrParams.charAt(i + 2) == 'd' || generatorAbbrParams.charAt(i + 2) == 'f') {
                         if (((String) item).contains(" to ")) {
                             String[] chunks = ((String) item).split(" to ");
                             if (chunks.length == 2 && (chunks[0].equals(chunks[1]))) {
-                                System.out.println(abbrParams.charAt(i + 2));
-                                switch (abbrParams.charAt(i + 2)) {
+                                System.out.println(generatorAbbrParams.charAt(i + 2));
+                                switch (generatorAbbrParams.charAt(i + 2)) {
                                     case 'i':
                                         data.set(i, Integer.parseInt(chunks[0]));
                                         break;
@@ -200,7 +351,7 @@ public class MethodMeasurer {
                                 }
                             }
                         } else {
-                            switch (abbrParams.charAt(i + 2)) {
+                            switch (generatorAbbrParams.charAt(i + 2)) {
                                 case 'i':
                                     data.set(i, Integer.parseInt((String) item));
                                     break;

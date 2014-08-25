@@ -23,4 +23,5 @@ package cz.cuni.mff.d3s.tools.perfdoc.workloads;
  */
 public interface ServiceWorkload {
     public int getNumberResults();
+    public int getPriority();
 }

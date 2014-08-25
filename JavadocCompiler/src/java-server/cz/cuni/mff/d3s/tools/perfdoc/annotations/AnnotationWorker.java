@@ -16,6 +16,9 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import com.sun.javadoc.AnnotationDesc;
 import java.lang.annotation.Annotation;
 

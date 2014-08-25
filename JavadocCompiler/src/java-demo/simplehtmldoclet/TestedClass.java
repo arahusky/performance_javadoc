@@ -43,6 +43,7 @@ public class TestedClass {
               @ParamDesc(description = "Second enum") SomeOtherEnum blah
               )
       {
+          System.out.println("I was called");
       }
       
       @Generator(description = "Some another generator", genName = "Some another")   
@@ -50,12 +51,13 @@ public class TestedClass {
       (
               Workload workload,
               ServiceWorkload sw,
-        @ParamNum(description = "Number of removalss", min = 0, max = 100) int removalss,
-              @ParamNum(description = "Number of searchess", min = 0, max = 100, step = 1.2) int searchess,
-              @ParamNum(description = "Just some percentagse", min = 0, max = 100, step = 0.01) float percentages
-             // @ParamDesc(description = "Some Strings") String strs  
+        @ParamNum(description = "Not important slider", min = 0, max = 100) int non_important,
+              @ParamNum(description = "Approx. time", min = 0, max = 100, step = 1.2) int lengthTime,
+              @ParamNum(description = "Approx. time", min = 0, max = 100, step = 0.1) float some 
               )
       {
+          System.out.println("I was called");
+          workload.addCall(new SimpleHTMLDoclet(), new String[lengthTime]);
           
       }
       
@@ -70,7 +72,7 @@ public class TestedClass {
               @ParamDesc(description = "some") SomeEnum someEnum
               )
       {
-          
+          System.out.println("I was called");
       }
 
 }

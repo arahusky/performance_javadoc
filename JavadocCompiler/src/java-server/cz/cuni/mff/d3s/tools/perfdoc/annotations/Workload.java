@@ -15,33 +15,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+package cz.cuni.mff.d3s.tools.perfdoc.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
-public class ServiceWorkloadImpl implements ServiceWorkload{
-
-    private int numberResults = 1;
-    private int priority = 1;
-    
-    @Override
-    public int getNumberResults() {
-        return numberResults;
-    }
-    
-    public void setNumberResults(int i) {
-        numberResults = i;
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-    
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-    
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Workload {
+    //destination enum to represent
+    String value();
 }

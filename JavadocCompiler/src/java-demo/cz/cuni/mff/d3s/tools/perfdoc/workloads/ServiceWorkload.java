@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package simplehtmldoclet;
+package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
 /**
  *
  * @author arahusky
  */
-public enum ParamType {
-    NUMBER, STRING
+public class ServiceWorkload {
+    
 }

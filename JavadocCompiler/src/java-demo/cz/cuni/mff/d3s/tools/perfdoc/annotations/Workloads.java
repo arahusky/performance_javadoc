@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package simplehtmldoclet;
+package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,12 +13,11 @@ import java.lang.annotation.Target;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
-
-@Target(ElementType.PARAMETER)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ParamEnum {
+public @interface Workloads {
     //destination enum to represent
-    String description();
+    Workload[] value();
 }

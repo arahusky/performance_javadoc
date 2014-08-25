@@ -329,7 +329,9 @@ public class PerformanceWriterImpl {
 
     /**
      * Method to count the unique identifier (through all .html document), that
-     * represents the concrete method
+     * represents the concrete method, this identifier however contatins also
+     * characters like dot or hash, which can not be used as a variable (see
+     * getUniqueInfo)
      *
      * @param doc the methodDoc of method, for which the unique ID will be
      * counted
@@ -346,7 +348,7 @@ public class PerformanceWriterImpl {
 
         return (fullMethodName + "#" + number);
     }
-    
+
     public String getUniqueInfo(String fullMethodInfo) {
         return fullMethodInfo.replaceAll("\\.", "_").replaceAll("#", "_");
     }
