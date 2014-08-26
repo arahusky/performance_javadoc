@@ -57,13 +57,13 @@ public class ClassParser {
     /**
      * Method that finds all the possible value of the given (enum) class
      *
-     * @param workloadName the name of the .java file (without .java)
+     * @param className1 the name of the .java file (without .java)
      * @return the FieldDoc[] containing all enum values of given enum or null
      * if the given name is not an enum
      */
     public static FieldDoc[] findEnums(String className1) {
         String className = className1.replaceAll("\\.", "/") + ".java";
-        Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
+        Main.execute("", EnumAnalyzer.class.getName(), new String[]{ className});
         return EnumAnalyzer.enumValues;
     }
 

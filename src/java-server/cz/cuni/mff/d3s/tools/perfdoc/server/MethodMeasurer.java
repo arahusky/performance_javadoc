@@ -21,6 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,16 +46,13 @@ public class MethodMeasurer {
     private ArrayList<String> generatorParamTypes;
 
     private int rangeValue;
+    private int priority;
 
     private ArrayList<Object> data = new ArrayList<>();
 
-    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException {
+    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
-
-        for (int i = 0; i < this.data.size(); i++) {
-            System.out.println(this.data.get(i));
-        }
     }
 
     public MethodMeasurer(Method method, Method generator, int rangeValue, ArrayList<Object> data) {
@@ -67,7 +65,7 @@ public class MethodMeasurer {
     /**
      * measures the time duration of the method for given data and rangeValue
      *
-     * @return JSONObject containg measured values with their time durations
+     * @return JSONObject containing measured values with their time durations
      * @throws InstantiationException
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
@@ -77,24 +75,30 @@ public class MethodMeasurer {
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
         serviceImpl.setNumberResults(1);
-
+        
         ArrayList<Object[]> result = new ArrayList<>();
 
-        double[] valuesToMeasure = getValuesToMeasure(5);
+        double[] valuesToMeasure = getValuesToMeasure(MeasurementConfiguration.returnHowManyValuesToMeasure(priority));
+        int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
 
         for (int i = 0; i < valuesToMeasure.length; i++) {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
-            System.out.println("heree");
-            
+
+            debugInfo(args);
             generatorMethod.invoke(generatorClass.newInstance(), args);
 
             Object[] objs;
             while ((objs = workloadImpl.getCall()) != null) {
+                
+                //TODO if is an array, if not ...
                 long before = System.nanoTime();
-                method.invoke(objs[0], objs[1]);
+                for (int a = 0; a < howManyTimesToMeasure; a++) {
+                    method.invoke(objs[0], (Object[]) objs[1]);
+                }
                 long after = System.nanoTime();
 
-                result.add(new Object[]{valuesToMeasure[i], ((after - before) / 1000000)});
+                long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
+                result.add(new Object[]{valuesToMeasure[i], duration});
             }
         }
 
@@ -126,6 +130,7 @@ public class MethodMeasurer {
      * @return the double array containing chosen values
      */
     private double[] getValuesToMeasure(int howMany) {
+        //TODO check whether it is even possible to make so many values - otherwise return as much as you can
         double[] values = new double[howMany];
 
         //the endpoints will be always contained in the values 
@@ -169,13 +174,8 @@ public class MethodMeasurer {
 
         //the candidate for the step
         double possibleStep = (numberOfPossibleSteps / (howMany + 1)) * step;
-        System.out.println("---------------");
-        System.out.println("Poss step:" + possibleStep);
-
         //the candidate for the step must be normalized = we need to find the highest smaller (or equal) value that can be reached be adding the step to the min
         double myStep = findNearestSmallerPossibleValue(possibleStep, minVal, step);
-        System.out.println("------------");
-        System.out.println("Mystep:" + myStep);
 
         //TODO check whether is it possible to find so many values in the interval
         double[] arr = new double[howMany];
@@ -194,7 +194,6 @@ public class MethodMeasurer {
     private double findNearestSmallerPossibleValue(double value, double min, double step) {
         double actualValue = 0;
 
-        //System.out.println("calue:" + value + ", min:" + min + ", step: " + step);
         while (actualValue + step <= value) {
             actualValue += step;
         }
@@ -279,7 +278,7 @@ public class MethodMeasurer {
          * @throws MalformedURLException when files in which to search the files
          * are in a bad format
          */
-        private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException {
+        private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException, IOException {
             JSONObject obj = new JSONObject(parseData);
 
             String methodName = obj.getString("testedMethod");
@@ -288,6 +287,7 @@ public class MethodMeasurer {
             findAndSaveMethodsAndClassses(methodName, generatorName);
 
             rangeValue = obj.getInt("rangeValue");
+            priority = obj.getInt("priority");
 
             JSONArray dataArray = obj.getJSONArray("data");
 
@@ -309,7 +309,7 @@ public class MethodMeasurer {
          * @throws MalformedURLException when files in which to search the files
          * are in a bad format
          */
-        private void findAndSaveMethodsAndClassses(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException {
+        private void findAndSaveMethodsAndClassses(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException, IOException {
             String[] testedMethodInfo = parseMethod(testedMethodString);
             ArrayList<String> testedParamNames = getParamNames(testedMethodInfo[2]);
 
@@ -330,7 +330,7 @@ public class MethodMeasurer {
 
             for (String s : paramNames) {
                 if (!s.isEmpty()) {
-                res.add(s);
+                    res.add(s);
                 }
             }
 
@@ -351,10 +351,8 @@ public class MethodMeasurer {
             String className = subs[0] + "." + subs[1];
             String methodName = subs[2];
             String params = subs[3];
-            
-            System.out.println(params);
 
-            return new String[]{className.toString(), methodName, params};
+            return new String[]{className, methodName, params};
         }
 
         /**
@@ -362,13 +360,15 @@ public class MethodMeasurer {
          * converted to "0" and all the incoming numbers must be converted to
          * the corresponding types (int, float, double)
          */
-        private void normalize(String generatorName) {
+        private void normalize(String generatorName) throws ClassNotFoundException, IOException {
 
             for (int i = 0; i < data.size(); i++) {
                 if (i != rangeValue) {
                     Object item = data.get(i);
-                    
-                    String parameter = getGenParameterName(i);                    
+
+                    String parameter = getGenParameterName(i);
+                    System.out.println("-----");
+                    System.out.println(parameter);
                     //if it is a number, it must be on it converted
                     if (parameter.equals("int") || parameter.equals("float") || parameter.equals("double")) {
                         if (((String) item).contains(" to ")) {
@@ -399,9 +399,11 @@ public class MethodMeasurer {
                                     break;
                             }
                         }
+                    } else if (!parameter.equals("java.lang.String") && !parameter.equals("String")) {
+                        //enum
+                        data.set(i, Enum.valueOf((Class<? extends Enum>) new ClassParser(parameter).clazz, (String) item));
                     }
                 }
-                //TODO Strings are implicitly solved, but we need to convert strings to enums
             }
         }
     }

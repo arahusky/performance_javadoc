@@ -16,7 +16,12 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
@@ -32,35 +37,15 @@ public class ClassParser {
 
     public Class<?> clazz;
     
-    public static void main(String[] args) {
-        try {
-            ClassParser cp  = new ClassParser("simplehtmldoclet.SimpleHTMLDoclet");
-            System.out.println(cp.clazz.getName());
-            Method[] methods = cp.clazz.getMethods();
-            for (Method m : methods)
-            {
-                System.out.println(m.getName());
-            }
-            
-            System.out.println("finding method");
-            
-            //Method m = cp.findMethod("main", "j");
-            
-            //System.out.println(m.getName());
-        } catch (MalformedURLException ex) {
-            System.out.println("malformed url");;
-        } catch (ClassNotFoundException ex) {
-            System.out.println("class not found");
-        }
-    }
-
+    static ClassLoader cl;    
+    
     /**
      * Creates new ClassParser instance for the specified class, which is determined by a className
      * @param className
      * @throws MalformedURLException when there was a problem when parsing class location
      * @throws ClassNotFoundException when the class was not found
      */
-    public ClassParser(String className) throws MalformedURLException, ClassNotFoundException {
+    public ClassParser(String className) throws MalformedURLException, ClassNotFoundException, IOException {
         loadClass(className);
     }
 
@@ -70,19 +55,35 @@ public class ClassParser {
      * @throws ClassNotFoundException when tested method or generator method were not found
      * @throws MalformedURLException when files in which to search the files are in a bad format 
      */
-    private void loadClass(String className) throws ClassNotFoundException, MalformedURLException {
-        File file = new File("C:\\Users\\arahusky\\Google Drive\\Rocnikac\\SimpleHTMLDoclet\\build\\classes");
-
-        //convert the file to URL format
-        URL url = file.toURI().toURL();
-        URL[] urls = new URL[]{url};
-
-        //load this folder into Class loader
-        ClassLoader cl = new URLClassLoader(urls);
+    private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {  
+        
+        if (cl == null) {
+            URL[] urls = findClassClassPaths();
+            cl = new URLClassLoader(urls);
+        }
 
         clazz = cl.loadClass(className);
+        
     }
 
+    private URL[] findClassClassPaths() throws FileNotFoundException, IOException
+    {
+        ArrayList<URL> urls = new ArrayList<>();
+        
+        //TODO copy somewhere or what
+        try(BufferedReader reader = new BufferedReader(new FileReader("Class_classPath.txt")))
+        {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                File file = new File(line);
+                URL url = file.toURI().toURL();
+                urls.add(url);
+            }
+        }  
+        
+        return urls.toArray(new URL[urls.size()]);
+    }
+    
     /**
      * Finds specified method
      * @param methodName

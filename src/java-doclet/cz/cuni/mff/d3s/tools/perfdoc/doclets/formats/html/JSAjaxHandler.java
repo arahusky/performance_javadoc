@@ -33,12 +33,12 @@ public class JSAjaxHandler {
      * @param serverAddress The address of the measuring server
      */
     public static String returnCallServerFunction(String serverAddress) {
-        String pattern = "function callServer(data, successFunc, graphName) {"
+        String pattern = "function callServer(data, successFunc, graphName, priority) {"
                 + "   $.ajax({"
                 + "   url: \"" + serverAddress + "\","
                 + "   data: data,"
                 + "   type: \"POST\","
-                + "   success: function(json) {successFunc(json, data, successFunc, graphName)},"
+                + "   success: function(json) {successFunc(json, data, successFunc, graphName, priority)},"
                 + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, errorThrown); }"
                 + "});"
                 + "  }\n";
@@ -67,13 +67,27 @@ public class JSAjaxHandler {
     public static void addSuccessFunction() {
         String successFunctionName = returnSuccesFunctionName();
 
-        String success = "function " + successFunctionName + "(json, data, myName, graphName) {"
+        String success = "function " + successFunctionName + "(json, data, myName, graphName, priority) {"
                 + "  	//show in appropriate format to user \n"
-                + "    alert(json);"
-                +       returnStartGraphCode(returnGraphName(), "some x-value")
-                + "    //if not enough data\n"
-                + "    //callServer(data, myName, graphName);}\n "
-                + " }\n";
+                //+ "    alert(json);"
+                //+ "    alert(priority);"
+                + "    if (priority == 1) {"
+                +      returnStartGraphCode(returnGraphName(), "some x-value")
+                + "    var jsonData = JSON.parse(data); "
+                + "    jsonData.priority++; "
+                + "    var newData = JSON.stringify(jsonData, null, 2);"
+                + "    callServer(newData, myName, graph, ++priority);" //here must be graph variable passing the graph reference
+                + "    } else if (priority < 4) {"
+                + "    graphName.updateOptions( { 'file': JSON.parse(json).data } );"
+                + "    var jsonData = JSON.parse(data); "
+                + "    jsonData.priority++; "
+                + "    var newData = JSON.stringify(jsonData, null, 2);"
+                + "    callServer(newData, myName, graphName, ++priority);"
+                + "    } else {"
+                + "    graphName.updateOptions( { 'file': JSON.parse(json).data } );"
+                + "    alert(\"Measurement done\");"
+                + "    }"
+                + "    }\n ";
 
         JavascriptCodeBox.addLocalCode(success);
     }
@@ -104,14 +118,15 @@ public class JSAjaxHandler {
         //create graph
         //sb.append(returnStartGraphCode(graphName, "Some x-value"));
         
-        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\");");
+        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", 1);");
 
         return sb.toString();
     }
 
     private static String returnStartGraphCode(String graphName, String xAxisName) {
         StringBuilder sb = new StringBuilder();
-        sb.append("var graph = new Dygraph("
+        sb.append(""
+                + " var graph = new Dygraph("
                 + "    document.getElementById(\""+ graphName + "\").getElementsByClassName(\"right\")[0], "
                 + "    JSON.parse(json).data," 
                 + "    {"
@@ -133,6 +148,7 @@ public class JSAjaxHandler {
         sb.append("\"testedMethod\" : \"" + testedMethod + "\",");
         sb.append("\"generator\" : \"" + generator + "\",");
         sb.append("\"rangeValue\" : error[2],");
+        sb.append("\"priority\" : 1,");
 
         //data are in this part stored in an array error on the index 1 (index 0 is reserved for the error message and the index 2 for the range value)
         sb.append("\"data\" :  error[1] ");

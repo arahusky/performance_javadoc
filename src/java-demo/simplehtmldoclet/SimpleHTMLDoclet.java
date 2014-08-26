@@ -34,9 +34,9 @@ public class SimpleHTMLDoclet {
      * @return always true
      */
     @Workload("simplehtmldoclet.TestedClass#prepareData1")
-    public int[] ListClone(int[] param) throws InterruptedException
+    public void foo(String[] param) throws InterruptedException
     {
-        return null;     
+        main(param);  
     }
     
     /**
