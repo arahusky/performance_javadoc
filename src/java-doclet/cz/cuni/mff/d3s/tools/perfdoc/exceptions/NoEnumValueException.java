@@ -20,7 +20,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
  * This exception stands for the situation when the enum exists but programmer
  * did not specify any possible values
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class NoEnumValueException extends Exception {
 

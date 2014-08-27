@@ -21,7 +21,7 @@ import java.lang.annotation.Annotation;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class AnnotationWorker {
 

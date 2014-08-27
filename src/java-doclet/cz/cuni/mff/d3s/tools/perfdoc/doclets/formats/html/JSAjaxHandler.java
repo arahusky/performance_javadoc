@@ -18,7 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class JSAjaxHandler {
 

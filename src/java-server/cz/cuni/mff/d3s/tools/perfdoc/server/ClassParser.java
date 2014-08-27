@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
@@ -31,18 +30,21 @@ import java.util.ArrayList;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class ClassParser {
 
     public Class<?> clazz;
-    
-    static ClassLoader cl;    
-    
+
+    static ClassLoader cl;
+
     /**
-     * Creates new ClassParser instance for the specified class, which is determined by a className
+     * Creates new ClassParser instance for the specified class, which is
+     * determined by a className
+     *
      * @param className
-     * @throws MalformedURLException when there was a problem when parsing class location
+     * @throws MalformedURLException when there was a problem when parsing class
+     * location
      * @throws ClassNotFoundException when the class was not found
      */
     public ClassParser(String className) throws MalformedURLException, ClassNotFoundException, IOException {
@@ -51,47 +53,65 @@ public class ClassParser {
 
     /**
      * Loads and saves the specified class
+     *
      * @param className
-     * @throws ClassNotFoundException when tested method or generator method were not found
-     * @throws MalformedURLException when files in which to search the files are in a bad format 
+     * @throws ClassNotFoundException when tested method or generator method
+     * were not found
+     * @throws MalformedURLException when files in which to search the files are
+     * in a bad format
      */
-    private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {  
-        
+    private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {
+
         if (cl == null) {
             URL[] urls = findClassClassPaths();
             cl = new URLClassLoader(urls);
+            clazz = cl.loadClass(className);
+            ReflectionCache.addClass(className, clazz);
+            return;
         }
 
-        clazz = cl.loadClass(className);
+        if ((clazz = ReflectionCache.getClass(className)) == null) {
+            clazz = cl.loadClass(className);
+            ReflectionCache.addClass(className, clazz);
+            return;
+        }
         
+        System.out.println("Found class in cache: " + className);
     }
 
-    private URL[] findClassClassPaths() throws FileNotFoundException, IOException
-    {
+    private URL[] findClassClassPaths() throws FileNotFoundException, IOException {
         ArrayList<URL> urls = new ArrayList<>();
-        
+
         //TODO copy somewhere or what
-        try(BufferedReader reader = new BufferedReader(new FileReader("Class_classPath.txt")))
-        {
+        try (BufferedReader reader = new BufferedReader(new FileReader("Class_classPath.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 File file = new File(line);
                 URL url = file.toURI().toURL();
                 urls.add(url);
             }
-        }  
-        
+        }
+
         return urls.toArray(new URL[urls.size()]);
     }
-    
+
     /**
      * Finds specified method
-     * @param methodName
-     * @param params 
+     *
+     * @param methodInfo     
      * @return the Method instance if found, otherwise null
-     * @throws ClassNotFoundException 
+     * @throws ClassNotFoundException
      */
-    public Method findMethod(String methodName, ArrayList<String> params) throws ClassNotFoundException {
+    public Method findMethod(MethodInfo methodInfo) throws ClassNotFoundException {
+
+        String methodName = methodInfo.getMethodName();
+        ArrayList<String> params = methodInfo.getParams();
+
+        Method met;
+        if ((met = searchMethodInCache(methodInfo)) != null) {
+            System.out.println("Found method in cache: " + methodName);
+            return met;
+        }
 
         Method[] methods = clazz.getMethods();
 
@@ -102,18 +122,27 @@ public class ClassParser {
                 boolean isCorrect = true;
 
                 for (int i = 0; i < parameters.length; i++) {
-                    if (! parameters[i].getType().getCanonicalName().equals(params.get(i))) {
+                    if (!parameters[i].getType().getCanonicalName().equals(params.get(i))) {
                         isCorrect = false;
                         break;
                     }
                 }
 
-                if (isCorrect) {    
+                if (isCorrect) {
+                    addMethodInCache(methodInfo, m);
                     return m;
                 }
             }
         }
 
         return null;
+    }
+
+    private Method searchMethodInCache(MethodInfo methodInfo) {
+        return ReflectionCache.getMethod(methodInfo.toString());
+    }
+
+    private void addMethodInCache(MethodInfo methodInfo, Method method) {
+        ReflectionCache.addMethod(methodInfo.toString(), method);
     }
 }

@@ -19,7 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class ResultCache {
     

@@ -33,7 +33,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 class RequestHandler implements HttpHandler {
 
@@ -53,7 +53,7 @@ class RequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
-            System.out.println(requestBody);
+            //System.out.println(requestBody);
             
             MethodMeasurer m = new MethodMeasurer(requestBody); 
             JSONObject obj = m.measureTime();

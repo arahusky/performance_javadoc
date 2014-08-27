@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class WorkloadImpl implements Workload{
 

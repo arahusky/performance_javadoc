@@ -19,7 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
 
 /**
  * This exception stands for the parameter, that has no annotation and is not Workload or ServiceWorkload
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class GeneratorParameterException extends Exception {
 

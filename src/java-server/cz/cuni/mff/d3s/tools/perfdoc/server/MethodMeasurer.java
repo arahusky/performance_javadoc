@@ -35,12 +35,12 @@ import org.json.JSONObject;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class MethodMeasurer {
 
     private MethodInfo testedMethod;
-    private MethodInfo generator;    
+    private MethodInfo generator;
 
     private int rangeValue;
     private int priority;
@@ -65,11 +65,11 @@ public class MethodMeasurer {
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
         serviceImpl.setNumberResults(1);
-        
+
         ArrayList<Object[]> result = new ArrayList<>();
-        Method method = testedMethod.method;
-        Method generatorMethod = generator.method;
-        Class<?> generatorClass = generator.containingClass;
+        Method method = testedMethod.getMethod();
+        Method generatorMethod = generator.getMethod();
+        Class<?> generatorClass = generator.getContainingClass();
 
         double[] valuesToMeasure = getValuesToMeasure(MeasurementConfiguration.returnHowManyValuesToMeasure(priority));
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
@@ -77,12 +77,12 @@ public class MethodMeasurer {
         for (int i = 0; i < valuesToMeasure.length; i++) {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
 
-            debugInfo(args);
+            //debugInfo(args);
             generatorMethod.invoke(generatorClass.newInstance(), args);
 
             Object[] objs;
             while ((objs = workloadImpl.getCall()) != null) {
-                
+
                 //TODO if is an array, if not ...
                 long before = System.nanoTime();
                 for (int a = 0; a < howManyTimesToMeasure; a++) {
@@ -99,16 +99,16 @@ public class MethodMeasurer {
         JSONObject jsonResults = new JSONObject();
         for (int i = 0; i < result.size(); i++) {
             jsonResults.accumulate("data", result.get(i));
-            System.out.println(result.get(i)[0] + ":" + result.get(i)[1]);
+            //System.out.println(result.get(i)[0] + ":" + result.get(i)[1]);
         }
 
         return jsonResults;
     }
 
     private void debugInfo(Object[] args) {
-        System.out.println("test:" + testedMethod.method.getName());
-        System.out.println("generator:" + generator.method.getName());
-        System.out.println("class Generator:" + generator.containingClass.getName());
+        System.out.println("test:" + testedMethod.getMethod().getName());
+        System.out.println("generator:" + generator.getMethod().getName());
+        System.out.println("class Generator:" + generator.getContainingClass().getName());
 
         for (int u = 0; u < args.length; u++) {
             System.out.println(args[u] + ":" + args[u].getClass().getName());
@@ -210,7 +210,7 @@ public class MethodMeasurer {
     private double findStepValue() {
         //first two parameters are workload and serviceWorkload
         int numInParams = rangeValue + 2;
-        Parameter[] params = generator.method.getParameters();
+        Parameter[] params = generator.getMethod().getParameters();
 
         Annotation[] annotations = params[numInParams].getAnnotations();
 
@@ -253,7 +253,7 @@ public class MethodMeasurer {
     }
 
     private String getGenParameterName(int i) {
-        return generator.params.get(i + 2);
+        return generator.getParams().get(i + 2);
     }
 
     /**
@@ -277,8 +277,8 @@ public class MethodMeasurer {
             String methodName = obj.getString("testedMethod");
             String generatorName = obj.getString("generator");
 
-            testedMethod = new MethodInfo(methodName);            
-            generator = new MethodInfo(generatorName);   
+            testedMethod = new MethodInfo(methodName);
+            generator = new MethodInfo(generatorName);
 
             rangeValue = obj.getInt("rangeValue");
             priority = obj.getInt("priority");
@@ -290,7 +290,7 @@ public class MethodMeasurer {
             }
 
             normalize(generatorName);
-        }                 
+        }
 
         /**
          * incoming data may contain stuff like "0 to 0", which should be
@@ -304,8 +304,6 @@ public class MethodMeasurer {
                     Object item = data.get(i);
 
                     String parameter = getGenParameterName(i);
-                    System.out.println("-----");
-                    System.out.println(parameter);
                     //if it is a number, it must be on it converted
                     if (parameter.equals("int") || parameter.equals("float") || parameter.equals("double")) {
                         if (((String) item).contains(" to ")) {
@@ -343,54 +341,5 @@ public class MethodMeasurer {
                 }
             }
         }
-    }
-    
-    /**
-     * Class that stores informations about one method
-     */
-    private class MethodInfo {
-        private String className;
-        private String methodName;
-        private ArrayList<String> params;
-        
-        private Class<?> containingClass;
-        private Method method;
-        
-        public MethodInfo(String jsonMMethodData) throws ClassNotFoundException, IOException
-        {
-            parseMethod(jsonMMethodData);
-
-            ClassParser cp = new ClassParser(className); 
-            this.containingClass = cp.clazz;
-            this.method = cp.findMethod(methodName, params);
-        }
-        
-         private ArrayList<String> getParamNames(String params) {
-            String[] paramNames = params.split("@");
-            ArrayList<String> res = new ArrayList<>();
-
-            for (String s : paramNames) {
-                if (!s.isEmpty()) {
-                    res.add(s);
-                }
-            }
-
-            return res;
-        }
-         
-         /**
-         * Parses the method that we get from incoming JSON.
-         *
-         * @param method the incoming method name
-         * @return String array containing the className, methodName and
-         * abbrParams
-         */
-        private void parseMethod(String method) {
-            String[] subs = method.split("#");
-
-            this.className = subs[0] + "." + subs[1];
-            this.methodName = subs[2];
-            this.params = getParamNames(subs[3]);
-        }
-    }
+    }   
 }

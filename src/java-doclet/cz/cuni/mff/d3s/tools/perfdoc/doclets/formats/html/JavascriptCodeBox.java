@@ -22,7 +22,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
  * are being used by other functions and the local code, which represents
  * functions, that are created dynamically (e.g. sliders, button handlers)
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class JavascriptCodeBox {
 

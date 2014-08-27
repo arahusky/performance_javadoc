@@ -19,7 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
 
 /**
  * This exception stands for situation, when some generator has less than 2 parameters, or the first parameter is not Workload, or the second parameter is not ServiceWorkload
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class NoWorkloadException extends Exception {
 

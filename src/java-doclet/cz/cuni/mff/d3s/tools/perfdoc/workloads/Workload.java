@@ -19,7 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public interface Workload {
     public void addCall(Object obj, Object... args);

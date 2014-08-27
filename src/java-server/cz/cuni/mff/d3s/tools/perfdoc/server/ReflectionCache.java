@@ -23,25 +23,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *Class to cache loaded method and classes
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class ReflectionCache {
-    Map<String, Method> methodCache = new ConcurrentHashMap<>();
-    Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+    private static Map<String, Method> methodCache = new ConcurrentHashMap<>();
+    private static Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
     
-    public void addMethod(String name, Method method) {
+    public static void addMethod(String name, Method method) {
         methodCache.put(name, method);
     }
     
-    public void addClass(String name, Class<?> clazz) {
+    public static void addClass(String name, Class<?> clazz) {
         classCache.put(name, clazz);
     }
     
-    public boolean containsMethod(String name) {
-        return methodCache.containsKey(name);
+    public static Method getMethod(String name) {
+        return methodCache.get(name);
     }
     
-    public boolean containsClass(String name) {
-        return classCache.containsKey(name);
+    public static Class<?> getClass(String name) {
+        return classCache.get(name);
     }
 }
