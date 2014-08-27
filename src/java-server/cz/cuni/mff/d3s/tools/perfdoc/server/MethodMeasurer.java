@@ -39,11 +39,8 @@ import org.json.JSONObject;
  */
 public class MethodMeasurer {
 
-    private Method method;
-
-    private Class<?> generatorClass;
-    private Method generatorMethod;
-    private ArrayList<String> generatorParamTypes;
+    private MethodInfo testedMethod;
+    private MethodInfo generator;    
 
     private int rangeValue;
     private int priority;
@@ -53,13 +50,6 @@ public class MethodMeasurer {
     public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
-    }
-
-    public MethodMeasurer(Method method, Method generator, int rangeValue, ArrayList<Object> data) {
-        this.method = method;
-        this.generatorMethod = generator;
-        this.rangeValue = rangeValue;
-        this.data = data;
     }
 
     /**
@@ -77,6 +67,9 @@ public class MethodMeasurer {
         serviceImpl.setNumberResults(1);
         
         ArrayList<Object[]> result = new ArrayList<>();
+        Method method = testedMethod.method;
+        Method generatorMethod = generator.method;
+        Class<?> generatorClass = generator.containingClass;
 
         double[] valuesToMeasure = getValuesToMeasure(MeasurementConfiguration.returnHowManyValuesToMeasure(priority));
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
@@ -93,7 +86,7 @@ public class MethodMeasurer {
                 //TODO if is an array, if not ...
                 long before = System.nanoTime();
                 for (int a = 0; a < howManyTimesToMeasure; a++) {
-                    method.invoke(objs[0], (Object[]) objs[1]);
+                    method.invoke(objs[0], objs[1]);
                 }
                 long after = System.nanoTime();
 
@@ -113,9 +106,9 @@ public class MethodMeasurer {
     }
 
     private void debugInfo(Object[] args) {
-        System.out.println("test:" + method.getName());
-        System.out.println("generator:" + generatorMethod.getName());
-        System.out.println("class Generator:" + generatorClass.getName());
+        System.out.println("test:" + testedMethod.method.getName());
+        System.out.println("generator:" + generator.method.getName());
+        System.out.println("class Generator:" + generator.containingClass.getName());
 
         for (int u = 0; u < args.length; u++) {
             System.out.println(args[u] + ":" + args[u].getClass().getName());
@@ -217,7 +210,7 @@ public class MethodMeasurer {
     private double findStepValue() {
         //first two parameters are workload and serviceWorkload
         int numInParams = rangeValue + 2;
-        Parameter[] params = generatorMethod.getParameters();
+        Parameter[] params = generator.method.getParameters();
 
         Annotation[] annotations = params[numInParams].getAnnotations();
 
@@ -260,7 +253,7 @@ public class MethodMeasurer {
     }
 
     private String getGenParameterName(int i) {
-        return generatorParamTypes.get(i + 2);
+        return generator.params.get(i + 2);
     }
 
     /**
@@ -284,7 +277,8 @@ public class MethodMeasurer {
             String methodName = obj.getString("testedMethod");
             String generatorName = obj.getString("generator");
 
-            findAndSaveMethodsAndClassses(methodName, generatorName);
+            testedMethod = new MethodInfo(methodName);            
+            generator = new MethodInfo(generatorName);   
 
             rangeValue = obj.getInt("rangeValue");
             priority = obj.getInt("priority");
@@ -296,64 +290,7 @@ public class MethodMeasurer {
             }
 
             normalize(generatorName);
-        }
-
-        /**
-         * Finds and saves (in MethodMeasurer variables) tested method and
-         * generator class and generator method
-         *
-         * @param testedMethodString
-         * @param generatorMethodString
-         * @throws ClassNotFoundException when tested method or generator method
-         * were not found
-         * @throws MalformedURLException when files in which to search the files
-         * are in a bad format
-         */
-        private void findAndSaveMethodsAndClassses(String testedMethodString, String generatorMethodString) throws MalformedURLException, ClassNotFoundException, IOException {
-            String[] testedMethodInfo = parseMethod(testedMethodString);
-            ArrayList<String> testedParamNames = getParamNames(testedMethodInfo[2]);
-
-            method = new ClassParser(testedMethodInfo[0]).findMethod(testedMethodInfo[1], testedParamNames);
-
-            String[] generatorMethodInfo = parseMethod(generatorMethodString);
-
-            ClassParser generatorClassParser = new ClassParser(generatorMethodInfo[0]);
-            generatorClass = generatorClassParser.clazz;
-
-            generatorParamTypes = getParamNames(generatorMethodInfo[2]);
-            generatorMethod = generatorClassParser.findMethod(generatorMethodInfo[1], generatorParamTypes);
-        }
-
-        private ArrayList<String> getParamNames(String params) {
-            String[] paramNames = params.split("@");
-            ArrayList<String> res = new ArrayList<>();
-
-            for (String s : paramNames) {
-                if (!s.isEmpty()) {
-                    res.add(s);
-                }
-            }
-
-            return res;
-        }
-
-        /**
-         * Parses the method that we get from incoming JSON.
-         *
-         *
-         * @param method the incoming method name
-         * @return String array containing the className, methodName and
-         * abbrParams
-         */
-        private String[] parseMethod(String method) {
-            String[] subs = method.split("#");
-
-            String className = subs[0] + "." + subs[1];
-            String methodName = subs[2];
-            String params = subs[3];
-
-            return new String[]{className, methodName, params};
-        }
+        }                 
 
         /**
          * incoming data may contain stuff like "0 to 0", which should be
@@ -405,6 +342,55 @@ public class MethodMeasurer {
                     }
                 }
             }
+        }
+    }
+    
+    /**
+     * Class that stores informations about one method
+     */
+    private class MethodInfo {
+        private String className;
+        private String methodName;
+        private ArrayList<String> params;
+        
+        private Class<?> containingClass;
+        private Method method;
+        
+        public MethodInfo(String jsonMMethodData) throws ClassNotFoundException, IOException
+        {
+            parseMethod(jsonMMethodData);
+
+            ClassParser cp = new ClassParser(className); 
+            this.containingClass = cp.clazz;
+            this.method = cp.findMethod(methodName, params);
+        }
+        
+         private ArrayList<String> getParamNames(String params) {
+            String[] paramNames = params.split("@");
+            ArrayList<String> res = new ArrayList<>();
+
+            for (String s : paramNames) {
+                if (!s.isEmpty()) {
+                    res.add(s);
+                }
+            }
+
+            return res;
+        }
+         
+         /**
+         * Parses the method that we get from incoming JSON.
+         *
+         * @param method the incoming method name
+         * @return String array containing the className, methodName and
+         * abbrParams
+         */
+        private void parseMethod(String method) {
+            String[] subs = method.split("#");
+
+            this.className = subs[0] + "." + subs[1];
+            this.methodName = subs[2];
+            this.params = getParamNames(subs[3]);
         }
     }
 }
