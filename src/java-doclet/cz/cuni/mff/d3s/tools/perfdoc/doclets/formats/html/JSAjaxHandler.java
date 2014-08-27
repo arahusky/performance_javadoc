@@ -33,13 +33,13 @@ public class JSAjaxHandler {
      * @param serverAddress The address of the measuring server
      */
     public static String returnCallServerFunction(String serverAddress) {
-        String pattern = "function callServer(data, successFunc, graphName, priority) {"
+        String pattern = "function callServer(data, successFunc, graphName, graph, priority) {"
                 + "   $.ajax({"
                 + "   url: \"" + serverAddress + "\","
                 + "   data: data,"
                 + "   type: \"POST\","
-                + "   success: function(json) {successFunc(json, data, successFunc, graphName, priority)},"
-                + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, errorThrown); }"
+                + "   success: function(json) {successFunc(json, data, successFunc, graphName, graph, priority)},"
+                + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, graphName, errorThrown); }"
                 + "});"
                 + "  }\n";
 
@@ -51,11 +51,14 @@ public class JSAjaxHandler {
      * occured error
      */
     public static String returnErrorFunction() {
-        String errorFunction = " function printAjaxError(xhr, status, errorThrown) {"
-                + " alert( \"Sorry, there was a problem! (More informations in debugger console.)\" );"
+        String errorFunction = " function printAjaxError(xhr, status, graphName, errorThrown) {"
+                + " alert( \"Sorry, there was a problem! Detailed information can be found in debugger console.\" );"
                 + " console.log( \"Error: \" + errorThrown );"
                 + " console.log( \"Status: \" + status );"
-                + " console.dir( xhr ); }\n";
+                + " console.dir( xhr );"
+                + " if (xhr.status == 0) { $(\"#\" + graphName + \" .right\").text(\"Server is shut-down, or could not connect to him.\"); }"
+                + "else { $(\"#\" + graphName + \" .right\").text(xhr.status + \": \" + xhr.responseText); }"
+                + " }\n";
 
         return errorFunction;
     }
@@ -67,7 +70,7 @@ public class JSAjaxHandler {
     public static void addSuccessFunction() {
         String successFunctionName = returnSuccesFunctionName();
 
-        String success = "function " + successFunctionName + "(json, data, myName, graphName, priority) {"
+        String success = "function " + successFunctionName + "(json, data, myName, graphName, graph, priority) {"
                 + "  	//show in appropriate format to user \n"
                 //+ "    alert(json);"
                 //+ "    alert(priority);"
@@ -76,15 +79,15 @@ public class JSAjaxHandler {
                 + "    var jsonData = JSON.parse(data); "
                 + "    jsonData.priority++; "
                 + "    var newData = JSON.stringify(jsonData, null, 2);"
-                + "    callServer(newData, myName, graph, ++priority);" //here must be graph variable passing the graph reference
+                + "    callServer(newData, myName, graphName, myGraph, ++priority);" //here must be graph variable passing the graph reference
                 + "    } else if (priority < 4) {"
-                + "    graphName.updateOptions( { 'file': JSON.parse(json).data } );"
+                + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
                 + "    var jsonData = JSON.parse(data); "
                 + "    jsonData.priority++; "
                 + "    var newData = JSON.stringify(jsonData, null, 2);"
-                + "    callServer(newData, myName, graphName, ++priority);"
+                + "    callServer(newData, myName, graphName, graph, ++priority);"
                 + "    } else {"
-                + "    graphName.updateOptions( { 'file': JSON.parse(json).data } );"
+                + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
                 + "    alert(\"Measurement done\");"
                 + "    }"
                 + "    }\n ";
@@ -118,7 +121,7 @@ public class JSAjaxHandler {
         //create graph
         //sb.append(returnStartGraphCode(graphName, "Some x-value"));
         
-        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", 1);");
+        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", null, 1);");
 
         return sb.toString();
     }
@@ -126,7 +129,7 @@ public class JSAjaxHandler {
     private static String returnStartGraphCode(String graphName, String xAxisName) {
         StringBuilder sb = new StringBuilder();
         sb.append(""
-                + " var graph = new Dygraph("
+                + " var myGraph = new Dygraph("
                 + "    document.getElementById(\""+ graphName + "\").getElementsByClassName(\"right\")[0], "
                 + "    JSON.parse(json).data," 
                 + "    {"

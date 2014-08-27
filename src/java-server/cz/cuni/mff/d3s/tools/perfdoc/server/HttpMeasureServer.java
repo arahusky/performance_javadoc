@@ -20,9 +20,15 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 class HttpMeasureServer {
 
+    private static final Logger log = Logger.getLogger( HttpMeasureServer.class.getName() );
+    
     /**
      * @param args the command line arguments
      */
@@ -31,11 +37,13 @@ class HttpMeasureServer {
 
         //creates server with backlog (=the maximum queue length for incoming connection indications) set to 0 (system default value)
         HttpServer server = HttpServer.create(addr, 0);
-
         server.createContext("/", new RequestHandler());
-
         server.setExecutor(Executors.newCachedThreadPool());
+        
+        //ResultCache.run();
+        
         server.start();
-        System.out.println("Server is listening on port 8080");
+                
+        log.log(Level.INFO, "Server started and is listening on port 8080");
     }
 }

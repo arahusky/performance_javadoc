@@ -30,6 +30,8 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,6 +49,8 @@ public class MethodMeasurer {
 
     private ArrayList<Object> data = new ArrayList<>();
 
+    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+
     public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
@@ -62,6 +66,7 @@ public class MethodMeasurer {
      * @throws InvocationTargetException
      */
     public JSONObject measureTime() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
         serviceImpl.setNumberResults(1);
@@ -77,42 +82,50 @@ public class MethodMeasurer {
         for (int i = 0; i < valuesToMeasure.length; i++) {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
 
-            //debugInfo(args);
-            generatorMethod.invoke(generatorClass.newInstance(), args);
+            String msg = "Starting to measure..." + ", tested Method:{0}" + testedMethod.getMethod().getName()
+                    + "generator:{0}" + generator.getMethod().getName() + "class Generator:{0}" + generator.getContainingClass().getName();
+            log.log(Level.FINE, msg);
 
-            Object[] objs;
-            while ((objs = workloadImpl.getCall()) != null) {
+            try {
+                generatorMethod.invoke(generatorClass.newInstance(), args);
 
-                //TODO if is an array, if not ...
-                long before = System.nanoTime();
-                for (int a = 0; a < howManyTimesToMeasure; a++) {
-                    method.invoke(objs[0], objs[1]);
+                Object[] objs;
+                while ((objs = workloadImpl.getCall()) != null) {
+
+                    //TODO if is an array, if not ...
+                    long before = System.nanoTime();
+                    for (int a = 0; a < howManyTimesToMeasure; a++) {
+                        method.invoke(objs[0], objs[1]);
+                    }
+                    long after = System.nanoTime();
+
+                    long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
+                    result.add(new Object[]{valuesToMeasure[i], duration});
                 }
-                long after = System.nanoTime();
-
-                long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
-                result.add(new Object[]{valuesToMeasure[i], duration});
+            } catch(IllegalAccessException ex) {
+                log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
+                throw ex;                
+            } catch (IllegalArgumentException ex) {
+                log.log(Level.SEVERE, "Some bad arguments were passed to tested/generator method", ex);
+                throw ex;
+            } catch (InstantiationException ex) {
+                log.log(Level.SEVERE, "Could not istantiate generator class", ex);
+                throw ex;
+            } catch (InvocationTargetException ex) {
+               log.log(Level.SEVERE, "An InvocationTargetException occured when trying to invoke generator/tested method", ex);
+               throw ex;
             }
         }
+
+        log.log(Level.FINE, "Measurement succesfully done");
 
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
         for (int i = 0; i < result.size(); i++) {
             jsonResults.accumulate("data", result.get(i));
-            //System.out.println(result.get(i)[0] + ":" + result.get(i)[1]);
         }
 
         return jsonResults;
-    }
-
-    private void debugInfo(Object[] args) {
-        System.out.println("test:" + testedMethod.getMethod().getName());
-        System.out.println("generator:" + generator.getMethod().getName());
-        System.out.println("class Generator:" + generator.getContainingClass().getName());
-
-        for (int u = 0; u < args.length; u++) {
-            System.out.println(args[u] + ":" + args[u].getClass().getName());
-        }
     }
 
     /**
@@ -271,7 +284,7 @@ public class MethodMeasurer {
          * @throws MalformedURLException when files in which to search the files
          * are in a bad format
          */
-        private void parseData(String parseData) throws ClassNotFoundException, MalformedURLException, IOException {
+        private void parseData(String parseData) throws ClassNotFoundException, IOException {
             JSONObject obj = new JSONObject(parseData);
 
             String methodName = obj.getString("testedMethod");
@@ -341,5 +354,5 @@ public class MethodMeasurer {
                 }
             }
         }
-    }   
+    }
 }

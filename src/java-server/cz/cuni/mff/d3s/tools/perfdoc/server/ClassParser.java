@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -34,6 +36,8 @@ import java.util.ArrayList;
  */
 public class ClassParser {
 
+    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+     
     public Class<?> clazz;
 
     static ClassLoader cl;
@@ -61,25 +65,30 @@ public class ClassParser {
      * in a bad format
      */
     private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {
+        try {
+            if (cl == null) {
+                URL[] urls = findClassClassPaths();
+                cl = new URLClassLoader(urls);
+                clazz = cl.loadClass(className);
+                ReflectionCache.addClass(className, clazz);
+                return;
+            }
 
-        if (cl == null) {
-            URL[] urls = findClassClassPaths();
-            cl = new URLClassLoader(urls);
-            clazz = cl.loadClass(className);
-            ReflectionCache.addClass(className, clazz);
-            return;
+            if ((clazz = ReflectionCache.getClass(className)) == null) {
+                clazz = cl.loadClass(className);
+                ReflectionCache.addClass(className, clazz);
+                return;
+            }
+        } catch (ClassNotFoundException e) {
+            log.log(Level.SEVERE, "Class was not found", e);
+            throw e;
+        } catch (IOException ei) {
+            log.log(Level.SEVERE, "Unable to read from file containing class directories, or its bad format", ei);
+            throw ei;
         }
-
-        if ((clazz = ReflectionCache.getClass(className)) == null) {
-            clazz = cl.loadClass(className);
-            ReflectionCache.addClass(className, clazz);
-            return;
-        }
-        
-        System.out.println("Found class in cache: " + className);
     }
 
-    private URL[] findClassClassPaths() throws FileNotFoundException, IOException {
+    private URL[] findClassClassPaths() throws IOException {
         ArrayList<URL> urls = new ArrayList<>();
 
         //TODO copy somewhere or what
@@ -98,18 +107,16 @@ public class ClassParser {
     /**
      * Finds specified method
      *
-     * @param methodInfo     
+     * @param methodInfo
      * @return the Method instance if found, otherwise null
-     * @throws ClassNotFoundException
      */
-    public Method findMethod(MethodInfo methodInfo) throws ClassNotFoundException {
+    public Method findMethod(MethodInfo methodInfo) {
 
         String methodName = methodInfo.getMethodName();
         ArrayList<String> params = methodInfo.getParams();
 
         Method met;
         if ((met = searchMethodInCache(methodInfo)) != null) {
-            System.out.println("Found method in cache: " + methodName);
             return met;
         }
 

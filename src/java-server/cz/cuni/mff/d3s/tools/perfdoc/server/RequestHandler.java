@@ -14,9 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server;
-
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -27,9 +25,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONObject;
-
 
 /**
  *
@@ -37,8 +37,11 @@ import org.json.JSONObject;
  */
 class RequestHandler implements HttpHandler {
 
+    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+
+    @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("Got new request. Starting to handle it.");
+        log.log(Level.INFO, "Got new Ajax request. Starting to handle it.");
 
         //adding the right header
         Headers responseHeaders = exchange.getResponseHeaders();
@@ -53,26 +56,47 @@ class RequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
-            //System.out.println(requestBody);
-            
-            MethodMeasurer m = new MethodMeasurer(requestBody); 
-            JSONObject obj = m.measureTime();
-            
-            exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
-            responseBody.write(obj.toString().getBytes());
-            
+            log.log(Level.FINE, "The incoming message is: {0}", requestBody);
 
-        } catch (Exception e) {
-            //TODO possibly data in bad format - sent him some message
-            System.out.println(e);
+            MethodMeasurer m = new MethodMeasurer(requestBody);
+            JSONObject obj = m.measureTime();
+            try {
+                exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
+                responseBody.write(obj.toString().getBytes());
+            } catch (IOException ex) {
+                log.log(Level.INFO, "Unable to send the results to the client", ex);
+            }
+        } catch (ClassNotFoundException ec) {
+            sendErrorMessage("Unable to find a generator class", exchange, responseBody);
+        } catch (InstantiationException ex) {
+            sendErrorMessage("Unable to make an instance of generator class", exchange, responseBody);
+        } catch (IllegalAccessException | InvocationTargetException ex) {
+            sendErrorMessage("Some other error", exchange, responseBody);
+        } catch (IllegalArgumentException ex) {
+            sendErrorMessage("The bad parameters were sent to server", exchange, responseBody);
+        } catch (IOException ex) {
+            sendErrorMessage("There was some problem while reading some file on the server", exchange, responseBody);
         } finally {
-            in.close();
-            
-            //closing to indicate that the response is complete
-            responseBody.close();
+            try {
+                in.close();
+                responseBody.close();
+            } catch (IOException ex) {
+                //there is nothing we can do with it
+                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
+            }
         }
-        
-        System.out.println("all data sent");
+
+        //TODO az nam uzivatel posle unikatni identifikator, tak ho sem taky zapsat
+        log.log(Level.INFO, "Data were succesfully sent to the user.");
+    }
+    
+    private void sendErrorMessage(String msg, HttpExchange exchange, OutputStream out) {
+        try {
+            exchange.sendResponseHeaders(500, 0);
+            out.write(msg.getBytes());
+        } catch (IOException ex) {
+           log.log(Level.INFO, "Unable to send the error message to the client", ex);
+        }
     }
 
     private static String readAll(Reader rd) throws IOException {
@@ -84,4 +108,3 @@ class RequestHandler implements HttpHandler {
         return sb.toString();
     }
 }
-
