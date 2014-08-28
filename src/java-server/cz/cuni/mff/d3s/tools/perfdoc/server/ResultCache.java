@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 
 /**
  *
@@ -32,6 +33,22 @@ import java.util.logging.Logger;
  */
 public class ResultCache {
 
+    public static void main(String[] args) {
+         try {
+            ResultCache.startTestDatabase();
+            Connection conn = ResultCache.createTestConnection();
+            ResultCache.insertResult(conn, "method1", "[data]", 10, 1000);
+            ResultCache.insertResult(conn, "method12", "[data]1", 10, 1000);
+            ResultCache.insertResult(conn, "method12", "[data]1", 101, 200);
+            System.out.println(ResultCache.getResults(conn, "method1",  "[data]", 2));
+             System.out.println(ResultCache.getResults(conn, "method12",  "[data]1", 10));
+            
+        } catch (ClassNotFoundException | SQLException e) {
+            Assert.assertTrue(false);
+        }
+    }
+    
+    
     private static final Logger log = Logger.getLogger(ResultCache.class.getName());
 
     private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
@@ -41,8 +58,6 @@ public class ResultCache {
     public static void startDatabase() throws ClassNotFoundException, SQLException {
         try {
             Class.forName(DRIVER);
-
-            Connection conn = DriverManager.getConnection(JDBC_URL);
 
             checkTablesAndCreate();
 
@@ -67,7 +82,7 @@ public class ResultCache {
                 System.out.println("Table results dropped");
             }
 
-            checkTablesAndCreate();
+            checkTestTablesAndCreate();
 
         } catch (ClassNotFoundException e) {
             log.log(Level.SEVERE, "Could not find the database driver", e);
@@ -99,36 +114,64 @@ public class ResultCache {
 
         closeConnection(conn);
     }
+    
+    public static void dropTable(Connection conn) throws SQLException
+    {
+         if (contains(conn, "results")) {
+                String query = "DELETE FROM results";
+                conn.createStatement().execute(query);
+                System.out.println("Table results dropped");
+            }
+    }
+    
+    private static void checkTestTablesAndCreate() throws SQLException {
+
+        Connection conn = createTestConnection();
+        
+        if (!contains(conn, "results")) {
+            String query = "CREATE TABLE results (methodName varchar(300), data varchar(300), numberOfMeasurements int, time int)";
+            conn.createStatement().execute(query);
+            log.log(Level.INFO, "New table \"results\" was created");
+        }
+
+        closeConnection(conn);
+    }
 
     public static int getResults(Connection conn, String methodName, String data, int numberOfMeasurements) throws SQLException {
         Statement stmt = conn.createStatement();
         String query = "SELECT numberOfMeasurements, time "
                 + "FROM results "
-                + "WHERE (methodName = '" + methodName + "' && data='" + data + "')";
+                + "WHERE (methodName = '" + methodName + "' AND data='" + data + "')";
         ResultSet rs = stmt.executeQuery(query);
 
         if (!rs.next()) {
             //if there is no row in the table containing the measured method with the data
+            closeResultSet(rs);
             return -1;
         } else {
             //the first column (numberOfMeasurements) is saved under index 1
             int savedNumberOfMeasurements = rs.getInt(1);
             if (savedNumberOfMeasurements >= numberOfMeasurements) {
                 int savedResult = rs.getInt(2);
+                closeResultSet(rs);
                 return savedResult;
             }
 
+            closeResultSet(rs);
             return -1;
         }
     }
 
     public static void insertResult(Connection conn, String methodName, String data, int numberOfMeasurements, int time) {
+        Statement stmt = null;
+        ResultSet rs = null;
+        
         try {
-            Statement stmt = conn.createStatement();
+            stmt = conn.createStatement();
             String query = "SELECT numberOfMeasurements "
                     + "FROM results"
                     + " WHERE (methodName = '" + methodName + "' AND data='" + data + "')";
-            ResultSet rs = stmt.executeQuery(query);
+            rs = stmt.executeQuery(query);
 
             //we expect one or zero results
             if (!rs.next()) {
@@ -138,33 +181,34 @@ public class ResultCache {
                 int insertedNumberOfMeasurements = rs.getInt("numberOfMeasurements");
 
                 if (insertedNumberOfMeasurements < numberOfMeasurements) {
-                    //if data in database are less accurate, we update them to our value
+                    //if data in database are less accurate, we update them to our value   
                     updateResult(conn, methodName, data, numberOfMeasurements, time);
                 }
             }
         } catch (SQLException e) {
             log.log(Level.WARNING, "Unable to insert new result in the table", e);
-        }
+        }       
     }
 
     private static void insertNewResult(Connection conn, String methodName, String data, int numberOfMeasurements, int time) throws SQLException {
         Statement stmt = conn.createStatement();
-        String query = "INSERT INTO "
-                + "results (methodName, data, numberOfMeasurements, time) "
-                + "VALUES"
-                + "('" + methodName + "', '" + data + "', " + numberOfMeasurements + ", " + time + ")";
-        System.out.println(query);
-        System.out.println("==================");
+        
+        String query = "INSERT INTO results (methodName, data, numberOfMeasurements, time) "
+                + "VALUES ('" + methodName + "', '" + data + "', " + numberOfMeasurements + ", " + time + ")";
         stmt.executeUpdate(query);
+        
+        closeStatement(stmt);
     }
 
     private static void updateResult(Connection conn, String methodName, String data, int numberOfMeasurements, int time) throws SQLException {
         Statement stmt = conn.createStatement();
         String query = "UPDATE results "
-                + "SET numberOfMeasurements='" + numberOfMeasurements + "', time='" + time + "'"
-                + "WHERE (methodName='" + methodName + "' && data='" + data + "')";
+                + "SET numberOfMeasurements=" + numberOfMeasurements + ", time=" + time 
+                + "WHERE (methodName='" + methodName + "' AND data='" + data + "')";
 
         stmt.executeUpdate(query);
+        
+        closeStatement(stmt);
     }
 
     public static void printSQLException(SQLException e) {
@@ -203,7 +247,6 @@ public class ResultCache {
         String query = "SELECT * FROM results";
 
         ResultSet result = stmt.executeQuery(query);
-        closeStatement(stmt);
         return result;
     }
 

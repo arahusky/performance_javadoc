@@ -91,6 +91,16 @@ public class MethodMeasurer {
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
 
         for (int i = 0; i < valuesToMeasure.length; i++) {
+            try {
+                int res = ResultCache.getResults(conn, testedMethod.toString(), data.toString(), howManyTimesToMeasure);
+                System.out.println("res is: " + res);
+                if (res != -1) {
+                    result.add(new Object[]{valuesToMeasure[i], res});
+                }
+            } catch (SQLException ex) {
+                //TODO 
+                Logger.getLogger(MethodMeasurer.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
 
             String msg = "Starting to measure..." + ", tested Method:{0}" + testedMethod.getMethod().getName()
@@ -100,7 +110,6 @@ public class MethodMeasurer {
             try {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
                 
-                System.out.println("good");
                 Object[] objs;
                 while ((objs = workloadImpl.getCall()) != null) {
 
@@ -113,6 +122,8 @@ public class MethodMeasurer {
 
                     long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
                     result.add(new Object[]{valuesToMeasure[i], duration});
+                    ResultCache.insertResult(conn, testedMethod.getMethodName(), data.toString(), priority + 10, (int) duration);
+                    
                 }
             } catch(IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
@@ -137,12 +148,7 @@ public class MethodMeasurer {
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
         for (int i = 0; i < result.size(); i++) {
-            jsonResults.accumulate("data", result.get(i));
-            if (conn != null) {
-                int time = Integer.parseInt(result.get(i)[1].toString());
-                
-                ResultCache.insertResult(conn, testedMethod.getMethodName(), data.toString(), rangeValue, time);
-            }
+            jsonResults.accumulate("data", result.get(i));            
         }
         
         if (conn != null) {
