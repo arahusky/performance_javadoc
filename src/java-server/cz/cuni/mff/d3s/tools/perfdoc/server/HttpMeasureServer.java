@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -40,10 +41,20 @@ class HttpMeasureServer {
         server.createContext("/", new RequestHandler());
         server.setExecutor(Executors.newCachedThreadPool());
         
-        //ResultCache.run();
+        try {
+            ResultCache.startDatabase();
+            //ResultCache.run();
+        } catch (ClassNotFoundException ex) {
+            //Could not find the database driver
+            return;
+        } catch (SQLException ex) {
+            //The connection to database could have not been established
+            return;
+        }
         
         server.start();
-                
         log.log(Level.INFO, "Server started and is listening on port 8080");
+        
+        //TODO close server on exit                
     }
 }

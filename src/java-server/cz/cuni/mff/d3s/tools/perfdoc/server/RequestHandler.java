@@ -62,7 +62,9 @@ class RequestHandler implements HttpHandler {
             JSONObject obj = m.measureTime();
             try {
                 exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
+                System.out.println("heree");
                 responseBody.write(obj.toString().getBytes());
+                System.out.println("jeee");
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
@@ -94,6 +96,7 @@ class RequestHandler implements HttpHandler {
         try {
             exchange.sendResponseHeaders(500, 0);
             out.write(msg.getBytes());
+            log.log(Level.INFO, msg);
         } catch (IOException ex) {
            log.log(Level.INFO, "Unable to send the error message to the client", ex);
         }

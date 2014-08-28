@@ -28,6 +28,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -48,12 +50,21 @@ public class MethodMeasurer {
     private int priority;
 
     private ArrayList<Object> data = new ArrayList<>();
+    
+    private Connection conn;
 
-    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+    private static final Logger log = Logger.getLogger(MethodMeasurer.class.getName());
 
     public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
+        
+        try {
+            this.conn = ResultCache.createConnection();
+        } catch (SQLException ex) {
+            //TODO
+            Logger.getLogger(MethodMeasurer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -88,7 +99,8 @@ public class MethodMeasurer {
 
             try {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
-
+                
+                System.out.println("good");
                 Object[] objs;
                 while ((objs = workloadImpl.getCall()) != null) {
 
@@ -114,17 +126,29 @@ public class MethodMeasurer {
             } catch (InvocationTargetException ex) {
                log.log(Level.SEVERE, "An InvocationTargetException occured when trying to invoke generator/tested method", ex);
                throw ex;
+            } catch (Exception e) {
+                //TODO
+                //log.log(Level.SEVERE, "Some fucking exception occured", e);
             }
         }
 
         log.log(Level.FINE, "Measurement succesfully done");
-
+        
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
         for (int i = 0; i < result.size(); i++) {
             jsonResults.accumulate("data", result.get(i));
+            if (conn != null) {
+                int time = Integer.parseInt(result.get(i)[1].toString());
+                
+                ResultCache.insertResult(conn, testedMethod.getMethodName(), data.toString(), rangeValue, time);
+            }
         }
-
+        
+        if (conn != null) {
+            ResultCache.closeConnection(conn);
+        }
+        
         return jsonResults;
     }
 

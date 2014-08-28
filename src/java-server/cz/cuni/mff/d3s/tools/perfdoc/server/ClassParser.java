@@ -18,7 +18,6 @@ package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -36,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class ClassParser {
 
-    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+    private static final Logger log = Logger.getLogger(ClassParser.class.getName());
      
     public Class<?> clazz;
 
