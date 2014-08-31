@@ -14,10 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package Testing.Package;
+package testing.server;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.ResultCache;
-import java.sql.Connection;
+import cz.cuni.mff.d3s.tools.perfdoc.server.ResultDatabaseCache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,14 +33,14 @@ import org.junit.Test;
  */
 public class TestResultCache {
 
-    private static Connection conn;
+    private static ResultDatabaseCache res;
 
     @BeforeClass
     public static void testStartAndCreateDB() {
         try {
-            ResultCache.startTestDatabase();
-            conn = ResultCache.createTestConnection();
-        } catch (ClassNotFoundException | SQLException e) {
+            res = new ResultDatabaseCache(true);
+        res.startTestDatabase();        
+        } catch (SQLException | ClassNotFoundException e) {
             Assert.assertTrue(false);
         }
     }
@@ -49,7 +48,7 @@ public class TestResultCache {
     @Before
     public void makeNewConnection() {
         try {
-            conn = ResultCache.createTestConnection();
+            res = new ResultDatabaseCache(true);
         } catch (SQLException e) {
             Assert.assertTrue(false);
         }
@@ -58,8 +57,8 @@ public class TestResultCache {
     @After
     public void closeConnection() {
         try {
-            ResultCache.dropTable(conn);
-            ResultCache.closeConnection(conn);
+            res.emptyTable();
+            res.closeConnection();
         } catch (SQLException ex) {
             Assert.assertTrue(false);
         }
@@ -68,13 +67,13 @@ public class TestResultCache {
 
     @AfterClass
     public static void endDB() {
-        ResultCache.closeDatabase();
+        res.closeDatabase();
     }
 
     @Test
     public void testNumberOfTables() {
         try {
-            ArrayList<String> set = ResultCache.getDBTables(conn);
+            ArrayList<String> set = res.getDBTables();
 
             //created database contains just one table
             Assert.assertTrue(set.size() == 1);
@@ -90,7 +89,7 @@ public class TestResultCache {
     @Test
     public void testSimpleEmptyTableTest() {
         try {
-            ResultSet rs = ResultCache.getTable(conn);
+            ResultSet rs = res.getTable();
 
             if (rs.next()) {
                 Assert.assertTrue(false);
@@ -104,8 +103,8 @@ public class TestResultCache {
     @Test
     public void testSimpleInsertRow() {
         try {
-            ResultCache.insertResult(conn, "method1", "[data]", 10, 1000);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method1", "generator", "[data]", 10, 1000);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -127,10 +126,10 @@ public class TestResultCache {
     @Test
     public void testMultipleInsertDifferentRow() {
         try {
-            ResultCache.insertResult(conn, "method1", "[data]", 10, 1000);
-            ResultCache.insertResult(conn, "method2", "[data1]", 0, 20);
-            ResultCache.insertResult(conn, "method3", "[data2]", 10, 1000);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method1", "generator", "[data]", 10, 1000);
+            res.insertResult("method2", "generator", "[data1]", 0, 20);
+            res.insertResult("method3", "generator", "[data2]", 10, 1000);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -171,9 +170,9 @@ public class TestResultCache {
     @Test
     public void testMultipleUpdateSametRowBetterResults() {
         try {
-            ResultCache.insertResult(conn, "method", "[data]", 10, 1000);
-            ResultCache.insertResult(conn, "method", "[data]", 100, 20);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method", "generator", "[data]", 10, 1000);
+            res.insertResult("method", "generator","[data]", 100, 20);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -195,9 +194,9 @@ public class TestResultCache {
     @Test
     public void testMultipleUpdateSametRowEqualResults() {
         try {
-            ResultCache.insertResult(conn, "method", "[data]", 10, 1000);
-            ResultCache.insertResult(conn, "method", "[data]", 10, 200);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method", "generator", "[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data]", 10, 200);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -219,9 +218,9 @@ public class TestResultCache {
     @Test
     public void testMultipleUpdateSametRowWorseResults() {
         try {
-            ResultCache.insertResult(conn, "method", "[data]", 10, 1000);
-            ResultCache.insertResult(conn, "method", "[data]", 9, 200);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method", "generator","[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data]", 9, 200);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -243,9 +242,9 @@ public class TestResultCache {
     @Test
     public void testMulitpleUpdateSametRowWorseResults() {
         try {
-            ResultCache.insertResult(conn, "method", "[data]", 10, 1000);
-            ResultCache.insertResult(conn, "method", "[data]", 9, 200);
-            ResultSet rs = ResultCache.getTable(conn);
+            res.insertResult("method", "generator", "[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data]", 9, 200);
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -267,13 +266,14 @@ public class TestResultCache {
     @Test
     public void testMoreConnections() {
         try {
-            ResultCache.insertResult(conn, "method", "[data]", 10, 1000);            
+            res.insertResult("method", "generator", "[data]", 10, 1000);            
             
-            Connection pomConn = ResultCache.createTestConnection();
-            ResultCache.insertResult(pomConn, "method", "[data]", 9, 200);
-            ResultCache.insertResult(pomConn, "method1", "[data]", 9, 200);
+            ResultDatabaseCache newRes = new ResultDatabaseCache(true);
             
-            ResultSet rs = ResultCache.getTable(pomConn);
+            newRes.insertResult("method", "generator", "[data]", 9, 200);
+            newRes.insertResult("method1", "generator", "[data]", 9, 200);
+            
+            ResultSet rs = res.getTable();
 
             if (!rs.next()) {
                 Assert.assertTrue(false);
@@ -297,9 +297,60 @@ public class TestResultCache {
                 Assert.assertTrue(false);
             }
             
-            ResultCache.closeConnection(pomConn);
+            newRes.closeConnection();
         } catch (SQLException ex) {
             Assert.assertTrue(false);
         } 
+    }
+    
+    @Test
+    public void testGetResults() {
+        try {
+            res.insertResult("method", "generator", "[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data2]", 9, 200);
+            res.insertResult("method1", "generator", "[data]", 19, 2500);
+            
+            ResultSet rs = res.getTable();
+
+            long time = res.getResults("method2", "generator", "[data]", 9);
+            Assert.assertEquals(-1, time);
+            
+            time = res.getResults("method", "generator", "[data1]", 9);
+            Assert.assertEquals(-1, time);
+            
+            time = res.getResults("method", "generator", "[data]", 10);
+            Assert.assertEquals(1000, time);
+            
+            time = res.getResults("method", "generator", "[data]", 11);
+            Assert.assertEquals(-1, time);
+            
+            time = res.getResults("method", "generator", "[data2]", 9);
+            Assert.assertEquals(200, time);
+            
+            time = res.getResults("method1", "generator", "[data]", 15);
+            Assert.assertEquals(2500, time);   
+            
+            
+        } catch (SQLException ex) {
+            Assert.assertTrue(false);
+        }
+    }
+    
+    @Test
+    public void testEmptyTable() {
+        try {
+            res.insertResult("method", "generator",  "[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data2]", 9, 200);
+            
+            res.emptyTable();
+            ResultSet rs = res.getTable();
+
+            if (rs.next()) {
+                Assert.assertTrue(false);
+            }
+             
+        } catch (SQLException ex) {
+            Assert.assertTrue(false);
+        }
     }
 }

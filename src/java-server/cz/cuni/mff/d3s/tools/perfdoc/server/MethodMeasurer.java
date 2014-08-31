@@ -28,7 +28,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -50,21 +49,16 @@ public class MethodMeasurer {
     private int priority;
 
     private ArrayList<Object> data = new ArrayList<>();
-    
-    private Connection conn;
+
+    private ResultCache resultCache;
 
     private static final Logger log = Logger.getLogger(MethodMeasurer.class.getName());
 
-    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException {
+    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
-        
-        try {
-            this.conn = ResultCache.createConnection();
-        } catch (SQLException ex) {
-            //TODO
-            Logger.getLogger(MethodMeasurer.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+        this.resultCache = new ResultDatabaseCache();
     }
 
     /**
@@ -80,37 +74,49 @@ public class MethodMeasurer {
 
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
+
+        //passing the amount of wanted results to generator
         serviceImpl.setNumberResults(1);
 
+        //passing the priority to generator
+        serviceImpl.setPriority(priority);
+
+        //list to store measured results
         ArrayList<Object[]> result = new ArrayList<>();
+
         Method method = testedMethod.getMethod();
         Method generatorMethod = generator.getMethod();
         Class<?> generatorClass = generator.getContainingClass();
 
+        //values chosen from rangeValue to measure data in
         double[] valuesToMeasure = getValuesToMeasure(MeasurementConfiguration.returnHowManyValuesToMeasure(priority));
+
+        //how many times to measure the method in one cycle
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
 
         for (int i = 0; i < valuesToMeasure.length; i++) {
-            try {
-                int res = ResultCache.getResults(conn, testedMethod.toString(), data.toString(), howManyTimesToMeasure);
-                System.out.println("res is: " + res);
-                if (res != -1) {
-                    result.add(new Object[]{valuesToMeasure[i], res});
-                }
-            } catch (SQLException ex) {
-                //TODO 
-                Logger.getLogger(MethodMeasurer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+
+            //the arguments for the generator 
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
+
+            //check, whether we do not have already data cached
+            long res = resultCache.getResults(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), howManyTimesToMeasure);
+            if (res != -1) {
+                result.add(new Object[]{valuesToMeasure[i], res});
+                log.log(Level.CONFIG, "The value for measuring was found in cache.");
+                continue;
+            }
 
             String msg = "Starting to measure..." + ", tested Method:{0}" + testedMethod.getMethod().getName()
                     + "generator:{0}" + generator.getMethod().getName() + "class Generator:{0}" + generator.getContainingClass().getName();
-            log.log(Level.FINE, msg);
+            log.log(Level.CONFIG, msg);
 
             try {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
-                
+
                 Object[] objs;
+                //the generator prepared us the arguments for tested method in workloadImpl
+                //we just get one and measure the tested method with it
                 while ((objs = workloadImpl.getCall()) != null) {
 
                     //TODO if is an array, if not ...
@@ -122,12 +128,13 @@ public class MethodMeasurer {
 
                     long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
                     result.add(new Object[]{valuesToMeasure[i], duration});
-                    ResultCache.insertResult(conn, testedMethod.getMethodName(), data.toString(), priority + 10, (int) duration);
-                    
+
+                    resultCache.insertResult(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), priority + 10, duration);
+
                 }
-            } catch(IllegalAccessException ex) {
+            } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
-                throw ex;                
+                throw ex;
             } catch (IllegalArgumentException ex) {
                 log.log(Level.SEVERE, "Some bad arguments were passed to tested/generator method", ex);
                 throw ex;
@@ -135,26 +142,23 @@ public class MethodMeasurer {
                 log.log(Level.SEVERE, "Could not istantiate generator class", ex);
                 throw ex;
             } catch (InvocationTargetException ex) {
-               log.log(Level.SEVERE, "An InvocationTargetException occured when trying to invoke generator/tested method", ex);
-               throw ex;
-            } catch (Exception e) {
-                //TODO
-                //log.log(Level.SEVERE, "Some fucking exception occured", e);
+                log.log(Level.SEVERE, "An InvocationTargetException occured when trying to invoke generator/tested method", ex);
+                throw ex;
             }
         }
 
-        log.log(Level.FINE, "Measurement succesfully done");
-        
+        log.log(Level.CONFIG, "Measurement succesfully done");
+
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
         for (int i = 0; i < result.size(); i++) {
-            jsonResults.accumulate("data", result.get(i));            
+            jsonResults.accumulate("data", result.get(i));
         }
-        
-        if (conn != null) {
-            ResultCache.closeConnection(conn);
+
+        if (resultCache != null) {
+            //we do not need the connection to database anymore
+            resultCache.closeConnection();
         }
-        
         return jsonResults;
     }
 

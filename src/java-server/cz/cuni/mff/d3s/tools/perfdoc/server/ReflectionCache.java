@@ -14,34 +14,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *Class to cache loaded method and classes
- * @author Jakub Naplava
+ * Interface to communicate with reflection saved things
+ * @author arahusky
  */
-public class ReflectionCache {
-    private static Map<String, Method> methodCache = new ConcurrentHashMap<>();
-    private static Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
-    
-    public static void addMethod(String name, Method method) {
-        methodCache.put(name, method);
-    }
-    
-    public static void addClass(String name, Class<?> clazz) {
-        classCache.put(name, clazz);
-    }
-    
-    public static Method getMethod(String name) {
-        return methodCache.get(name);
-    }
-    
-    public static Class<?> getClass(String name) {
-        return classCache.get(name);
-    }
+public interface ReflectionCache {
+
+    void addMethod(String name, Method method);
+
+    void addClass(String name, Class<?> clazz);
+
+    Method getMethod(String name);
+
+    Class<?> getClass(String name);
 }

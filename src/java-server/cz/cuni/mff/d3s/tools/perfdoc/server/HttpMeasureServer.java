@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 class HttpMeasureServer {
 
@@ -42,8 +40,9 @@ class HttpMeasureServer {
         server.setExecutor(Executors.newCachedThreadPool());
         
         try {
-            ResultCache.startDatabase();
-            //ResultCache.run();
+            ResultDatabaseCache res = new ResultDatabaseCache();
+            res.startDatabase();
+            //res.emptyTable();
         } catch (ClassNotFoundException ex) {
             //Could not find the database driver
             return;

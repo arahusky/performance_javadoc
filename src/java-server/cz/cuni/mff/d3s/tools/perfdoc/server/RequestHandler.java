@@ -26,7 +26,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONObject;
@@ -56,15 +58,13 @@ class RequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
-            log.log(Level.FINE, "The incoming message is: {0}", requestBody);
+            log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
             MethodMeasurer m = new MethodMeasurer(requestBody);
             JSONObject obj = m.measureTime();
             try {
                 exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
-                System.out.println("heree");
                 responseBody.write(obj.toString().getBytes());
-                System.out.println("jeee");
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
@@ -78,6 +78,8 @@ class RequestHandler implements HttpHandler {
             sendErrorMessage("The bad parameters were sent to server", exchange, responseBody);
         } catch (IOException ex) {
             sendErrorMessage("There was some problem while reading some file on the server", exchange, responseBody);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, "There was some problem when connecting to database", ex);
         } finally {
             try {
                 in.close();

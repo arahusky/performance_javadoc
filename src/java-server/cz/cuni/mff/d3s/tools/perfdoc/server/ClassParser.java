@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 public class ClassParser {
 
     private static final Logger log = Logger.getLogger(ClassParser.class.getName());
+    
+    private ReflectionCache refCache;
      
     public Class<?> clazz;
 
@@ -51,7 +53,7 @@ public class ClassParser {
      * @throws ClassNotFoundException when the class was not found
      */
     public ClassParser(String className) throws MalformedURLException, ClassNotFoundException, IOException {
-        loadClass(className);
+        loadClass(className);        
     }
 
     /**
@@ -65,18 +67,21 @@ public class ClassParser {
      */
     private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {
         try {
+            refCache = ReflectionConcurrentMapCache.getInstance();
+            
             if (cl == null) {
                 URL[] urls = findClassClassPaths();
                 cl = new URLClassLoader(urls);
                 clazz = cl.loadClass(className);
-                ReflectionCache.addClass(className, clazz);
+                refCache.addClass(className, clazz);
+                log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
                 return;
             }
 
-            if ((clazz = ReflectionCache.getClass(className)) == null) {
+            if ((clazz = refCache.getClass(className)) == null) {
                 clazz = cl.loadClass(className);
-                ReflectionCache.addClass(className, clazz);
-                return;
+                refCache.addClass(className, clazz);
+                log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
             }
         } catch (ClassNotFoundException e) {
             log.log(Level.SEVERE, "Class was not found", e);
@@ -145,10 +150,10 @@ public class ClassParser {
     }
 
     private Method searchMethodInCache(MethodInfo methodInfo) {
-        return ReflectionCache.getMethod(methodInfo.toString());
+        return refCache.getMethod(methodInfo.toString());
     }
 
     private void addMethodInCache(MethodInfo methodInfo, Method method) {
-        ReflectionCache.addMethod(methodInfo.toString(), method);
+        refCache.addMethod(methodInfo.toString(), method);
     }
 }
