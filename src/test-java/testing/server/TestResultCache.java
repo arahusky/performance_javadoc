@@ -20,6 +20,9 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.ResultDatabaseCache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -304,7 +307,7 @@ public class TestResultCache {
     }
     
     @Test
-    public void testGetResults() {
+    public void testGetResult() {
         try {
             res.insertResult("method", "generator", "[data]", 10, 1000);
             res.insertResult("method", "generator", "[data2]", 9, 200);
@@ -312,22 +315,22 @@ public class TestResultCache {
             
             ResultSet rs = res.getTable();
 
-            long time = res.getResults("method2", "generator", "[data]", 9);
+            long time = res.getResult("method2", "generator", "[data]", 9);
             Assert.assertEquals(-1, time);
             
-            time = res.getResults("method", "generator", "[data1]", 9);
+            time = res.getResult("method", "generator", "[data1]", 9);
             Assert.assertEquals(-1, time);
             
-            time = res.getResults("method", "generator", "[data]", 10);
+            time = res.getResult("method", "generator", "[data]", 10);
             Assert.assertEquals(1000, time);
             
-            time = res.getResults("method", "generator", "[data]", 11);
+            time = res.getResult("method", "generator", "[data]", 11);
             Assert.assertEquals(-1, time);
             
-            time = res.getResults("method", "generator", "[data2]", 9);
+            time = res.getResult("method", "generator", "[data2]", 9);
             Assert.assertEquals(200, time);
             
-            time = res.getResults("method1", "generator", "[data]", 15);
+            time = res.getResult("method1", "generator", "[data]", 15);
             Assert.assertEquals(2500, time);   
             
             
@@ -353,4 +356,48 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
+    
+    @Test
+    public void testGetResults()
+    {
+        res.insertResult("method", "generator",  "[data]", 10, 1000);
+        res.insertResult("method", "generator1", "[data2]", 9, 200);
+        res.insertResult("method2", "generator2", "[data3]", 90, 1200);
+        List<Map<String, Object>> list = res.getResults();
+        
+        Assert.assertEquals(3, list.size());
+        
+        ArrayList<Object> alist = new ArrayList<>();
+        alist.add("method");
+        alist.add("generator");
+        alist.add("[data]");
+        alist.add(10);
+        alist.add((long) 1000);    
+        rowEquals(alist, list.get(0));
+        
+        alist = new ArrayList<>();
+        alist.add("method");
+        alist.add("generator1");
+        alist.add("[data2]");
+        alist.add(9);
+        alist.add((long) 200);    
+        rowEquals(alist, list.get(1)); 
+        
+        alist = new ArrayList<>();
+        alist.add("method2");
+        alist.add("generator2");
+        alist.add("[data3]");
+        alist.add(90);
+        alist.add((long) 1200);    
+        rowEquals(alist, list.get(2));         
+    }
+    
+    private void rowEquals(ArrayList<Object> row, Map<String, Object> map) {
+        Assert.assertEquals(row.get(0), map.get("methodName"));
+        Assert.assertEquals(row.get(1), map.get("generator"));
+        Assert.assertEquals(row.get(2), map.get("data"));
+        Assert.assertEquals(row.get(3), map.get("numberOfMeasurements"));
+        Assert.assertEquals(row.get(4), map.get("time"));
+    }
+    
 }

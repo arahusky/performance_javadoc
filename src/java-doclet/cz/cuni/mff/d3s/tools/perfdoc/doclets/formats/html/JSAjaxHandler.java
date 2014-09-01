@@ -39,7 +39,7 @@ public class JSAjaxHandler {
                 + "   data: data,"
                 + "   type: \"POST\","
                 + "   success: function(json) {successFunc(json, data, successFunc, graphName, graph, priority)},"
-                + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, graphName, errorThrown); }"
+                + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, graphName, errorThrown, priority); }"
                 + "});"
                 + "  }\n";
 
@@ -51,14 +51,15 @@ public class JSAjaxHandler {
      * occured error
      */
     public static String returnErrorFunction() {
-        String errorFunction = " function printAjaxError(xhr, status, graphName, errorThrown) {"
+        String errorFunction = " function printAjaxError(xhr, status, graphName, errorThrown, priority) {"
                 + " alert( \"Sorry, there was a problem! Detailed information can be found in debugger console.\" );"
                 + " console.log( \"Error: \" + errorThrown );"
                 + " console.log( \"Status: \" + status );"
                 + " console.dir( xhr );"
+                + "if (priority < 2) {"
                 + " if (xhr.status == 0) { $(\"#\" + graphName + \" .right\").text(\"Server is shut-down, or could not connect to him.\"); }"
                 + "else { $(\"#\" + graphName + \" .right\").text(xhr.status + \": \" + xhr.responseText); }"
-                + " }\n";
+                + "} }\n";
 
         return errorFunction;
     }
@@ -119,9 +120,7 @@ public class JSAjaxHandler {
         sb.append("var json = JSON.stringify(" + data + ", null, 2); ");
 
         //create graph
-        //sb.append(returnStartGraphCode(graphName, "Some x-value"));
-        
-        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", null, 1);");
+        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", error[3], 1);");
 
         return sb.toString();
     }
@@ -134,7 +133,7 @@ public class JSAjaxHandler {
                 + "    JSON.parse(json).data," 
                 + "    {"
                 + "      ylabel: 'Search time (ms)',"
-                + "      xlabel: '" + xAxisName + "'"
+                + "      xlabel: graph"
                 + "    }"
                 + "  );");
 

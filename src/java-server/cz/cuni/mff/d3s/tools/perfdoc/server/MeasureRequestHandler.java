@@ -37,9 +37,9 @@ import org.json.JSONObject;
  *
  * @author Jakub Naplava
  */
-class RequestHandler implements HttpHandler {
+class MeasureRequestHandler implements HttpHandler {
 
-    private static final Logger log = Logger.getLogger(RequestHandler.class.getName());
+    private static final Logger log = Logger.getLogger(MeasureRequestHandler.class.getName());
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -75,7 +75,7 @@ class RequestHandler implements HttpHandler {
         } catch (IllegalAccessException | InvocationTargetException ex) {
             sendErrorMessage("Some other error", exchange, responseBody);
         } catch (IllegalArgumentException ex) {
-            sendErrorMessage("The bad parameters were sent to server", exchange, responseBody);
+            sendErrorMessage("The bad parameters were sent to server (There might be an error in generator).", exchange, responseBody);
         } catch (IOException ex) {
             sendErrorMessage("There was some problem while reading some file on the server", exchange, responseBody);
         } catch (SQLException ex) {

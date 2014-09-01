@@ -23,11 +23,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Implementation of ResultCache that saves the results in the database.
+ *
  * @author Jakub Naplava
  */
 public class ResultDatabaseCache implements ResultCache {
@@ -135,7 +139,7 @@ public class ResultDatabaseCache implements ResultCache {
      * {@inheritDoc}
      */
     @Override
-    public long getResults(String methodName, String generatorName, String data, int numberOfMeasurements) {
+    public long getResult(String methodName, String generatorName, String data, int numberOfMeasurements) {
         try {
             Statement stmt = conn.createStatement();
             String query = "SELECT numberOfMeasurements, time "
@@ -170,7 +174,7 @@ public class ResultDatabaseCache implements ResultCache {
      */
     @Override
     public boolean insertResult(String methodName, String generatorName, String data, int numberOfMeasurements, long time) {
-       
+
         Statement stmt;
         ResultSet rs;
 
@@ -228,6 +232,42 @@ public class ResultDatabaseCache implements ResultCache {
         closeStatement(stmt);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<Map<String, Object>> getResults() {
+
+        ArrayList<Map<String, Object>> list = new ArrayList<>();
+
+        try {
+            Statement stmt = conn.createStatement();
+            String query = "SELECT * FROM results";
+            ResultSet rs = stmt.executeQuery(query);
+
+            while (rs.next()) {
+                String methodName = rs.getString("methodName");
+                String generator = rs.getString("generator");
+                String data = rs.getString("data");
+                int numberOfMeasurements = rs.getInt("numberOfMeasurements");
+                long time = rs.getLong("time");
+                
+                HashMap map = new HashMap();
+                map.put("methodName", methodName);
+                map.put("generator", generator);
+                map.put("data", data);
+                map.put("numberOfMeasurements", numberOfMeasurements);
+                map.put("time", time);
+                
+                list.add(map);
+            }
+            return list;
+        } catch (SQLException e) {
+            log.log(Level.INFO, "Unable to retrieve results from database", e);
+            return null;
+        }
+    }
+
     private static void printSQLException(SQLException e) {
         while (e != null) {
             log.log(Level.WARNING, "Some error occured while working with database.", e);
@@ -240,18 +280,6 @@ public class ResultDatabaseCache implements ResultCache {
         ArrayList<String> tables = getDBTables(con);
 
         return tables.contains(tableName);
-    }
-
-    public ResultSet getContent() {
-        try {
-            Statement stmt = conn.createStatement();
-            String query = "SELECT * FROM results";
-            return stmt.executeQuery(query);
-        } catch (SQLException ex) {
-           log.log(Level.CONFIG, "Unable to get results from database.", ex);
-        }
-
-        return null;
     }
 
     public ArrayList<String> getDBTables() throws SQLException {

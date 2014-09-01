@@ -269,7 +269,8 @@ public class PerformanceWriterImpl {
         String uniqueTextboxName = workloadName + "_sliderTextBox_" + number;
         JSSliderWriter.addNewSlider(uniqueSliderName, uniqueTextboxName, min, max, step, axis);
 
-        content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\">" + description + ":   </label>"));
+        String labelName = uniqueTextboxName + "Label";
+        content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\" id = \"" + labelName + "\">" + description + ":   </label>"));
         content.addContent(new RawHtml("<input type=\"text\" id=\"" + uniqueTextboxName + "\" style=\"border:0; color:#f6931f; font-weight:bold;\"> </p>"));
         content.addContent(new RawHtml("<div id=\"" + uniqueSliderName + "\" style=\"margin:10\"></div>"));
 

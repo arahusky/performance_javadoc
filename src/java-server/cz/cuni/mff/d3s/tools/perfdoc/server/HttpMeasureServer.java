@@ -32,11 +32,18 @@ class HttpMeasureServer {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
+        //the port on which the server will run
         InetSocketAddress addr = new InetSocketAddress(8080);
 
         //creates server with backlog (=the maximum queue length for incoming connection indications) set to 0 (system default value)
         HttpServer server = HttpServer.create(addr, 0);
-        server.createContext("/", new RequestHandler());
+        
+        //handler to handle request for measuring
+        server.createContext("/", new MeasureRequestHandler());
+        
+        //handler to handle request for cache
+        server.createContext("/cache", new CacheRequestHandler());
+        
         server.setExecutor(Executors.newCachedThreadPool());
         
         try {

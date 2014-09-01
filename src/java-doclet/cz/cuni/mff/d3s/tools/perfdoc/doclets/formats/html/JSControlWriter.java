@@ -126,6 +126,7 @@ public class JSControlWriter {
         sb.append("var value;");
         sb.append("var values = [];");
         sb.append("var rangeValue;");
+        sb.append("var rangeValueName = \"\";");
         sb.append("var min = 0;");
         sb.append("var max = 0;");
         sb.append("var step = 0;");
@@ -153,7 +154,7 @@ public class JSControlWriter {
 
         //we add the control of number of range sliders (must be precisely one)
         sb.append(returnNumberIntervalsCheck());
-        sb.append("return [error, values, rangeValue];");
+        sb.append("return [error, values, rangeValue, rangeValueName];");
         sb.append("} \n");
         return new RawHtml(sb.toString());
     }
@@ -281,7 +282,8 @@ public class JSControlWriter {
     }
 
     private static String returnIntervalCheck(InfoItem it, int number) {
-        return ("pom = isInterval(value, min, max, step); if (pom == \"true\") { intervals++; rangeValue = " + number + "}"
+        String labelName = it.textbox + "Label"; 
+        return ("pom = isInterval(value, min, max, step); if (pom == \"true\") { intervals++; rangeValue = " + number + "; rangeValueName = $(\"#"+ labelName + "\").text();}"
                 + "else if (pom == \"false\") {" + addSliderControl(it, false) + "}");
     }
 

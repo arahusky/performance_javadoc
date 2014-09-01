@@ -100,7 +100,7 @@ public class MethodMeasurer {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
 
             //check, whether we do not have already data cached
-            long res = resultCache.getResults(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), howManyTimesToMeasure);
+            long res = resultCache.getResult(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), howManyTimesToMeasure);
             if (res != -1) {
                 result.add(new Object[]{valuesToMeasure[i], res});
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
