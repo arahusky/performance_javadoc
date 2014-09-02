@@ -34,7 +34,7 @@ import java.util.logging.Logger;
  *
  * @author Jakub Naplava
  */
-public class ResultDatabaseCache implements ResultCache {
+public class ResultDatabaseCache implements ResultCache, ResultAdminCache {
 
     private static final Logger log = Logger.getLogger(ResultDatabaseCache.class.getName());
 
@@ -54,6 +54,7 @@ public class ResultDatabaseCache implements ResultCache {
         }
     }
 
+    @Override
     public void startDatabase() throws ClassNotFoundException, SQLException {
         try {
             Class.forName(DRIVER);

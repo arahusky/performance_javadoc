@@ -47,18 +47,21 @@ public class MethodMeasurer {
 
     private int rangeValue;
     private int priority;
+    private String hash;
 
     private ArrayList<Object> data = new ArrayList<>();
 
     private ResultCache resultCache;
+    private LockBase lockBase;
 
     private static final Logger log = Logger.getLogger(MethodMeasurer.class.getName());
 
-    public MethodMeasurer(String data) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
+    public MethodMeasurer(String data, LockBase lockBase) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
 
         this.resultCache = new ResultDatabaseCache();
+        this.lockBase = lockBase;
     }
 
     /**
@@ -94,6 +97,9 @@ public class MethodMeasurer {
         //how many times to measure the method in one cycle
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
 
+        //wait until we can measure (there is no lock for our hash)
+        lockBase.waitUntilFree(hash);
+        
         for (int i = 0; i < valuesToMeasure.length; i++) {
 
             //the arguments for the generator 
@@ -134,20 +140,25 @@ public class MethodMeasurer {
                 }
             } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
+                lockBase.freeLock(hash);
                 throw ex;
             } catch (IllegalArgumentException ex) {
                 log.log(Level.SEVERE, "Some bad arguments were passed to tested/generator method", ex);
+                lockBase.freeLock(hash);
                 throw ex;
             } catch (InstantiationException ex) {
                 log.log(Level.SEVERE, "Could not istantiate generator class", ex);
+                lockBase.freeLock(hash);
                 throw ex;
             } catch (InvocationTargetException ex) {
                 log.log(Level.SEVERE, "An InvocationTargetException occured when trying to invoke generator/tested method", ex);
+                lockBase.freeLock(hash);
                 throw ex;
             }
-        }
-
+        }        
+        
         log.log(Level.CONFIG, "Measurement succesfully done");
+        lockBase.freeLock(hash);
 
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
@@ -329,6 +340,7 @@ public class MethodMeasurer {
 
             rangeValue = obj.getInt("rangeValue");
             priority = obj.getInt("priority");
+            hash = obj.getString("id");
 
             JSONArray dataArray = obj.getJSONArray("data");
 

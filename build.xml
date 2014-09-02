@@ -9,9 +9,36 @@
 	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
 	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
 	
+  <condition property="isMac">
+    <os family="mac" />
+  </condition>
+
+  <condition property="isWindows">
+    <os family="windows" />
+  </condition>
+
+  <condition property="isUnix">
+    <os family="unix" />
+  </condition>
+
+  <target name="doMac" if="isMac">
+  	<!-- doMAC FIXME -->
+    <property name="jdk.tools.jar" location="Mac\tools.jar" />     
+  </target>
+
+  <target name="doWindows" if="isWindows">
+    <property name="jdk.tools.jar" location="$(JAVA_HOME)\lib\tools.jar" /> 
+  </target>
+
+  <target name="doUnix" if="isUnix">
+    <property name="jdk.tools.jar" location="/opt/java/lib/tools.jar"/>
+  </target>
+
+
 	<!-- FIXME: make this platform independent. -->
-	<property name="jdk.tools.jar" location="/opt/java/lib/tools.jar" />
-	
+	<!-- <property name="jdk.tools.jar" location="/opt/java/lib/tools.jar" /> -->
+	<property name="jdk.tools.jar" location="C:\Program Files\Java\jdk1.8.0_05\lib\tools.jar" /> 
+
 	<target name="main" depends="compile-doclet,compile-demo" description="Main target: compiles everything.">
 	</target>
 	

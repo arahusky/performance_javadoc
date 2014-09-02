@@ -65,6 +65,8 @@ public class JavascriptCodeBox {
 
         globalCode.append(JSControlWriter.returnIsDivisibleFunction());
         globalCode.append(JSControlWriter.returnIsIntervalFunction());
+        
+        globalCode.append(" var globalIdentifier = Math.random().toString(36).substring(7);");
     }
 
     /**

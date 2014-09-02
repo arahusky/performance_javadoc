@@ -38,8 +38,10 @@ class HttpMeasureServer {
         //creates server with backlog (=the maximum queue length for incoming connection indications) set to 0 (system default value)
         HttpServer server = HttpServer.create(addr, 0);
         
+        LockBase lockBase = new LockHashMapBase();
+        
         //handler to handle request for measuring
-        server.createContext("/", new MeasureRequestHandler());
+        server.createContext("/", new MeasureRequestHandler(lockBase));
         
         //handler to handle request for cache
         server.createContext("/cache", new CacheRequestHandler());
@@ -47,7 +49,7 @@ class HttpMeasureServer {
         server.setExecutor(Executors.newCachedThreadPool());
         
         try {
-            ResultDatabaseCache res = new ResultDatabaseCache();
+            ResultAdminCache res = new ResultDatabaseCache();
             res.startDatabase();
             //res.emptyTable();
         } catch (ClassNotFoundException ex) {

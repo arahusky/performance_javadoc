@@ -61,6 +61,7 @@ public class HtmlDoclet extends AbstractDoclet {
     public static boolean start(RootDoc root) {
         try {
             HtmlDoclet doclet = new HtmlDoclet();
+            ClassParser.arguments = root.options();
             return doclet.start(doclet, root);
         } finally {
             ConfigurationImpl.reset();

@@ -151,6 +151,7 @@ public class JSAjaxHandler {
         sb.append("\"generator\" : \"" + generator + "\",");
         sb.append("\"rangeValue\" : error[2],");
         sb.append("\"priority\" : 1,");
+        sb.append("\"id\" : globalIdentifier, ");
 
         //data are in this part stored in an array error on the index 1 (index 0 is reserved for the error message and the index 2 for the range value)
         sb.append("\"data\" :  error[1] ");

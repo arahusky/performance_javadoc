@@ -39,6 +39,12 @@ import org.json.JSONObject;
  */
 class MeasureRequestHandler implements HttpHandler {
 
+    private LockBase lockBase;
+    
+    public MeasureRequestHandler(LockBase lockBase) {
+        this.lockBase = lockBase;
+    }
+    
     private static final Logger log = Logger.getLogger(MeasureRequestHandler.class.getName());
 
     @Override
@@ -60,7 +66,7 @@ class MeasureRequestHandler implements HttpHandler {
             
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
-            MethodMeasurer m = new MethodMeasurer(requestBody);
+            MethodMeasurer m = new MethodMeasurer(requestBody, lockBase);
             JSONObject obj = m.measureTime();
             try {
                 exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent

@@ -34,6 +34,7 @@ import java.util.ArrayList;
  */
 public class ClassParser {
 
+    public static String[][] arguments;
     /**
      *
      * @param workloadName the workloadName in format package.className#method
