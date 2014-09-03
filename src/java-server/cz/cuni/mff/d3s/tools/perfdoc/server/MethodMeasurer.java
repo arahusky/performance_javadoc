@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
@@ -26,10 +28,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,6 +62,10 @@ public class MethodMeasurer {
 
         this.resultCache = new ResultDatabaseCache();
         this.lockBase = lockBase;
+    }
+    
+    public MethodMeasurer() {
+        //for testing purposes only
     }
 
     /**
@@ -106,7 +110,8 @@ public class MethodMeasurer {
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
 
             //check, whether we do not have already data cached
-            long res = resultCache.getResult(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), howManyTimesToMeasure);
+            String dataCache = prepareDataForCache(args);
+            long res = resultCache.getResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure);
             if (res != -1) {
                 result.add(new Object[]{valuesToMeasure[i], res});
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
@@ -135,7 +140,7 @@ public class MethodMeasurer {
                     long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
                     result.add(new Object[]{valuesToMeasure[i], duration});
 
-                    resultCache.insertResult(testedMethod.toString(), generator.toString(), ("" + args[2] + args[3] + args[4]), priority + 10, duration);
+                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, priority, duration);
 
                 }
             } catch (IllegalAccessException ex) {
@@ -180,7 +185,7 @@ public class MethodMeasurer {
      * @param howMany how many data will be chosen
      * @return the double array containing chosen values
      */
-    private double[] getValuesToMeasure(int howMany) {
+    public double[] getValuesToMeasure(int howMany) {
         //TODO check whether it is even possible to make so many values - otherwise return as much as you can
         double[] values = new double[howMany];
 
@@ -214,7 +219,7 @@ public class MethodMeasurer {
      * @param howMany
      * @return
      */
-    private double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
+    public double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
         if (howMany < 1) {
             return new double[0];
         }
@@ -232,7 +237,7 @@ public class MethodMeasurer {
         double[] arr = new double[howMany];
 
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = roundToNextPossibleValue(minVal + ((i + 1) * myStep));
+            arr[i] = (minVal + ((i + 1) * myStep));
         }
 
         return arr;
@@ -240,26 +245,16 @@ public class MethodMeasurer {
 
     /**
      * Finds the highest number smaller than the value that can be achieved by
-     * step
+     * adding step to min
      */
-    private double findNearestSmallerPossibleValue(double value, double min, double step) {
+    public double findNearestSmallerPossibleValue(double value, double min, double step) {
         double actualValue = 0;
 
         while (actualValue + step <= value) {
             actualValue += step;
         }
 
-        return roundToNextPossibleValue(actualValue);
-    }
-
-    /**
-     * Rounds the value (slices inaccurate data)
-     */
-    private double roundToNextPossibleValue(double value) {
-        //TODO FIXME to be more precise according to step (which would be better in string format - it seems impossible)
-        DecimalFormat df = new DecimalFormat("0.#####");
-        df.setRoundingMode(RoundingMode.HALF_UP);
-        return Double.parseDouble(df.format(value));
+        return actualValue;
     }
 
     /**
@@ -314,6 +309,15 @@ public class MethodMeasurer {
         return generator.getParams().get(i + 2);
     }
 
+    public String prepareDataForCache(Object[] obj) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (int i = 2; i<obj.length; i++) {
+            sb.append(obj[i] + ";");
+        }
+        
+        return sb.toString();
+    }
     /**
      * private class that parses incoming JSON and the result saves in the
      * MethodMeasure instance

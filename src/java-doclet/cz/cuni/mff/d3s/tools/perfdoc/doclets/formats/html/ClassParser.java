@@ -35,6 +35,7 @@ import java.util.ArrayList;
 public class ClassParser {
 
     public static String[][] arguments;
+
     /**
      *
      * @param workloadName the workloadName in format package.className#method
@@ -42,7 +43,7 @@ public class ClassParser {
      * method name and contain generator annotation
      */
     public static MethodDoc[] findMethods(String workloadName) {
-
+     
         String[] field = workloadName.split("#");
 
         //class part is containing dots instead of slashes (we need to replace it) and add .java to the end
@@ -51,9 +52,23 @@ public class ClassParser {
 
         //setting the Analyzer methodName to the correct one
         Analyzer.methodName = methodName;
-        Main.execute("", Analyzer.class.getName(), new String[]{className});
+
+        String[] sourcePath = returnSourcePath();
+                
+        if (sourcePath == null) {
+            Main.execute("", Analyzer.class.getName(), new String[]{className});
+        } else {
+            //debug
+            System.out.println("searching for class:" + sourcePath[1] + "/" + className);
+            
+            //todo fixme
+            String[] args = new String[]{sourcePath[0], sourcePath[1], sourcePath[1] + "/" + className};
+            
+            Main.execute("", Analyzer.class.getName(), args);
+        }
+
         return Analyzer.methods;
-    }
+    }    
 
     /**
      * Method that finds all the possible value of the given (enum) class
@@ -64,8 +79,34 @@ public class ClassParser {
      */
     public static FieldDoc[] findEnums(String className1) {
         String className = className1.replaceAll("\\.", "/") + ".java";
-        Main.execute("", EnumAnalyzer.class.getName(), new String[]{ className});
+
+        String[] sourcePath = returnSourcePath();
+
+        if (sourcePath == null) {
+            Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
+        } else {
+            //debug
+            System.out.println("searching for class:" + sourcePath[1] + "/" + className);
+            
+            //TODO fixme
+            Main.execute("", EnumAnalyzer.class.getName(), new String[]{sourcePath[1] + "/" + className});
+        }
+
+        Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
+        System.out.println("succesfull");
         return EnumAnalyzer.enumValues;
+    }
+    
+    private static String[] returnSourcePath() {
+
+        for (int i = 0; i < arguments.length; i++) {
+            String[] arr = arguments[i];
+            if (arr[0].equals("-sourcepath")) {
+                return new String[]{"-sourcepath", arr[1]};
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -93,12 +134,13 @@ public class ClassParser {
             }
 
             ArrayList<MethodDoc> list = new ArrayList<>();
-            
-            if (root.classes().length == 0)
-                return false;
-            
-            ClassDoc classDoc = root.classes()[0];
 
+            if (root.classes().length == 0) {
+                return false;
+            }
+
+            ClassDoc classDoc = root.classes()[0];
+ 
             for (MethodDoc methodDoc : classDoc.methods()) {
                 if (methodDoc.name().equals(methodName) && checkAnnotation(methodDoc)) {
                     list.add(methodDoc);
@@ -134,23 +176,30 @@ public class ClassParser {
     /**
      * doclet class, that gets the RootDoc from the javadoc and searches for the
      * enum values
-     */    
+     */
     public static class EnumAnalyzer extends Doclet {
 
         public static FieldDoc[] enumValues = null;
 
         public static boolean start(RootDoc root) {
+            //debug
+            System.out.println("I started");
             ClassDoc[] classes = root.classes();
-            
-            if (classes.length == 0)
+
+            if (classes.length == 0) {
+                //debug
+                System.out.println("ended first");
                 return false;
-            
+            }
+
             ClassDoc cd = classes[0];
 
             if (cd.isEnum()) {
                 enumValues = cd.enumConstants();
             }
 
+            //debug
+            System.out.println("still here");
             return true;
         }
 

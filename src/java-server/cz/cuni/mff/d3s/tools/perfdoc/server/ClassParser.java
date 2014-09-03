@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionConcurrentMapCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionCache;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

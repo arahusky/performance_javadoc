@@ -232,6 +232,8 @@ public class PerformanceWriterImpl {
                 } else if (enumValues.length == 0) {
                     throw new NoEnumValueException(param.name());
                 } else {
+                    //debug
+                    System.out.println("adding");
                     addParameterEnum(enumValues, description, content, workloadName, number);
                 }
 

@@ -15,8 +15,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -30,10 +31,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author arahusky
+ * HttpHandler that handles request to show the actual cache
+ * @author Jakub Naplava
  */
-class CacheRequestHandler implements HttpHandler {
+public class CacheRequestHandler implements HttpHandler {
     
     private static final Logger log = Logger.getLogger(CacheRequestHandler.class.getName());
     private static ResultCache res;

@@ -14,16 +14,28 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 /**
+ * Data structure, that holds the base of given hashes and for every of them
+ * holds a lock, which is either locked or free
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public interface LockBase {
-    
+
+    /**
+     * Waits until the lock that belongs to given hash is free and than locks it
+     * for self
+     *
+     * @param hash
+     */
     void waitUntilFree(String hash);
-    
+
+    /**
+     * Releases lock for given hash
+     *
+     * @param hash
+     */
     void freeLock(String hash);
 }

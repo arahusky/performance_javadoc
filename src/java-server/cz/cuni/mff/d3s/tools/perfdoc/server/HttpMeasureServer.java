@@ -16,6 +16,9 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.CacheRequestHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;

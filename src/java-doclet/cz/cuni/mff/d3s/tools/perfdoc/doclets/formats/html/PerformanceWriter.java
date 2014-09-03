@@ -54,15 +54,19 @@ public abstract class PerformanceWriter {
     public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] workloadNames) {
 
         //passing full method name to the ajax handler
-        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();        
+        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
         JSAjaxHandler.testedMethod = perfWriter.getUniqueFullInfo(doc);
-        
+
         //list, that will contain all generators for the given method (doc) 
+        //debug
+        System.out.println(workloadNames.length);
         ArrayList<MethodDoc> list = new ArrayList<>();
         for (String w : workloadNames) {
             MethodDoc[] docs = ClassParser.findMethods(w);
-            for (MethodDoc md : docs) {
-                list.add(md);
+            if (docs != null) {
+                for (MethodDoc md : docs) {
+                    list.add(md);
+                }
             }
         }
 
@@ -87,7 +91,7 @@ public abstract class PerformanceWriter {
      */
     private static void addPerfoInfoOneDiv(MethodDoc method, PerformanceOutput output) {
         PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
-       
+
         String workloadFullName = perfWriter.getUniqueFullInfo(method);
         String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
         HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueWorkloadName, workloadFullName, false);
@@ -105,7 +109,8 @@ public abstract class PerformanceWriter {
      * @param doc the measured method
      * @param list the List of all workloads
      * @param output the PerformanceOutput to insert the content
-     * @throws GeneratorParameterException when there's some invalid content in generator
+     * @throws GeneratorParameterException when there's some invalid content in
+     * generator
      */
     private static void addPerfoInfoMoreDivs(MethodDoc doc, List<MethodDoc> list, PerformanceOutput output) throws GeneratorParameterException {
 
@@ -144,7 +149,7 @@ public abstract class PerformanceWriter {
         for (int i = 0; i < list.size(); i++) {
             //the i-th generator
             MethodDoc m = list.get(i);
-            
+
             String workloadFullName = perfWriter.getUniqueFullInfo(m);
             String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
 

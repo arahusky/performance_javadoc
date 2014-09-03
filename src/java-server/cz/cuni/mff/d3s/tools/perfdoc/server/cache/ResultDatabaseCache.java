@@ -14,8 +14,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;

@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class LockHashMapBase implements LockBase{
     
@@ -35,6 +35,9 @@ public class LockHashMapBase implements LockBase{
     
     private final Object privateLock = new Object();
     
+    /**
+     * {@inheritDoc}     *  
+     */
     @Override
     public void waitUntilFree(String hash) {
         Lock o;
@@ -56,7 +59,9 @@ public class LockHashMapBase implements LockBase{
          log.log(Level.CONFIG, "The lock for \"{0}\" was locked", hash);
     }    
     
-    
+    /**
+     * {@inheritDoc}     *  
+     */
     @Override
     public void freeLock(String hash) {
         //object already exists and I hold the lock

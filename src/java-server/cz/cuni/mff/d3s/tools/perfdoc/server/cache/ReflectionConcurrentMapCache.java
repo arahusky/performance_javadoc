@@ -15,7 +15,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
 import java.lang.reflect.Method;
 import java.util.Map;
