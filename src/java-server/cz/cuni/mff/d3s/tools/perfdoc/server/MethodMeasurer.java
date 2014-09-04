@@ -114,7 +114,7 @@ public class MethodMeasurer {
             long res = resultCache.getResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure);
             if (res != -1) {
                 result.add(new Object[]{valuesToMeasure[i], res});
-                log.log(Level.CONFIG, "The value for measuring was found in cache.");
+                log.log(Level.INFO, "The value for measuring was found in cache." + dataCache + howManyTimesToMeasure);
                 continue;
             }
 
@@ -140,8 +140,7 @@ public class MethodMeasurer {
                     long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
                     result.add(new Object[]{valuesToMeasure[i], duration});
 
-                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, priority, duration);
-
+                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, duration);
                 }
             } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
