@@ -356,48 +356,4 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
-    @Test
-    public void testGetResults()
-    {
-        res.insertResult("method", "generator",  "[data]", 10, 1000);
-        res.insertResult("method", "generator1", "[data2]", 9, 200);
-        res.insertResult("method2", "generator2", "[data3]", 90, 1200);
-        List<Map<String, Object>> list = res.getResults();
-        
-        Assert.assertEquals(3, list.size());
-        
-        ArrayList<Object> alist = new ArrayList<>();
-        alist.add("method");
-        alist.add("generator");
-        alist.add("[data]");
-        alist.add(10);
-        alist.add((long) 1000);    
-        rowEquals(alist, list.get(0));
-        
-        alist = new ArrayList<>();
-        alist.add("method");
-        alist.add("generator1");
-        alist.add("[data2]");
-        alist.add(9);
-        alist.add((long) 200);    
-        rowEquals(alist, list.get(1)); 
-        
-        alist = new ArrayList<>();
-        alist.add("method2");
-        alist.add("generator2");
-        alist.add("[data3]");
-        alist.add(90);
-        alist.add((long) 1200);    
-        rowEquals(alist, list.get(2));         
-    }
-    
-    private void rowEquals(ArrayList<Object> row, Map<String, Object> map) {
-        Assert.assertEquals(row.get(0), map.get("methodName"));
-        Assert.assertEquals(row.get(1), map.get("generator"));
-        Assert.assertEquals(row.get(2), map.get("data"));
-        Assert.assertEquals(row.get(3), map.get("numberOfMeasurements"));
-        Assert.assertEquals(row.get(4), map.get("time"));
-    }
-    
 }

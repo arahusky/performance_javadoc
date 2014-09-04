@@ -25,9 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,7 +33,7 @@ import java.util.logging.Logger;
  *
  * @author Jakub Naplava
  */
-public class ResultDatabaseCache implements ResultCache, ResultAdminCache {
+public class ResultDatabaseCache implements ResultAdminCache {
 
     private static final Logger log = Logger.getLogger(ResultDatabaseCache.class.getName());
 
@@ -44,7 +41,7 @@ public class ResultDatabaseCache implements ResultCache, ResultAdminCache {
     private static final String JDBC_URL = "jdbc:derby:cacheDB;create=true";
     private static final String TEST_URL = "jdbc:derby:testDB;create=true";
 
-    private Connection conn;
+    protected Connection conn;
 
     public ResultDatabaseCache() throws SQLException {
         this.conn = createConnection();
@@ -118,7 +115,7 @@ public class ResultDatabaseCache implements ResultCache, ResultAdminCache {
     }
 
     /**
-     * empties all the tables, where data are stored
+     * {@inheritDoc}
      */
     public void emptyTable() throws SQLException {
 
@@ -234,43 +231,7 @@ public class ResultDatabaseCache implements ResultCache, ResultAdminCache {
 
         closeStatement(stmt);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Map<String, Object>> getResults() {
-
-        ArrayList<Map<String, Object>> list = new ArrayList<>();
-
-        try {
-            Statement stmt = conn.createStatement();
-            String query = "SELECT * FROM results";
-            ResultSet rs = stmt.executeQuery(query);
-
-            while (rs.next()) {
-                String methodName = rs.getString("methodName");
-                String generator = rs.getString("generator");
-                String data = rs.getString("data");
-                int numberOfMeasurements = rs.getInt("numberOfMeasurements");
-                long time = rs.getLong("time");
-                
-                HashMap map = new HashMap();
-                map.put("methodName", methodName);
-                map.put("generator", generator);
-                map.put("data", data);
-                map.put("numberOfMeasurements", numberOfMeasurements);
-                map.put("time", time);
-                
-                list.add(map);
-            }
-            return list;
-        } catch (SQLException e) {
-            log.log(Level.INFO, "Unable to retrieve results from database", e);
-            return null;
-        }
-    }
-
+  
     private static void printSQLException(SQLException e) {
         while (e != null) {
             log.log(Level.WARNING, "Some error occured while working with database.", e);

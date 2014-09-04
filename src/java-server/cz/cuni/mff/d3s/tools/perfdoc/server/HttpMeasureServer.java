@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.CacheRequestHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.CacheRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
@@ -44,7 +44,7 @@ class HttpMeasureServer {
         LockBase lockBase = new LockHashMapBase();
         
         //handler to handle request for measuring
-        server.createContext("/", new MeasureRequestHandler(lockBase));
+        server.createContext("/measure", new MeasureRequestHandler(lockBase));
         
         //handler to handle request for cache
         server.createContext("/cache", new CacheRequestHandler());

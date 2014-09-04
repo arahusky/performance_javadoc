@@ -137,7 +137,7 @@ public class PerformanceWriterImpl {
 
         //then comes the string Configuration finally followed by all sliders/textboxes/...
         HtmlTree configurationTree = new HtmlTree(HtmlTag.P);
-        //configuration.addStyle(HtmlStyle.strong); //TODO why not working?
+        
         configurationTree.addContent("Configuration:");
         content.addContent(configurationTree);
 

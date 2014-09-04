@@ -16,9 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Interface to communicate with results in cache
  *
@@ -36,13 +33,7 @@ public interface ResultCache {
      * @return the measured time if saved in the cache, otherwise -1
      */
     long getResult(String methodName, String generatorName, String data, int numberOfMeasurements);
-
-    /**
-     * Returns all data in table, where each datum is one item in
-     * the list and each column one datum in map)
-     */
-    List<Map<String, Object>> getResults();
-
+ 
     /**
      * Inserts the data in cache
      *
@@ -51,9 +42,12 @@ public interface ResultCache {
      * @param data
      * @param numberOfMeasurements
      * @param time
-     * @return true if data were inserted succesfully, otherwise false
+     * @return true if data were inserted successfully, otherwise false
      */
     boolean insertResult(String methodName, String generatorName, String data, int numberOfMeasurements, long time);
 
+    /**
+     * Closes the current connection to database
+     */
     void closeConnection();
 }

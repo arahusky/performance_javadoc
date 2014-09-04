@@ -252,7 +252,6 @@ public abstract class PerformanceWriter {
      * @return the content that contains generated JS code
      */
     private static Content returnSelectJS(ArrayList<String> generatorDivsIDs, String methodID) {
-        //TODO possibly add to some JSSelectWriter
         String selectName = methodID + "workloadSelect";
 
         //we need a variable to store the last selected div in order to be able to hide it, when some new option is selected

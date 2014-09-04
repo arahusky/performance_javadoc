@@ -14,19 +14,16 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
-package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
-
-import java.sql.SQLException;
+import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 
 /**
  *
- * @author Jakub Naplava
+ * @author arahusky
  */
-public interface ResultAdminCache extends ResultCache {
-    void startDatabase() throws ClassNotFoundException, SQLException;
-   
-    void closeDatabase();
-    
-    void emptyTable() throws SQLException;
+public interface SiteHandler {
+
+    void handle(HttpExchange exchange, ResultCacheForWeb res);   
 }
