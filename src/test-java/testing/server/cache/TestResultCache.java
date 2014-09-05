@@ -20,9 +20,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -42,7 +39,7 @@ public class TestResultCache {
     public static void testStartAndCreateDB() {
         try {
             res = new ResultDatabaseCache(true);
-        res.startTestDatabase();        
+            res.startTestDatabase();
         } catch (SQLException | ClassNotFoundException e) {
             Assert.assertTrue(false);
         }
@@ -146,21 +143,21 @@ public class TestResultCache {
             if (!rs.next()) {
                 Assert.assertTrue(false);
             }
-            
+
             Assert.assertEquals("method2", rs.getString("methodName"));
             Assert.assertEquals("[data1]", rs.getString("data"));
             Assert.assertEquals(0, rs.getInt("numberOfMeasurements"));
             Assert.assertEquals(20, rs.getInt("time"));
-            
+
             if (!rs.next()) {
                 Assert.assertTrue(false);
             }
-            
+
             Assert.assertEquals("method3", rs.getString("methodName"));
             Assert.assertEquals("[data2]", rs.getString("data"));
             Assert.assertEquals(10, rs.getInt("numberOfMeasurements"));
             Assert.assertEquals(1000, rs.getInt("time"));
-            
+
             if (rs.next()) {
                 Assert.assertTrue(false);
             }
@@ -169,12 +166,12 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
+
     @Test
     public void testMultipleUpdateSametRowBetterResults() {
         try {
             res.insertResult("method", "generator", "[data]", 10, 1000);
-            res.insertResult("method", "generator","[data]", 100, 20);
+            res.insertResult("method", "generator", "[data]", 100, 20);
             ResultSet rs = res.getTable();
 
             if (!rs.next()) {
@@ -193,7 +190,7 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
+
     @Test
     public void testMultipleUpdateSametRowEqualResults() {
         try {
@@ -217,11 +214,11 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
+
     @Test
     public void testMultipleUpdateSametRowWorseResults() {
         try {
-            res.insertResult("method", "generator","[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data]", 10, 1000);
             res.insertResult("method", "generator", "[data]", 9, 200);
             ResultSet rs = res.getTable();
 
@@ -241,7 +238,7 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
+
     @Test
     public void testMulitpleUpdateSametRowWorseResults() {
         try {
@@ -265,17 +262,17 @@ public class TestResultCache {
             Assert.assertTrue(false);
         }
     }
-    
+
     @Test
     public void testMoreConnections() {
         try {
-            res.insertResult("method", "generator", "[data]", 10, 1000);            
-            
+            res.insertResult("method", "generator", "[data]", 10, 1000);
+
             ResultDatabaseCache newRes = new ResultDatabaseCache(true);
-            
+
             newRes.insertResult("method", "generator", "[data]", 9, 200);
             newRes.insertResult("method1", "generator", "[data]", 9, 200);
-            
+
             ResultSet rs = res.getTable();
 
             if (!rs.next()) {
@@ -290,68 +287,76 @@ public class TestResultCache {
             if (!rs.next()) {
                 Assert.assertTrue(false);
             }
-            
+
             Assert.assertEquals("method1", rs.getString("methodName"));
             Assert.assertEquals("[data]", rs.getString("data"));
             Assert.assertEquals(9, rs.getInt("numberOfMeasurements"));
             Assert.assertEquals(200, rs.getInt("time"));
-            
+
             if (rs.next()) {
                 Assert.assertTrue(false);
             }
-            
-            newRes.closeConnection();
-        } catch (SQLException ex) {
-            Assert.assertTrue(false);
-        } 
-    }
-    
-    @Test
-    public void testGetResult() {
-        try {
-            res.insertResult("method", "generator", "[data]", 10, 1000);
-            res.insertResult("method", "generator", "[data2]", 9, 200);
-            res.insertResult("method1", "generator", "[data]", 19, 2500);
-            
-            ResultSet rs = res.getTable();
 
-            long time = res.getResult("method2", "generator", "[data]", 9);
-            Assert.assertEquals(-1, time);
-            
-            time = res.getResult("method", "generator", "[data1]", 9);
-            Assert.assertEquals(-1, time);
-            
-            time = res.getResult("method", "generator", "[data]", 10);
-            Assert.assertEquals(1000, time);
-            
-            time = res.getResult("method", "generator", "[data]", 11);
-            Assert.assertEquals(-1, time);
-            
-            time = res.getResult("method", "generator", "[data2]", 9);
-            Assert.assertEquals(200, time);
-            
-            time = res.getResult("method1", "generator", "[data]", 15);
-            Assert.assertEquals(2500, time);   
-            
-            
+            newRes.closeConnection();
         } catch (SQLException ex) {
             Assert.assertTrue(false);
         }
     }
-    
+
+    @Test
+    public void testGetResultSimple() {
+        res.insertResult("method", "generator", "[0;0;0;0]", 10, 1000);
+
+        long time = res.getResult("method", "generator", "[0;0;0;0]", 9);
+        Assert.assertEquals(1000, time);
+
+        time = res.getResult("method", "generator", "[0;0;0;0]", 10);
+        Assert.assertEquals(1000, time);
+
+        time = res.getResult("method", "generator", "[0;0;0;0]", 11);
+        Assert.assertEquals(-1, time);
+
+    }
+
+    @Test
+    public void testGetResultComplex() {
+        res.insertResult("method", "generator", "[data]", 10, 1000);
+        res.insertResult("method", "generator", "[data2]", 9, 200);
+        res.insertResult("method1", "generator", "[data]", 19, 2500);
+
+        long time = res.getResult("method2", "generator", "[data]", 9);
+        Assert.assertEquals(-1, time);
+
+        time = res.getResult("method", "generator", "[data1]", 9);
+        Assert.assertEquals(-1, time);
+
+        time = res.getResult("method", "generator", "[data]", 10);
+        Assert.assertEquals(1000, time);
+
+        time = res.getResult("method", "generator", "[data]", 11);
+        Assert.assertEquals(-1, time);
+
+        time = res.getResult("method", "generator", "[data2]", 9);
+        Assert.assertEquals(200, time);
+
+        time = res.getResult("method1", "generator", "[data]", 15);
+        Assert.assertEquals(2500, time);
+
+    }
+
     @Test
     public void testEmptyTable() {
         try {
-            res.insertResult("method", "generator",  "[data]", 10, 1000);
+            res.insertResult("method", "generator", "[data]", 10, 1000);
             res.insertResult("method", "generator", "[data2]", 9, 200);
-            
+
             res.emptyTable();
             ResultSet rs = res.getTable();
 
             if (rs.next()) {
                 Assert.assertTrue(false);
             }
-             
+
         } catch (SQLException ex) {
             Assert.assertTrue(false);
         }

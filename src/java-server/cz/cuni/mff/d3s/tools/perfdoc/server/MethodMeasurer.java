@@ -114,7 +114,7 @@ public class MethodMeasurer {
             long res = resultCache.getResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure);
             if (res != -1) {
                 result.add(new Object[]{valuesToMeasure[i], res});
-                log.log(Level.INFO, "The value for measuring was found in cache." + dataCache + howManyTimesToMeasure);
+                log.log(Level.CONFIG, "The value for measuring was found in cache.");
                 continue;
             }
 

@@ -154,7 +154,6 @@ public class ResultDatabaseCache implements ResultAdminCache {
             } else {
                 //the first column (numberOfMeasurements) is saved under index 1
                 int savedNumberOfMeasurements = rs.getInt("numberOfMeasurements");
-                System.out.println(savedNumberOfMeasurements);
                 if (savedNumberOfMeasurements >= numberOfMeasurements) {
                     long savedResult = rs.getLong("time");
                     closeResultSet(rs);

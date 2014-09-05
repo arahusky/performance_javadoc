@@ -1,44 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." name="JavaPerfDoc" default="main">
+
+	<property environment="env"/>
+
 	<property name="doclet.src.dir" location="src/java-doclet" />
 	<property name="demo.src.dir" location="src/java-demo" />
+	<property name="server.src.dir" location="src/java-server" />
 	
 	<property name="build.dir" location="out" />
 	<property name="javadoc.build.dir" location="${build.dir}/javadoc" />
 	<property name="doclet.build.dir" location="${build.dir}/classes/java-doclet" />
 	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
 	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
+	<property name="server.build.dir" location="${build.dir}/classes/java-server" />
 	
-<!--   <condition property="isMac">
-    <os family="mac" />
-  </condition>
+	<!-- external libraries -->
+	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
+	<property name="json.parser.jar" location="lib/json-20140107.jar"/>
+	<property name="derby.jar" location="lib/derby.jar"/>
 
-  <condition property="isWindows">
-    <os family="windows" />
-  </condition>
-
-  <condition property="isUnix">
-    <os family="unix" />
-  </condition>
-
-  <target name="doMac" if="isMac">
-  	<!-- doMAC FIXME -->
- <!--    <property name="jdk.tools.jar" location="Mac\tools.jar" />     
-  </target>
-
-  <target name="doWindows" if="isWindows">
-    <property name="jdk.tools.jar" location="$(JAVA_HOME)\lib\tools.jar" /> 
-  </target>
-
-  <target name="doUnix" if="isUnix">
-    <property name="jdk.tools.jar" location="/opt/java/lib/tools.jar"/>
-  </target> --> 
-
-
-	<!-- FIXME: make this platform independent. -->
-	<property name="jdk.tools.jar" location="/opt/java/lib/tools.jar"/> 
-
-	<target name="main" depends="compile-doclet,compile-demo" description="Main target: compiles everything.">
+	<target name="main" depends="compile-doclet,compile-demo,compile-server" description="Main target: compiles everything.">
 	</target>
 	
 	<target name="compile-doclet" description="Compile the PerfDoc doclet.">
@@ -68,6 +49,18 @@
 			</classpath>
 		</javac>
 	</target>
+
+	<target name="compile-server" description="Compile the server.">
+		<mkdir dir="${server.build.dir}" />
+		<javac srcdir="${server.src.dir}" destdir="${server.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+			<classpath>
+				<pathelement path="${json.parser.jar}"/>
+			</classpath>
+		</javac>
+	</target>
 			
 	<target name="refdoc" description="Build JavaDoc documentation of the project.">
 		<mkdir dir="${javadoc.build.dir}" />
@@ -89,7 +82,7 @@
 	
 	<target name="run-demo" depends="compile-demo,compile-doclet" description="Run doclet demo.">
 		<mkdir dir="${demo.build.javadoc.dir}" />
-		<javadoc destdir="${demo.build.javadoc.dir}" sourcepath="src/java-demo">
+		<javadoc destdir="${demo.build.javadoc.dir}">
 			<fileset dir="${demo.src.dir}" defaultexcludes="yes">
 				<include name="**/SimpleHTMLDoclet.java"/>
 			</fileset>
@@ -100,10 +93,31 @@
 			<classpath>
 				<pathelement path="${doclet.build.dir}"/>
 			</classpath>
+			<arg value="-sourcepath" />
+            <arg value="${demo.src.dir}" />
 		</javadoc>
 	</target>
+
+	<target name="run-server" depends="compile-server" description="Run server.">
+		<java fork="true" classname="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer"
+		 classpath="${server.build.dir};${derby.jar};${json.parser.jar} /" />
+	</target>
 		
+
+		<condition property="agent.cc.java.os.include"
+			value="${env.JAVA_HOME}${file.separator}include${file.separator}linux">
+		<os name="Linux" />
+	</condition>
+	<condition property="agent.cc.java.os.include"
+			value="${env.JAVA_HOME}${file.separator}include${file.separator}win32">
+		<os family="windows" />
+	</condition>
+
+
+
 	<target name="clean" description="Remove all the generated files.">
 		<delete dir="${build.dir}" />
+		<delete dir="cacheDB" />
+		<delete file="derby.log" />
 	</target>
 </project>

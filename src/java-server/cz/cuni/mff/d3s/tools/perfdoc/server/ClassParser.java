@@ -98,7 +98,7 @@ public class ClassParser {
         ArrayList<URL> urls = new ArrayList<>();
 
         //TODO copy somewhere or what
-        try (BufferedReader reader = new BufferedReader(new FileReader("Class_classPath.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("config/Class_classPath.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 File file = new File(line);
