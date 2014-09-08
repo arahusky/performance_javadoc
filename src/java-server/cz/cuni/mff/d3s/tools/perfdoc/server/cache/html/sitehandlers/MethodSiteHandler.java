@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class MethodSiteHandler extends AbstractSiteHandler {
 
@@ -89,6 +89,8 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         String methodName = chunks[1];
 
         StringBuilder sb = new StringBuilder();
+        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
+        sb.append("<p><a href = \"class?" + className + "\"><-- Back to class " + className + "</a></p>");
         sb.append("<h1>Method <i>" + methodName + "</i> in class <i>" + className + "</i></h1>");
         sb.append("<h2>with parameters</h2>");
         

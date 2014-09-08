@@ -32,7 +32,7 @@ import org.junit.Test;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class TestResultDatabaseCacheForWeb {
 

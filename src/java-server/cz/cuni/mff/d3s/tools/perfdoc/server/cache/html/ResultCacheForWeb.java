@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public interface ResultCacheForWeb extends ResultCache {
 

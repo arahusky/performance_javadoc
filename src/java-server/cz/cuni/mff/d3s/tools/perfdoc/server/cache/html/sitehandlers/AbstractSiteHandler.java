@@ -24,7 +24,7 @@ import java.util.logging.Level;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public abstract class AbstractSiteHandler implements SiteHandler {
 

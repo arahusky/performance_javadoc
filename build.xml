@@ -100,20 +100,8 @@
 
 	<target name="run-server" depends="compile-server" description="Run server.">
 		<java fork="true" classname="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer"
-		 classpath="${server.build.dir};${derby.jar};${json.parser.jar} /" />
+		 classpath="${server.build.dir}${path.separator}${derby.jar}${path.separator}${json.parser.jar} /" />
 	</target>
-		
-
-		<condition property="agent.cc.java.os.include"
-			value="${env.JAVA_HOME}${file.separator}include${file.separator}linux">
-		<os name="Linux" />
-	</condition>
-	<condition property="agent.cc.java.os.include"
-			value="${env.JAVA_HOME}${file.separator}include${file.separator}win32">
-		<os family="windows" />
-	</condition>
-
-
 
 	<target name="clean" description="Remove all the generated files.">
 		<delete dir="${build.dir}" />

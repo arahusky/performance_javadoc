@@ -27,8 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author arahusky
+ * Site handler that shows the content of cache in the form of table
+ * 
+ * @author Jakub Naplava
  */
 public class FullDebugSiteHandler extends AbstractSiteHandler{
     

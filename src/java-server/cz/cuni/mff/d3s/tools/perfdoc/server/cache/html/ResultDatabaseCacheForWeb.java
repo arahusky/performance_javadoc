@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements ResultCacheForWeb {
 

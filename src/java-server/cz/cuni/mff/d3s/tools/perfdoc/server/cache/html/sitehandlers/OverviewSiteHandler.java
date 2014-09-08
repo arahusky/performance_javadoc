@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class OverviewSiteHandler extends AbstractSiteHandler{
 

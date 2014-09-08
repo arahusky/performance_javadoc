@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class ClassSiteHandler extends AbstractSiteHandler {
 
@@ -69,6 +69,8 @@ private static final Logger log = Logger.getLogger(ClassSiteHandler.class.getNam
     private String returnHeading(String className)
     {
         StringBuilder sb = new StringBuilder();
+        
+        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
         sb.append("<h1>Class <i>" + className + "</i></h1>");
         sb.append("<h2>Methods</h2>");
         

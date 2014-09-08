@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
@@ -61,7 +61,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         if (res != null) {
 
             //ArrayList<String> availableGenerators = res.getDistinctGenerators(methodName);
-            addCode(returnHeading(testedMethod, generator));
+            addCode(returnHeading(methods[0], testedMethod, generator));
             addCode(getBody(testedMethod, generator, res));
             String output = getCode();
 
@@ -84,7 +84,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(String testedMethod, String generator) {
+    private String returnHeading(String testedMethodNet, String testedMethod, String generator) {
         String[] testedMethodChunks = testedMethod.split("#");
         String[] generatorChunks = generator.split("#");
 
@@ -93,6 +93,9 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
+        sb.append("<p><a href = \"class?" + testedMethodChunks[0] + "\"><-- Back to class " + testedMethodChunks[0] + "</a></p>");
+        sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethodChunks[1] + "</a></p>");
         sb.append("<h1>Method <i>" + testedMethodChunks[1] + "</i> with generator <i>" + generatorChunks[1] + "</i></h1>");
 
         return sb.toString();
@@ -124,7 +127,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
                 + "</ul>");
         sb.append("<h3>Measurements:<h3>");
 
-        System.out.println("here1");
         String[] genParameters = genParams.split(",");
         String[] genParametersText = getDescriptions(generatorChunks[0], generator);
 
@@ -133,8 +135,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             return sb.toString();
         }
         
-        System.out.println("here");
-
         sb.append("<table border = \"1\"><tr>");
         
         for (int i = 0; i < genParametersText.length; i++) {
@@ -149,7 +149,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         List<Map<String, Object>> list = res.getResults(testedMethod, generator);
 
-        System.out.println("started");
         if (list != null) {
             for (Map<String, Object> map : list) {
                 sb.append("<tr>");
@@ -172,7 +171,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         sb.append("</table>");
 
-        System.out.println("returned");
         return sb.toString();
     }
 

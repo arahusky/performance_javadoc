@@ -21,7 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public interface SiteHandler {
 
