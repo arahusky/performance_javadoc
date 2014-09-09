@@ -28,6 +28,7 @@ import java.util.logging.Level;
  */
 public abstract class AbstractSiteHandler implements SiteHandler {
 
+    protected StringBuilder head = new StringBuilder();
     protected StringBuilder code = new StringBuilder();
 
     @Override
@@ -49,12 +50,6 @@ public abstract class AbstractSiteHandler implements SiteHandler {
         }
     }    
 
-    protected String getHeader() {
-        String header = "<head> </head>";
-
-        return header;
-    }
-
     protected String getCode() {
         if (code.length() == 0) {
             startNewCode();
@@ -71,6 +66,10 @@ public abstract class AbstractSiteHandler implements SiteHandler {
 
         this.code.append(code);
     }
+    
+    protected void addToHeader(String code) {
+        head.append(code);
+    }
 
     private void startNewCode() {
         code.append("<html>");
@@ -79,6 +78,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
 
     private void addHeader() {
         code.append("<head>");
+        code.append(head);
         code.append("</head>");
     }
 

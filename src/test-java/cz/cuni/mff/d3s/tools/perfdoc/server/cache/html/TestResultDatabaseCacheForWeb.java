@@ -14,11 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package testing.server.cache;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultDatabaseCacheForWeb;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,32 +36,20 @@ public class TestResultDatabaseCacheForWeb {
     private static ResultDatabaseCacheForWeb res;
 
     @BeforeClass
-    public static void testStartAndCreateDB() {
-        try {
-            res = new ResultDatabaseCacheForWeb(true);
-            res.startTestDatabase();
-        } catch (SQLException | ClassNotFoundException e) {
-            Assert.assertTrue(false);
-        }
+    public static void testStartAndCreateDB() throws SQLException, ClassNotFoundException {
+        res = new ResultDatabaseCacheForWeb(true);
+        res.startTestDatabase();
     }
 
     @Before
-    public void makeNewConnection() {
-        try {
-            res = new ResultDatabaseCacheForWeb(true);
-        } catch (SQLException e) {
-            Assert.assertTrue(false);
-        }
+    public void makeNewConnection() throws SQLException {
+        res = new ResultDatabaseCacheForWeb(true);
     }
 
     @After
-    public void closeConnection() {
-        try {
-            res.emptyTable();
-            res.closeConnection();
-        } catch (SQLException ex) {
-            Assert.assertTrue(false);
-        }
+    public void closeConnection() throws SQLException {
+        res.emptyTable();
+        res.closeConnection();
 
     }
 
@@ -80,9 +65,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("method2", "generator2", "[data3]", 90, 1200);
         List<Map<String, Object>> list = res.getResults();
 
-        if (list == null) {
-            Assert.assertTrue(false);
-        }
+        Assert.assertNotNull(list);
 
         Assert.assertEquals(3, list.size());
 
@@ -119,21 +102,10 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("method2", "someGen", "someData", 10, 300);
         ArrayList<String> list = res.getDistinctTestedMethods();
 
-        if (list == null) {
-            Assert.assertTrue(false);
-        }
-
-        if (list.size() != 2) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("method")) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("method2")) {
-            Assert.assertTrue(false);
-        }
+        Assert.assertNotNull(list);
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.contains("method"));
+        Assert.assertTrue(list.contains("method2"));
     }
 
     @Test
@@ -147,25 +119,11 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
         ArrayList<String> list = res.getDistinctClassMethods("package1.class1");
 
-        if (list == null) {
-            Assert.assertTrue(false);
-        }
-
-        if (list.size() != 3) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("package1.class1#method")) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("package1.class1#method2")) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("package1.class1#method3")) {
-            Assert.assertTrue(false);
-        }
+        Assert.assertNotNull(list);
+        Assert.assertEquals(3, list.size());
+        Assert.assertTrue(list.contains("package1.class1#method"));
+        Assert.assertTrue(list.contains("package1.class1#method2"));
+        Assert.assertTrue(list.contains("package1.class1#method3"));
     }
 
     @Test
@@ -179,25 +137,11 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
         ArrayList<String> list = res.getDistinctGenerators("package1.class1#method");
 
-        if (list == null) {
-            Assert.assertTrue(false);
-        }
-
-        if (list.size() != 3) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("generator")) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("generator1")) {
-            Assert.assertTrue(false);
-        }
-
-        if (!list.contains("someGen")) {
-            Assert.assertTrue(false);
-        }
+        Assert.assertNotNull(list);
+        Assert.assertEquals(3, list.size());
+        Assert.assertTrue(list.contains("generator"));
+        Assert.assertTrue(list.contains("generator1"));
+        Assert.assertTrue(list.contains("someGen"));
     }
 
     @Test
@@ -212,10 +156,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
         List<Map<String, Object>> list = res.getResults("package1.class1#method", "generator");
 
-        if (list == null) {
-            Assert.assertTrue(false);
-        }
-
+        Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
 
         ArrayList<Object> alist = new ArrayList<>();
@@ -236,7 +177,7 @@ public class TestResultDatabaseCacheForWeb {
         alist.add((long) 2000);
         rowEquals2(alist, list.get(2));
     }
-    
+
     private void rowEquals2(ArrayList<Object> row, Map<String, Object> map) {
         Assert.assertEquals(row.get(0), map.get("data"));
         Assert.assertEquals(row.get(1), map.get("numberOfMeasurements"));

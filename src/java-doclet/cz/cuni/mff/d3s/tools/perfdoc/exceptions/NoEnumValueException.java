@@ -24,6 +24,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
  */
 public class NoEnumValueException extends Exception {
 
+     private static final long serialVersionUID = 1L;
+     
     /**
      * Creates a new instance of <code>NoEnumValueException</code> without
      * detail message.

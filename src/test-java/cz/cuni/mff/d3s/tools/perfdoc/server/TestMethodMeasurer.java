@@ -15,9 +15,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-package testing.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.MethodMeasurer;
 import org.junit.Assert;
 import org.junit.Test;
 

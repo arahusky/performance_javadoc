@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.ClassSiteHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.DetailedSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.FullDebugSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.MethodGeneratorSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.MethodSiteHandler;
@@ -63,6 +64,9 @@ public class CacheRequestHandler implements HttpHandler {
                 break;
             case "/cache/methodgenerator":
                 handler = new MethodGeneratorSiteHandler();
+                break;
+            case "/cache/detailed":
+                handler = new DetailedSiteHandler();
                 break;
             case "/cache/full":
                 handler = new FullDebugSiteHandler();

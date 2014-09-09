@@ -72,11 +72,8 @@ public class JSAjaxHandler {
         String successFunctionName = returnSuccesFunctionName();
 
         String success = "function " + successFunctionName + "(json, data, myName, graphName, graph, priority) {"
-                + "  	//show in appropriate format to user \n"
-                //+ "    alert(json);"
-                //+ "    alert(priority);"
                 + "    if (priority == 1) {"
-                +      returnStartGraphCode(returnGraphName(), "some x-value")
+                +      returnStartGraphCode(returnDivName())
                 + "    var jsonData = JSON.parse(data); "
                 + "    jsonData.priority++; "
                 + "    var newData = JSON.stringify(jsonData, null, 2);"
@@ -101,7 +98,7 @@ public class JSAjaxHandler {
         return perfWriter.getUniqueInfo(generator) + "success";
     }
 
-    public static String returnGraphName() {
+    public static String returnDivName() {
         PerformanceWriterImpl perfwWriter = new PerformanceWriterImpl();
         return perfwWriter.getUniqueInfo(generator);
     }
@@ -111,7 +108,7 @@ public class JSAjaxHandler {
      */
     public static String returnSuccessButtonHandleFunction() {
         String successFunctionName = returnSuccesFunctionName();
-        String graphName = returnGraphName();
+        String graphName = returnDivName();
 
         //data in JSON format
         String data = returnDataJSON();
@@ -125,11 +122,11 @@ public class JSAjaxHandler {
         return sb.toString();
     }
 
-    private static String returnStartGraphCode(String graphName, String xAxisName) {
+    private static String returnStartGraphCode(String divName) {
         StringBuilder sb = new StringBuilder();
         sb.append(""
                 + " var myGraph = new Dygraph("
-                + "    document.getElementById(\""+ graphName + "\").getElementsByClassName(\"right\")[0], "
+                + "    document.getElementById(\""+ divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
                 + "    JSON.parse(json).data," 
                 + "    {"
                 + "      ylabel: 'Search time (ms)',"

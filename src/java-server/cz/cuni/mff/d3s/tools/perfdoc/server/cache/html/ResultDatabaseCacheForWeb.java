@@ -64,7 +64,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                HashMap map = new HashMap();
+                HashMap<String, Object> map = new HashMap<>();
                 map.put("methodName", methodName);
                 map.put("generator", generator);
                 map.put("data", data);
@@ -183,7 +183,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                HashMap map = new HashMap();
+                HashMap<String, Object> map = new HashMap<>();
                 map.put("data", data);
                 map.put("numberOfMeasurements", numberOfMeasurements);
                 map.put("time", time);

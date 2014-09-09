@@ -1,1 +1,1 @@
-out\classes\java-demo
+out/classes/java-demo

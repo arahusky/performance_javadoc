@@ -23,6 +23,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
  */
 public class GeneratorParamNumException extends Exception {
 
+     private static final long serialVersionUID = 1L;
+     
     /**
      * Creates a new instance of <code>GeneratorParamNumException</code> without
      * detail message.

@@ -94,8 +94,20 @@ public class JSControlWriter {
         sb.append("if ( error[0] == \"\") {");
         
         sb.append("alert(\"All parameteres checked succesfully. Sending request to the server. \\n Please wait...\"); ");
-        
+                
         JSAjaxHandler.generator = fullGeneratorName;
+        
+        //adding url adress, where the table formed results will be shown
+        String divName = JSAjaxHandler.returnDivName();
+        String adress = JavascriptCodeBox.serverAdress + "/cache/detailed?";
+        sb.append("var stringData = (error[1] + \"\").replace(/ /g, '_');");
+        sb.append("var method1 = parseToUrl('" + JSAjaxHandler.testedMethod + "');");
+        sb.append("var method2 = parseToUrl('" + JSAjaxHandler.generator + "');");
+        sb.append("var adress = '" + adress 
+                + "' + method1 + 'separator=' +"
+                + "method2 + 'separator=' + stringData;");
+        sb.append("$(\"#" + divName + " .right .url\").html(\"<a target=\\\"_blank\\\" href=\" + adress + \"> Results in a table.</a> \");");
+        
         JSAjaxHandler.addSuccessFunction();
         
         sb.append(JSAjaxHandler.returnSuccessButtonHandleFunction());

@@ -101,6 +101,7 @@
 	<target name="run-server" depends="compile-server" description="Run server.">
 		<java fork="true" classname="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer"
 		 classpath="${server.build.dir}${path.separator}${derby.jar}${path.separator}${json.parser.jar} /" />
+		 <echo> ${server.build.dir}${path.separator}${derby.jar}${path.separator}${json.parser.jar} </echo>
 	</target>
 
 	<target name="clean" description="Remove all the generated files.">

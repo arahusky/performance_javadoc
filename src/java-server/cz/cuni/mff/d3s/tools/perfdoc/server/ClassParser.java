@@ -97,13 +97,13 @@ public class ClassParser {
     private URL[] findClassClassPaths() throws IOException {
         ArrayList<URL> urls = new ArrayList<>();
 
-        //TODO copy somewhere or what
         try (BufferedReader reader = new BufferedReader(new FileReader("config/Class_classPath.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 File file = new File(line);
                 URL url = file.toURI().toURL();
                 urls.add(url);
+                System.out.println(url.toString());
             }
         }
 

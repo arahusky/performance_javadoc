@@ -30,13 +30,16 @@ public class JavascriptCodeBox {
 
     private static StringBuilder localCode = new StringBuilder("<script>");
 
+    public static String serverAdress = "http://localhost:8080";
+
     /**
      * indicates, whether the code was already printed out on the page
      */
     public static boolean isUsedOnThePage = false;
-    
+
     /**
      * Adds the code to the local code
+     *
      * @param code The code that will be added to the current local code
      */
     public static void addLocalCode(String code) {
@@ -45,6 +48,7 @@ public class JavascriptCodeBox {
 
     /**
      * Adds global code to the content
+     *
      * @param content The content to which to code will be added
      */
     public static void addGlobalCodeToContentAndEmpty(cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.Content content) {
@@ -57,20 +61,22 @@ public class JavascriptCodeBox {
     }
 
     /**
-     * adds all the needed functions to the global code 
+     * adds all the needed functions to the global code
      */
     private static void addGlobalCode() {
-        globalCode.append(JSAjaxHandler.returnCallServerFunction("http://localhost:8080/measure"));
+        globalCode.append(JSAjaxHandler.returnCallServerFunction(serverAdress + "/measure"));
         globalCode.append(JSAjaxHandler.returnErrorFunction());
 
         globalCode.append(JSControlWriter.returnIsDivisibleFunction());
         globalCode.append(JSControlWriter.returnIsIntervalFunction());
-        
+        globalCode.append(returnParseToURL());
+
         globalCode.append(" var globalIdentifier = Math.random().toString(36).substring(7);");
     }
 
     /**
      * Adds the currently saved local code to the content
+     *
      * @param content The content to which to code will be added
      */
     public static void addLocalCodeToContentAndEmpty(cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.Content content) {
@@ -81,9 +87,25 @@ public class JavascriptCodeBox {
 
     /**
      * Determines, whether the local code (=code) is empty
+     *
      * @return true, if is empty
      */
     public static boolean isEmpty() {
         return (localCode.toString().equals("<script>"));
+    }
+
+    private static String returnParseToURL() {
+        String code = " function parseToUrl(str) {"
+                + "	var arr = str.split(\"#\");"
+                + "	var className = arr[0] + \".\" + arr[1];"
+                + "	var methodName = className + \"&\" + arr[2];"
+                + "	arrParams = arr[3].split(\"@\");"
+                + "	var args = \"\";"
+                + "	for (i=1; i<arrParams.length; i++) {"
+                + "		args += \"&\" + arrParams[i];"
+                + "	}"
+                + "	return methodName + args; }\n";
+
+        return code;
     }
 }

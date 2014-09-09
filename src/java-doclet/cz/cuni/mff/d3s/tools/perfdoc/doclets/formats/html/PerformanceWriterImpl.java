@@ -106,8 +106,20 @@ public class PerformanceWriterImpl {
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
         rightSide.addAttr(HtmlAttr.CLASS, "right");
-        rightSide.addContent("Here will be the image / table + checkbox to choose the values");
+        
+        //div, where the graph will be shown
+        HtmlTree graph = new HtmlTree(HtmlTag.DIV);
+        graph.addAttr(HtmlAttr.CLASS, "graph");
+        graph.addContent("Here will be the image / table + checkbox to choose the values");
 
+        //div, where the link to accurate results will be shown
+        HtmlTree url = new HtmlTree(HtmlTag.DIV);
+        url.addAttr(HtmlAttr.CLASS, "url");
+        url.addContent(" ");
+        
+        rightSide.addContent(graph);
+        rightSide.addContent(url);
+        
         navList.addContent(rightSide);
         navList.addContent(leftSide);
 

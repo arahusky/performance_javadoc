@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -33,35 +34,40 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Jakub Naplava
+ * @author arahusky
  */
-public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
+public class DetailedSiteHandler extends AbstractSiteHandler {
 
-    private static final Logger log = Logger.getLogger(MethodGeneratorSiteHandler.class.getName());
+    private static final Logger log = Logger.getLogger(DetailedSiteHandler.class.getName());
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
-        log.log(Level.INFO, "Got new method-generator-site request. Starting to handle it.");
+        log.log(Level.INFO, "Got new detailed request. Starting to handle it.");
 
         String query = exchange.getRequestURI().getQuery();
-        String[] methods = getMethods(query);
+        String[] data = getData(query);
 
-        if ((methods == null) || (methods.length != 2)) {
+        if (data.length != 3) {
             try {
-                sentErrorHeaderAndClose(exchange, "The URL adress you passes seems not be correct.", 404);                
+                sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404);
             } catch (IOException ex) {
-                Logger.getLogger(MethodGeneratorSiteHandler.class.getName()).log(Level.SEVERE, null, ex);
+                //there is nothing we can do with it
+                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
             }
             return;
         }
 
-        String testedMethod = getMethodFromQuery(methods[0]);
-        String generator = getMethodFromQuery(methods[1]);
-
         if (res != null) {
 
-            addCode(returnHeading(methods[0], testedMethod, generator));
-            addCode(getBody(testedMethod, generator, res));
+            String testedMethod = getMethodFromQuery(data[0]);
+            String generator = getMethodFromQuery(data[1]);
+            String parameters = data[2];
+
+            //adding links to JQquery in order to be able to use sort
+            addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
+            addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
+            
+            addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
 
             try {
@@ -83,27 +89,14 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(String testedMethodNet, String testedMethod, String generator) {
-        String[] testedMethodChunks = testedMethod.split("#");
-        String[] generatorChunks = generator.split("#");
-
-        if ((testedMethodChunks.length < 2) || (generatorChunks.length < 2)) {            
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<p><a href = \"class?" + testedMethodChunks[0] + "\"><-- Back to class " + testedMethodChunks[0] + "</a></p>");
-        sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethodChunks[1] + "</a></p>");
-        sb.append("<h1>Method <i>" + testedMethodChunks[1] + "</i> with generator <i>" + generatorChunks[1] + "</i></h1>");
-
-        return sb.toString();
+    private String[] getData(String query) {
+        return query.split("separator=");
     }
 
-    public String getBody(String testedMethod, String generator, ResultCacheForWeb res) {
+    public String getBody(String testedMethod, String generator, String parameters, ResultCacheForWeb res) {
         String[] testedMethodChunks = testedMethod.split("#");
         String[] generatorChunks = generator.split("#");
-        
+
         if (testedMethodChunks.length < 2 || generatorChunks.length < 2) {
             return "";
         }
@@ -128,35 +121,42 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         String[] genParameters = genParams.split(",");
         String[] genParametersText = getDescriptions(generatorChunks[0], generator);
+        int range = getRangeValue(parameters, genParameters);        
 
-        if (genParametersText == null) {
-            //TODO return some error
+        if (genParametersText == null || (range == -1)) {
             return sb.toString();
         }
         
-        sb.append("<table border = \"1\"><tr>");
-        
-        for (int i = 0; i < genParametersText.length; i++) {
-            sb.append("<td>");
-            sb.append(genParametersText[i] + " (" + genParameters[i+2] + ")");
-            sb.append("</td>");
-        }
-        
-        System.out.println("sitlll");
+        double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
+        double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
+        System.out.println("min: " + min);
+        System.out.println("max: " + max);
+
+        sb.append("<table border = \"1\"><thead><tr>");
+
+        sb.append("<td>");
+        sb.append(genParametersText[range] + " (" + genParameters[range + 2] + ")");
+        sb.append("</td>");
+
         sb.append("<td>number of measurements</td>");
-        sb.append("<td>time (ms)</td></tr>");
+        sb.append("<td>time (ms)</td></tr></thead>");
 
         List<Map<String, Object>> list = res.getResults(testedMethod, generator);
 
+        sb.append("<tbody>");
         if (list != null) {
             for (Map<String, Object> map : list) {
-                sb.append("<tr>");
-
+                
                 String data = (String) map.get("data");
                 String[] datas = data.split(";");
-                for (String datum : datas) {
-                    sb.append("<td>" + datum + "</td>");
+                double value = Double.parseDouble(datas[range]);
+                
+                if (value > max || value < min) {
+                    continue;
                 }
+                
+                sb.append("<tr>");
+                sb.append("<td>" + datas[range] + "</td>");
 
                 int numberOfMeasurements = (int) map.get("numberOfMeasurements");
                 sb.append("<td>" + numberOfMeasurements + "</td>");
@@ -168,9 +168,35 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             }
         }
 
-        sb.append("</table>");
+        sb.append("</tbody></table>");
 
         return sb.toString();
+    }
+
+    int getRangeValue(String parameters, String[] paramTypeNames) {
+        for (int i = 2; i < paramTypeNames.length; i++) {
+            System.out.println(paramTypeNames[i]);
+        }
+        String[] arrParams = parameters.split(",");
+
+        //first two paramTypeNames are Workloads
+        for (int i = 2; i < paramTypeNames.length; i++) {
+            String s = paramTypeNames[i];
+            if (s.equals("int") || s.equals("double") || s.equals("float")) {
+                String parameter = arrParams[i - 2];
+
+                if (parameter.contains("_to_")) {
+                    String[] parts = parameter.split("_to_");
+                    if (parts.length == 2) {
+                        if (!parts[0].equals(parts[1])) {
+                            return i-2;
+                        }
+                    }
+                }
+            }
+        }
+
+        return -1;
     }
 
     private String getParameterInfo(String parameter) {
@@ -185,10 +211,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         sb.append(parameters[parameters.length - 1]);
 
         return sb.toString();
-    }
-
-    private String[] getMethods(String query) {
-        return query.split("separator=");
     }
 
     private String[] getDescriptions(String className, String methodName) {
@@ -207,13 +229,14 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
                 for (Annotation a : annot) {
                     if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
-                        result[i-2] = ((ParamNum) a).description();
+                        result[i - 2] = ((ParamNum) a).description();
                     } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
-                        result[i-2] = ((ParamDesc) a).description();
-                        System.out.println(((ParamDesc) a).description());                    }
+                        result[i - 2] = ((ParamDesc) a).description();
+                        System.out.println(((ParamDesc) a).description());
+                    }
                 }
             }
-            
+
             return result;
         } catch (ClassNotFoundException | IOException ex) {
             log.log(Level.INFO, "Unable to find some class", ex);
