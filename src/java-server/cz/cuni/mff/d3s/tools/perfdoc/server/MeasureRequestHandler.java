@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
- *
+ * Handler that handles incoming measure request
  * @author Jakub Naplava
  */
 class MeasureRequestHandler implements HttpHandler {
@@ -61,15 +61,19 @@ class MeasureRequestHandler implements HttpHandler {
         //gets the body of the output
         OutputStream responseBody = exchange.getResponseBody();
 
+        String userID = "";
+        
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
             log.log(Level.INFO, "The incoming message is: {0}", requestBody);
 
             MethodMeasurer m = new MethodMeasurer(requestBody, lockBase);
+            userID = m.hash;
+            
             JSONObject obj = m.measureTime();
             try {
-                exchange.sendResponseHeaders(200, 0); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
+                exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
                 responseBody.write(obj.toString().getBytes());
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
@@ -96,8 +100,7 @@ class MeasureRequestHandler implements HttpHandler {
             }
         }
 
-        //TODO az nam uzivatel posle unikatni identifikator, tak ho sem taky zapsat
-        log.log(Level.INFO, "Data were succesfully sent to the user.");
+        log.log(Level.INFO, "Data were succesfully sent to the user ({0}).", userID);
     }
     
     private void sendErrorMessage(String msg, HttpExchange exchange, OutputStream out) {

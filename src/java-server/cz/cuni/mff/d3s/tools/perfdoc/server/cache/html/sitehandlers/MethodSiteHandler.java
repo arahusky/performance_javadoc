@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Site handler that shows all generators, that have any measured result for the
+ * given (tested) method
  *
  * @author Jakub Naplava
  */
@@ -37,7 +39,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
 
         String query = exchange.getRequestURI().getQuery();
         String methodName = getMethodFromQuery(query);
-        
+
         if (methodName == null) {
             //there was some problem with URL (probably own written URL)
             try {
@@ -45,9 +47,9 @@ public class MethodSiteHandler extends AbstractSiteHandler {
             } catch (IOException ex) {
                 //there is nothing we can do with it
                 log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }            
+            }
             return;
-        }        
+        }
 
         if (res != null) {
 
@@ -80,11 +82,11 @@ public class MethodSiteHandler extends AbstractSiteHandler {
     private String returnHeading(String method) {
 
         String[] chunks = method.split("#");
-        
+
         if (chunks.length < 2) {
             return "";
         }
-        
+
         String className = chunks[0];
         String methodName = chunks[1];
 
@@ -93,15 +95,15 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         sb.append("<p><a href = \"class?" + className + "\"><-- Back to class " + className + "</a></p>");
         sb.append("<h1>Method <i>" + methodName + "</i> in class <i>" + className + "</i></h1>");
         sb.append("<h2>with parameters</h2>");
-        
+
         sb.append("<ul>");
-        for (int i = 2; i<chunks.length; i++) {
+        for (int i = 2; i < chunks.length; i++) {
             sb.append("<li>");
             sb.append(chunks[i].substring(1));
             sb.append("</li>");
         }
         sb.append("</ul>");
-        
+
         sb.append("<h2>has this possible saved generators</h2>");
 
         return sb.toString();
@@ -129,7 +131,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
 
     private String formatGenerator(String generator) {
         String[] chunks = generator.split("#");
-        
+
         if (chunks.length < 3) {
             return "";
         }
@@ -153,11 +155,11 @@ public class MethodSiteHandler extends AbstractSiteHandler {
 
         return sb.toString();
     }
-    
+
     private String getMethodGeneratorURL(String method, String generator) {
         String methodQuery = getQueryURL(method);
         String generatorQuery = getQueryURL(generator);
-        
+
         return (methodQuery + "separator=" + generatorQuery);
     }
 }

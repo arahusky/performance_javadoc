@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -32,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class to load requested .class files
  * @author Jakub Naplava
  */
 public class ClassParser {
@@ -41,6 +40,7 @@ public class ClassParser {
     
     private ReflectionCache refCache;
      
+    //loaded class
     public Class<?> clazz;
 
     static ClassLoader cl;
@@ -94,6 +94,11 @@ public class ClassParser {
         }
     }
 
+    /**
+     * Finds all the classpaths (that will be used while loading classes), that are saved in configuration file
+     * @return
+     * @throws IOException when there is any problem when working with Class_classPath.txt
+     */
     private URL[] findClassClassPaths() throws IOException {
         ArrayList<URL> urls = new ArrayList<>();
 
@@ -103,7 +108,6 @@ public class ClassParser {
                 File file = new File(line);
                 URL url = file.toURI().toURL();
                 urls.add(url);
-                System.out.println(url.toString());
             }
         }
 
@@ -116,7 +120,7 @@ public class ClassParser {
      * @param methodInfo
      * @return the Method instance if found, otherwise null
      */
-    public Method findMethod(MethodInfo methodInfo) {
+     public Method findMethod(MethodInfo methodInfo) {
 
         String methodName = methodInfo.getMethodName();
         ArrayList<String> params = methodInfo.getParams();
@@ -129,13 +133,13 @@ public class ClassParser {
         Method[] methods = clazz.getMethods();
 
         for (Method m : methods) {
-            if (m.getName().equals(methodName) && (m.getParameterCount() == params.size())) {
-                Parameter[] parameters = m.getParameters();
+            if (m.getName().equals(methodName) && (m.getParameterTypes().length == params.size())) {
+                Class<?>[] parameters = m.getParameterTypes();
 
                 boolean isCorrect = true;
 
                 for (int i = 0; i < parameters.length; i++) {
-                    if (!parameters[i].getType().getCanonicalName().equals(params.get(i))) {
+                    if (!parameters[i].getCanonicalName().equals(params.get(i))) {
                         isCorrect = false;
                         break;
                     }

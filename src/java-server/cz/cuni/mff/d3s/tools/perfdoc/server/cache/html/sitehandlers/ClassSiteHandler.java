@@ -25,7 +25,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Site handler that shows all measured methods for the given class 
+ * 
  * @author Jakub Naplava
  */
 public class ClassSiteHandler extends AbstractSiteHandler {

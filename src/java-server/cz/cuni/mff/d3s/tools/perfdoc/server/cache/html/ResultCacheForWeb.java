@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * Interface, that extends ResultCache with methods for site handlers
+ * 
  * @author Jakub Naplava
  */
 public interface ResultCacheForWeb extends ResultCache {

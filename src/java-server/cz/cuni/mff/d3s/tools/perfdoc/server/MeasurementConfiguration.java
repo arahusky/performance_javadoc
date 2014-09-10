@@ -18,7 +18,6 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 /**
- *
  * @author Jakub Naplava
  */
 public class MeasurementConfiguration {

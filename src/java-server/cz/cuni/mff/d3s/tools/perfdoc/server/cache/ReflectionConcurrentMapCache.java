@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *Class to cache loaded method and classes
+ * 
  * @author Jakub Naplava
  */
 public class ReflectionConcurrentMapCache implements ReflectionCache{
@@ -44,21 +45,33 @@ public class ReflectionConcurrentMapCache implements ReflectionCache{
         return instance;
     }
     
+    /**
+    *{@inheritDoc}
+    */
     @Override
     public void addMethod(String name, Method method) {
         methodCache.put(name, method);
     }
     
+    /**
+    *{@inheritDoc}
+    */
     @Override
     public void addClass(String name, Class<?> clazz) {
         classCache.put(name, clazz);
     }
     
+    /**
+    *{@inheritDoc}
+    */
     @Override
     public Method getMethod(String name) {
         return methodCache.get(name);
     }
     
+    /**
+    *{@inheritDoc}
+    */
     @Override
     public Class<?> getClass(String name) {
         return classCache.get(name);

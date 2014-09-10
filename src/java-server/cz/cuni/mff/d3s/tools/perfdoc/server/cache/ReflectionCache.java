@@ -19,7 +19,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 import java.lang.reflect.Method;
 
 /**
- * Interface to communicate with things (methods and classes) saved via reflection
+ * Interface to communicate with stuff (methods and classes) saved via reflection
+ * 
  * @author Jakub Naplava
  */
 public interface ReflectionCache {

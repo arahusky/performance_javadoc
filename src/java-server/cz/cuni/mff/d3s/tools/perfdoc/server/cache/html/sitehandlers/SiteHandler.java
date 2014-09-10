@@ -20,7 +20,8 @@ import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 
 /**
- *
+ * Common interface for all site handlers
+ * 
  * @author Jakub Naplava
  */
 public interface SiteHandler {

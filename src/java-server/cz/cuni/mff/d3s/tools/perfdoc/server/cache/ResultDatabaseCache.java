@@ -16,8 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -29,7 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of ResultCache that saves the results in the database.
+ * Implementation of ResultAdminCache that saves the results in the database.
  *
  * @author Jakub Naplava
  */
@@ -47,6 +45,11 @@ public class ResultDatabaseCache implements ResultAdminCache {
         this.conn = createConnection();
     }
 
+    /**
+     * Just for debugging purposes, do not use
+     * @param test 
+     * @throws SQLException 
+     */
     public ResultDatabaseCache(Boolean test) throws SQLException {
         if (test) {
             this.conn = createTestConnection();
@@ -54,7 +57,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
     }
 
     @Override
-    public void startDatabase() throws ClassNotFoundException, SQLException {
+    public void start() throws ClassNotFoundException, SQLException {
         try {
             Class.forName(DRIVER);
 
@@ -69,6 +72,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
         }
     }
 
+    /**
+     * Just for debugging purposes, do not use     
+    */
     public void startTestDatabase() throws ClassNotFoundException, SQLException {
         try {
             Class.forName(DRIVER);
@@ -100,11 +106,15 @@ public class ResultDatabaseCache implements ResultAdminCache {
         }
     }
 
-    //TODO just debug
-    public Connection createTestConnection() throws SQLException {
+    Connection createTestConnection() throws SQLException {
         return DriverManager.getConnection(TEST_URL);
     }
 
+    /**
+     * Checks whether database contains all needed tables and if not than creates them
+     * 
+     * @throws SQLException 
+     */
     private void checkTablesAndCreate() throws SQLException {
 
         if (!contains(conn, "results")) {
@@ -117,7 +127,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
     /**
      * {@inheritDoc}
      */
-    public void emptyTable() throws SQLException {
+    public void empty() throws SQLException {
 
         if (contains(conn, "results")) {
             String query = "DELETE FROM results";
@@ -326,7 +336,8 @@ public class ResultDatabaseCache implements ResultAdminCache {
         }
     }
 
-    public void closeDatabase() {
+    @Override
+    public void close() {
         try {
             closeConnection(conn);
             // the shutdown=true attribute shuts down Derby

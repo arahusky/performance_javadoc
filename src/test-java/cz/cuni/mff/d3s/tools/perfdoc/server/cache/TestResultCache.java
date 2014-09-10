@@ -47,14 +47,14 @@ public class TestResultCache {
 
     @After
     public void closeConnection() throws SQLException {
-        res.emptyTable();
+        res.empty();
         res.closeConnection();
 
     }
 
     @AfterClass
     public static void endDB() {
-        res.closeDatabase();
+        res.close();
     }
 
     @Test
@@ -261,7 +261,7 @@ public class TestResultCache {
         res.insertResult("method", "generator", "[data]", 10, 1000);
         res.insertResult("method", "generator", "[data2]", 9, 200);
 
-        res.emptyTable();
+        res.empty();
         ResultSet rs = res.getTable();
 
         Assert.assertFalse(rs.next());

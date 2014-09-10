@@ -48,14 +48,14 @@ public class TestResultDatabaseCacheForWeb {
 
     @After
     public void closeConnection() throws SQLException {
-        res.emptyTable();
+        res.empty();
         res.closeConnection();
 
     }
 
     @AfterClass
     public static void endDB() {
-        res.closeDatabase();
+        res.close();
     }
 
     @Test

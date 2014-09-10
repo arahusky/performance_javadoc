@@ -25,14 +25,14 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Site handler that shows all results for given tested method and its generator
+ * 
  * @author Jakub Naplava
  */
 public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
@@ -197,23 +197,23 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             cp = new ClassParser(className);
             Method m = cp.findMethod(new MethodInfo(methodName));
 
-            Parameter[] parameters = m.getParameters();
-            String[] result = new String[parameters.length - 2];
+            Annotation[][] annotations = m.getParameterAnnotations();
+            String[] result = new String[annotations.length - 2];
 
             //first two parameters are Workload and ServiceWorkload
-            for (int i = 2; i < parameters.length; i++) {
-                Parameter p = parameters[i];
-                Annotation[] annot = p.getAnnotations();
+            for (int i = 2; i < annotations.length; i++) {;
+                Annotation[] annot = annotations[i];
 
                 for (Annotation a : annot) {
                     if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
-                        result[i-2] = ((ParamNum) a).description();
+                        result[i - 2] = ((ParamNum) a).description();
                     } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
-                        result[i-2] = ((ParamDesc) a).description();
-                        System.out.println(((ParamDesc) a).description());                    }
+                        result[i - 2] = ((ParamDesc) a).description();
+                        System.out.println(((ParamDesc) a).description());
+                    }
                 }
             }
-            
+
             return result;
         } catch (ClassNotFoundException | IOException ex) {
             log.log(Level.INFO, "Unable to find some class", ex);

@@ -22,13 +22,13 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Site handler, that shows all classes, that have any measured method
+ * 
  * @author Jakub Naplava
  */
 public class OverviewSiteHandler extends AbstractSiteHandler{

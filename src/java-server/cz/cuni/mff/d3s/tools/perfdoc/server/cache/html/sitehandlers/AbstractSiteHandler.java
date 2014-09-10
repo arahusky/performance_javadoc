@@ -20,10 +20,10 @@ import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
 
 /**
- *
+ * Abstract class that defines method that are common for all site handlers
+ * 
  * @author Jakub Naplava
  */
 public abstract class AbstractSiteHandler implements SiteHandler {
@@ -35,7 +35,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     public abstract void handle(HttpExchange exchange, ResultCacheForWeb res);
 
     protected void sentSuccesHeaderAndBodyAndClose(HttpExchange exchange, byte[] message) throws IOException {
-        exchange.sendResponseHeaders(200, message.length); //0 means Chunked transfer encoding - HTTP 1.1 arbitary amount of data may be sent
+        exchange.sendResponseHeaders(200, message.length);
 
         try (OutputStream responseBody = exchange.getResponseBody()) {
             responseBody.write(message);
@@ -50,6 +50,10 @@ public abstract class AbstractSiteHandler implements SiteHandler {
         }
     }    
 
+    /**
+     * Gets current html code
+     * @return 
+     */
     protected String getCode() {
         if (code.length() == 0) {
             startNewCode();
@@ -59,6 +63,10 @@ public abstract class AbstractSiteHandler implements SiteHandler {
         return code.toString();
     }
 
+    /**
+     * Adds the code to the current code
+     * @param code 
+     */
     protected void addCode(String code) {
         if (this.code.length() == 0) {
             startNewCode();

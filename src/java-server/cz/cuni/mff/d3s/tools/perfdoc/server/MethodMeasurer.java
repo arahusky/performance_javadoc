@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,9 +44,13 @@ public class MethodMeasurer {
     private MethodInfo testedMethod;
     private MethodInfo generator;
 
+    //which generator parameter is the range parameter
     private int rangeValue;
+    
     private int priority;
-    private String hash;
+    
+    //user identifier
+    public String hash;
 
     private ArrayList<Object> data = new ArrayList<>();
 
@@ -64,7 +67,7 @@ public class MethodMeasurer {
         this.lockBase = lockBase;
     }
     
-    public MethodMeasurer() {
+    MethodMeasurer() {
         //for testing purposes only
     }
 
@@ -262,9 +265,9 @@ public class MethodMeasurer {
     private double findStepValue() {
         //first two parameters are workload and serviceWorkload
         int numInParams = rangeValue + 2;
-        Parameter[] params = generator.getMethod().getParameters();
+        Annotation[][] params = generator.getMethod().getParameterAnnotations();
 
-        Annotation[] annotations = params[numInParams].getAnnotations();
+        Annotation[] annotations = params[numInParams];
 
         for (Annotation a : annotations) {
             if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {

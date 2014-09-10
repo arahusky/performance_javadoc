@@ -53,7 +53,7 @@ class HttpMeasureServer {
         
         try {
             ResultAdminCache res = new ResultDatabaseCache();
-            res.startDatabase();
+            res.start();
             //res.emptyTable();
         } catch (ClassNotFoundException ex) {
             //Could not find the database driver
@@ -64,8 +64,6 @@ class HttpMeasureServer {
         }
         
         server.start();
-        log.log(Level.INFO, "Server started and is listening on port 8080");
-        
-        //TODO close server on exit                
+        log.log(Level.INFO, "Server started and is listening on port 8080");               
     }
 }

@@ -29,7 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Implementation of ResultCacheForWeb.
+ * 
  * @author Jakub Naplava
  */
 public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements ResultCacheForWeb {

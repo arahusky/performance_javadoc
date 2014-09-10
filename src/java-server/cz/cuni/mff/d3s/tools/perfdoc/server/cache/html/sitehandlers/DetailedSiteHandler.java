@@ -25,7 +25,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public class DetailedSiteHandler extends AbstractSiteHandler {
 
@@ -66,7 +65,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             //adding links to JQquery in order to be able to use sort
             addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
             addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
-            
+
             addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
 
@@ -121,16 +120,20 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
 
         String[] genParameters = genParams.split(",");
         String[] genParametersText = getDescriptions(generatorChunks[0], generator);
-        int range = getRangeValue(parameters, genParameters);        
+        int range = getRangeValue(parameters, genParameters);
 
         if (genParametersText == null || (range == -1)) {
             return sb.toString();
         }
-        
+
+        String[] normalizedParameters = normalizeParameters(parameters, range, genParameters);
+
+        if (normalizedParameters == null) {
+            return sb.toString();
+        }
+
         double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
         double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
-        System.out.println("min: " + min);
-        System.out.println("max: " + max);
 
         sb.append("<table border = \"1\"><thead><tr>");
 
@@ -146,25 +149,8 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<tbody>");
         if (list != null) {
             for (Map<String, Object> map : list) {
-                
-                String data = (String) map.get("data");
-                String[] datas = data.split(";");
-                double value = Double.parseDouble(datas[range]);
-                
-                if (value > max || value < min) {
-                    continue;
-                }
-                
-                sb.append("<tr>");
-                sb.append("<td>" + datas[range] + "</td>");
 
-                int numberOfMeasurements = (int) map.get("numberOfMeasurements");
-                sb.append("<td>" + numberOfMeasurements + "</td>");
-
-                long time = (long) map.get("time");
-                sb.append("<td>" + time + "</td>");
-
-                sb.append("</tr>");
+                sb.append(getRowIfPass(normalizedParameters, map, min, max, range));
             }
         }
 
@@ -173,10 +159,41 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    int getRangeValue(String parameters, String[] paramTypeNames) {
-        for (int i = 2; i < paramTypeNames.length; i++) {
-            System.out.println(paramTypeNames[i]);
+    String getRowIfPass(String[] normalizedData, Map<String, Object> mapDB, double min, double max, int rangeValue) {
+        StringBuilder sb = new StringBuilder();
+
+        String data = (String) mapDB.get("data");
+        String[] datas = data.split(";");
+
+        for (int i = 0; i < datas.length; i++) {
+            if (i != rangeValue) {
+                if (!datas[i].equals(normalizedData[i])) {
+                    return ""; 
+                }
+            }
         }
+
+        double value = Double.parseDouble(datas[rangeValue]);
+
+        if (value > max || value < min) {
+            return "";
+        }
+
+        sb.append("<tr>");
+        sb.append("<td>" + datas[rangeValue] + "</td>");
+
+        int numberOfMeasurements = (int) mapDB.get("numberOfMeasurements");
+        sb.append("<td>" + numberOfMeasurements + "</td>");
+
+        long time = (long) mapDB.get("time");
+        sb.append("<td>" + time + "</td>");
+
+        sb.append("</tr>");
+
+        return sb.toString();
+    }
+
+    int getRangeValue(String parameters, String[] paramTypeNames) {
         String[] arrParams = parameters.split(",");
 
         //first two paramTypeNames are Workloads
@@ -189,7 +206,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                     String[] parts = parameter.split("_to_");
                     if (parts.length == 2) {
                         if (!parts[0].equals(parts[1])) {
-                            return i-2;
+                            return i - 2;
                         }
                     }
                 }
@@ -197,6 +214,52 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         }
 
         return -1;
+    }
+
+    String[] normalizeParameters(String params, int rangeValue, String[] paramTypeNames) {
+        String[] paramsArr = params.split(",");
+        String[] res = new String[paramsArr.length];
+
+        //first two paramTypeNames are Workloads
+        for (int i = 2; i < paramTypeNames.length; i++) {
+            if (i == rangeValue + 2) {
+                res[i - 2] = paramsArr[i - 2];
+                continue;
+            }
+
+            String s = paramTypeNames[i];
+            String parameter = paramsArr[i - 2];
+
+            if (s.equals("int") || s.equals("double") || s.equals("float")) {
+
+                if (parameter.contains("_to_")) {
+                    String[] parts = parameter.split("_to_");
+                    if (parts.length == 2) {
+                        if (!parts[0].equals(parts[1])) {
+                            return null;
+                        }
+                        
+                        switch (s) {
+                            case "int":
+                                res[i - 2] = Integer.parseInt(parts[0]) + "";
+                                break;
+                            case "float":
+                                res[i-2] = Float.parseFloat(parts[0]) + "";
+                                break;
+                            case "double":
+                                res[i-2] = Double.parseDouble(parts[0]) + "";
+                                break;
+                        }
+                    }
+                } else {
+                    res[i - 2] = parameter;
+                }
+            } else {
+                res[i - 2] = parameter;
+            }
+        }
+
+        return res;
     }
 
     private String getParameterInfo(String parameter) {
@@ -219,13 +282,12 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             cp = new ClassParser(className);
             Method m = cp.findMethod(new MethodInfo(methodName));
 
-            Parameter[] parameters = m.getParameters();
-            String[] result = new String[parameters.length - 2];
+            Annotation[][] annotations = m.getParameterAnnotations();
+            String[] result = new String[annotations.length - 2];
 
             //first two parameters are Workload and ServiceWorkload
-            for (int i = 2; i < parameters.length; i++) {
-                Parameter p = parameters[i];
-                Annotation[] annot = p.getAnnotations();
+            for (int i = 2; i < annotations.length; i++) {;
+                Annotation[] annot = annotations[i];
 
                 for (Annotation a : annot) {
                     if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {

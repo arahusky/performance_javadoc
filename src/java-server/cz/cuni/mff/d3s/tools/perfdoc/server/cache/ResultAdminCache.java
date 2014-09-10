@@ -20,13 +20,15 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 import java.sql.SQLException;
 
 /**
- *
+ * Extension of ResultCache defining administration methods for database
+ * 
  * @author Jakub Naplava
  */
 public interface ResultAdminCache extends ResultCache {
-    void startDatabase() throws ClassNotFoundException, SQLException;
-   
-    void closeDatabase();
     
-    void emptyTable() throws SQLException;
+    void start() throws ClassNotFoundException, SQLException;
+   
+    void close();
+    
+    void empty() throws SQLException;
 }
