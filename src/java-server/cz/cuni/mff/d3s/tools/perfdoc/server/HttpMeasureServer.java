@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 
 class HttpMeasureServer {
 
-    private static final Logger log = Logger.getLogger( HttpMeasureServer.class.getName() );
-    
+    private static final Logger log = Logger.getLogger(HttpMeasureServer.class.getName());
+
     /**
      * @param args the command line arguments
      */
@@ -40,21 +40,24 @@ class HttpMeasureServer {
 
         //creates server with backlog (=the maximum queue length for incoming connection indications) set to 0 (system default value)
         HttpServer server = HttpServer.create(addr, 0);
-        
+
         LockBase lockBase = new LockHashMapBase();
-        
+
         //handler to handle request for measuring
         server.createContext("/measure", new MeasureRequestHandler(lockBase));
-        
+
         //handler to handle request for cache
         server.createContext("/cache", new CacheRequestHandler());
-        
+
         server.setExecutor(Executors.newCachedThreadPool());
-        
+
         try {
             ResultAdminCache res = new ResultDatabaseCache();
             res.start();
-            //res.emptyTable();
+
+            if (emptyTable(args)) {
+                res.empty();
+            }
         } catch (ClassNotFoundException ex) {
             //Could not find the database driver
             return;
@@ -62,8 +65,18 @@ class HttpMeasureServer {
             //The connection to database could have not been established
             return;
         }
-        
+
         server.start();
-        log.log(Level.INFO, "Server started and is listening on port 8080");               
+        log.log(Level.INFO, "Server started and is listening on port 8080");
+    }
+
+    private static boolean emptyTable(String[] args) {
+        for (String s : args) {
+            if (s.equals("-empty")) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

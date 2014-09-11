@@ -129,7 +129,7 @@ public class JSAjaxHandler {
                 + "    document.getElementById(\""+ divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
                 + "    JSON.parse(json).data," 
                 + "    {"
-                + "      ylabel: 'Search time (ms)',"
+                + "      ylabel: 'Search time (' + JSON.parse(json).units + ')',"
                 + "      xlabel: graph"
                 + "    }"
                 + "  );");

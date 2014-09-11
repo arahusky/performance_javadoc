@@ -66,7 +66,7 @@ class MeasureRequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             
-            log.log(Level.INFO, "The incoming message is: {0}", requestBody);
+            log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
             MethodMeasurer m = new MethodMeasurer(requestBody, lockBase);
             userID = m.hash;

@@ -6,11 +6,14 @@
 
 package simplehtmldoclet;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import simplehtmldoclet.enums.SomeTestingEnum;
 import simplehtmldoclet.enums.next.SomeOtherEnum;
 
@@ -44,6 +47,8 @@ public class TestedClass {
               )
       {
           System.out.println("I was called");
+          SimpleHTMLDoclet simple = new SimpleHTMLDoclet();
+          workload.addCall(simple, new String[removals + additions + collection_size], 50);
       }
       
       @Generator(description = "Some another generator", genName = "Some another")   
@@ -52,12 +57,13 @@ public class TestedClass {
               Workload workload,
               ServiceWorkload sw,
         @ParamNum(description = "Not important slider", min = 0, max = 100) int non_important,
-              @ParamNum(description = "Approx. time", min = 0, max = 100, step = 1.2) int lengthTime,
+              @ParamNum(description = "Approx. time", min = 0, max = 100, step = 2) int lengthTime,
               @ParamNum(description = "Approx. time", min = 0, max = 100, step = 0.1) float some 
               )
       {
           System.out.println("I was called");
-          workload.addCall(new SimpleHTMLDoclet(), new String[lengthTime]);
+          SimpleHTMLDoclet simple = new SimpleHTMLDoclet();
+          workload.addCall(simple, new String[lengthTime]);
           
       }
       
@@ -68,11 +74,12 @@ public class TestedClass {
               ServiceWorkload sw,
         @ParamNum(description = "Number of removalss", min = 0, max = 100) int removalss,
               @ParamNum(description = "Number of searchess", min = 0, max = 100, step = 1.2) int searchess,
-              @ParamDesc(description = "Some String") String str,
-              @ParamDesc(description = "some") SomeEnum someEnum
+              @ParamDesc(description = "Some String") String str
               )
       {
           System.out.println("I was called");
+          SimpleHTMLDoclet simple = new SimpleHTMLDoclet();
+          workload.addCall(simple, new String[removalss + searchess + str.length()]);
       }
 
 }

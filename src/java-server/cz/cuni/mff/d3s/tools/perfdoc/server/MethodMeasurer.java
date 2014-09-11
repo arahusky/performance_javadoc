@@ -36,6 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
+ * Class that parses an incoming JSON request and measures the time duration
  *
  * @author Jakub Naplava
  */
@@ -46,9 +47,9 @@ public class MethodMeasurer {
 
     //which generator parameter is the range parameter
     private int rangeValue;
-    
+
     private int priority;
-    
+
     //user identifier
     public String hash;
 
@@ -66,7 +67,7 @@ public class MethodMeasurer {
         this.resultCache = new ResultDatabaseCache();
         this.lockBase = lockBase;
     }
-    
+
     MethodMeasurer() {
         //for testing purposes only
     }
@@ -106,7 +107,7 @@ public class MethodMeasurer {
 
         //wait until we can measure (there is no lock for our hash)
         lockBase.waitUntilFree(hash);
-        
+
         for (int i = 0; i < valuesToMeasure.length; i++) {
 
             //the arguments for the generator 
@@ -140,7 +141,7 @@ public class MethodMeasurer {
                     }
                     long after = System.nanoTime();
 
-                    long duration = ((after - before) / 1000000) / howManyTimesToMeasure;
+                    long duration = (after - before) / howManyTimesToMeasure;
                     result.add(new Object[]{valuesToMeasure[i], duration});
 
                     resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, duration);
@@ -162,10 +163,12 @@ public class MethodMeasurer {
                 lockBase.freeLock(hash);
                 throw ex;
             }
-        }        
-        
+        }
+
         log.log(Level.CONFIG, "Measurement succesfully done");
         lockBase.freeLock(hash);
+
+        String units = convertUnitsIfNeeded(result);
 
         //create new JSONObject containing measured results
         JSONObject jsonResults = new JSONObject();
@@ -173,11 +176,51 @@ public class MethodMeasurer {
             jsonResults.accumulate("data", result.get(i));
         }
 
+        jsonResults.accumulate("units", units);
+        
         if (resultCache != null) {
             //we do not need the connection to database anymore
             resultCache.closeConnection();
         }
         return jsonResults;
+    }
+
+    String convertUnitsIfNeeded(ArrayList<Object[]> list) {
+        //supported units (may be added more)
+        String[] units = new String[]{"s", "ms", "µs", "ns"};
+        //pointer to units array showing actual unit
+        int index = 3;
+
+        long min = Long.MAX_VALUE;
+
+        for (Object[] obj : list) {
+            long value = (long) obj[1];
+
+            if (value < min) {
+                min = value;
+            }
+        }
+
+        //10,000 was chosen constant so that the minValue is not bigger than it
+        while (min > 10000 && (index > 0)) {
+            index--;
+            min = min / 1000;
+        }
+
+        int divideBy = 1;
+
+        for (int i = index; i < units.length - 1; i++) {
+            divideBy *= 1000;
+        }
+
+        for (int i = 0; i < list.size(); i++) {
+            Object[] o = list.get(i);
+            long val = ((long) o[1]) / divideBy;
+            o[1] = val;
+            list.set(i, o);
+        }
+
+        return units[index];
     }
 
     /**
@@ -188,8 +231,6 @@ public class MethodMeasurer {
      * @return the double array containing chosen values
      */
     public double[] getValuesToMeasure(int howMany) {
-        //TODO check whether it is even possible to make so many values - otherwise return as much as you can
-        double[] values = new double[howMany];
 
         //the endpoints will be always contained in the values 
         String[] oarr = ((String) data.get(rangeValue)).split(" to ");
@@ -198,6 +239,15 @@ public class MethodMeasurer {
 
         //the distance of two measured values
         double step = findStepValue();
+
+        int howManyIsPossible = returnHowManyInInterval(min, max, step) + 2;
+
+        //if there is not enough point in the interval, we add as many as we can
+        if (howManyIsPossible < howMany) {
+            howMany = howManyIsPossible;
+        }
+
+        double[] values = new double[howMany];
 
         values[0] = min;
         values[values.length - 1] = max;
@@ -209,6 +259,25 @@ public class MethodMeasurer {
         }
 
         return values;
+    }
+
+    /**
+     * Returns how many numbers, that are made by adding step to min, are bigger
+     * than min and smaller than max
+     *
+     * @param min
+     * @param max
+     * @param step
+     * @return total number of such values
+     */
+    int returnHowManyInInterval(double min, double max, double step) {
+        int number = 0;
+
+        while ((min + step * (number + 1)) < max) {
+            number++;
+        }
+
+        return number;
     }
 
     /**
@@ -313,13 +382,14 @@ public class MethodMeasurer {
 
     public String prepareDataForCache(Object[] obj) {
         StringBuilder sb = new StringBuilder();
-        
-        for (int i = 2; i<obj.length; i++) {
+
+        for (int i = 2; i < obj.length; i++) {
             sb.append(obj[i] + ";");
         }
-        
+
         return sb.toString();
     }
+
     /**
      * private class that parses incoming JSON and the result saves in the
      * MethodMeasure instance

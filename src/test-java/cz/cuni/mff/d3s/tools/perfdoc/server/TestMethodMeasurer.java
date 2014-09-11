@@ -17,6 +17,7 @@
  
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -79,5 +80,91 @@ public class TestMethodMeasurer {
         val = met.findNearestSmallerPossibleValue(38.01, 15, 0.1);
         Assert.assertEquals(38, val, 0.0001);
     }
+    
+    @Test
+    public void testReturnHowManyInInterval()
+    {
+        MethodMeasurer met = new MethodMeasurer();
+        
+        int val = met.returnHowManyInInterval(1.0, 2.0, 0.1);
+        Assert.assertEquals(9, val);  
+        
+        val = met.returnHowManyInInterval(1.0, 2.0, 0.01);
+        Assert.assertEquals(99, val);  
+        
+        val = met.returnHowManyInInterval(2.0, 2.0, 0.01);
+        Assert.assertEquals(0, val);  
+        
+        val = met.returnHowManyInInterval(2.5, 2.0, 0.01);
+        Assert.assertEquals(0, val);  
+    }
+    
+    @Test
+    public void testConvertUnitsIfNeededNoConvert()
+    {
+        MethodMeasurer met = new MethodMeasurer();
+        ArrayList<Object[]> list = new ArrayList<>();
+        
+        list.add(new Object[] {20.0, (long) 10});
+        list.add(new Object[] {100000.0, (long) 100});
+        list.add(new Object[] {300.0, (long) 1200});
+        list.add(new Object[] {200.0, (long) 100});
+        
+        ArrayList<Object[]> copy = new ArrayList<>(list);
+        
+        Assert.assertEquals("ns", met.convertUnitsIfNeeded(copy));
+       
+        arrayListEquals(list, copy);
+    }
+    
+    @Test
+    public void testConvertUnitsIfNeededConvert()
+    {
+        MethodMeasurer met = new MethodMeasurer();
+        ArrayList<Object[]> list = new ArrayList<>();        
+        list.add(new Object[] {20.0, (long) 10001});
+        list.add(new Object[] {100000.0, (long) 100000});
+        list.add(new Object[] {300.0, (long) 12000});
+        list.add(new Object[] {200.0, (long) 100000});
+        
+        ArrayList<Object[]> expected = new ArrayList<>();
+        expected.add(new Object[] {20.0, (long) 10});
+        expected.add(new Object[] {100000.0, (long) 100});
+        expected.add(new Object[] {300.0, (long) 12});
+        expected.add(new Object[] {200.0, (long) 100});
+        
+        Assert.assertEquals("µs", met.convertUnitsIfNeeded(list));
+       
+        arrayListEquals(expected, list);
+    }
+    
+    @Test
+    public void testConvertUnitsIfNeededMoreConverts()
+    {
+        MethodMeasurer met = new MethodMeasurer();
+        ArrayList<Object[]> list = new ArrayList<>();        
+        list.add(new Object[] {20.0, 10001000000L});
+        list.add(new Object[] {100000.0, 100000000000L});
+        list.add(new Object[] {300.0, 12000000000L});
+        list.add(new Object[] {200.0, 100000000000L});
+        
+        ArrayList<Object[]> expected = new ArrayList<>();
+        expected.add(new Object[] {20.0, (long) 10});
+        expected.add(new Object[] {100000.0, (long) 100});
+        expected.add(new Object[] {300.0, (long) 12});
+        expected.add(new Object[] {200.0, (long) 100});
+        
+        Assert.assertEquals("s", met.convertUnitsIfNeeded(list));
+       
+        arrayListEquals(expected, list);
+    }
+    
+    private void arrayListEquals(ArrayList<Object[]>  first, ArrayList<Object[]> second) {
+        Assert.assertEquals(first.size(), second.size());
+        
+        for (int i = 0; i<first.size(); i++) {
+            Assert.assertArrayEquals(first.get(i), second.get(i));
+        }
+     }
             
 }

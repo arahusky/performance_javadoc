@@ -47,9 +47,10 @@ public class SimpleHTMLDoclet {
      */
     //@Workload("some value")
     @Workload(value = "simplehtmldoclet.TestedClass#prepareData2")
-    public String foo1(String param, int param2) throws InterruptedException
+    public String foo1(String[] param, int param2) throws InterruptedException
     {
-        for (int i = 0; i<param.length(); i++) {    
+        System.out.println(param2);
+        for (int i = 0; i<param.length; i++) {    
             Random r =new Random();
         Thread.sleep(r.nextInt(30));
         }
