@@ -305,6 +305,7 @@ public class ConfigurationImpl extends Configuration {
         if ((result = super.optionLength(option)) > 0) {
             return result;
         }
+        
         // otherwise look for the options we have added
         option = option.toLowerCase();
         if (option.equals("-nodeprecatedlist") ||
@@ -331,7 +332,8 @@ public class ConfigurationImpl extends Configuration {
                    option.equals("-stylesheetfile") ||
                    option.equals("-charset") ||
                    option.equals("-overview") ||
-                   option.equals("-xdocrootparent")) {
+                   option.equals("-xdocrootparent") ||
+                   option.equals("-serveraddress")) {
             return 2;
         } else {
             return 0;

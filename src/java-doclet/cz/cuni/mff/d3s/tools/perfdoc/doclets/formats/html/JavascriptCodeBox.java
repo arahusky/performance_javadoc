@@ -30,6 +30,7 @@ public class JavascriptCodeBox {
 
     private static StringBuilder localCode = new StringBuilder("<script>");
 
+    //server location, default is localhost with port 8080, may be changed by command line arguments
     public static String serverAdress = "http://localhost:8080";
 
     /**
@@ -107,5 +108,15 @@ public class JavascriptCodeBox {
                 + "	return methodName + args; }\n";
 
         return code;
+    }
+
+    static void findServerAddress(String[][] options) {
+        for (String[] s : options) {
+            if (s[0].toLowerCase().equals("-serveraddress")) {
+                if (s.length > 1) {
+                    serverAdress = s[1];
+                }
+            }
+        }
     }
 }

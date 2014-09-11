@@ -62,6 +62,7 @@ public class HtmlDoclet extends AbstractDoclet {
         try {
             HtmlDoclet doclet = new HtmlDoclet();
             ClassParser.arguments = root.options();
+            JavascriptCodeBox.findServerAddress(root.options());
             return doclet.start(doclet, root);
         } finally {
             ConfigurationImpl.reset();
