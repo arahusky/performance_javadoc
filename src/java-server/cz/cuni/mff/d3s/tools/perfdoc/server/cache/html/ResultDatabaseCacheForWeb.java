@@ -149,7 +149,6 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, methodName);
 
-            System.out.println(query);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {

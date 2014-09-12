@@ -106,7 +106,7 @@ public class PerformanceWriterImpl {
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
         rightSide.addAttr(HtmlAttr.CLASS, "right");
-        
+
         //div, where the graph will be shown
         HtmlTree graph = new HtmlTree(HtmlTag.DIV);
         graph.addAttr(HtmlAttr.CLASS, "graph");
@@ -116,10 +116,10 @@ public class PerformanceWriterImpl {
         HtmlTree url = new HtmlTree(HtmlTag.DIV);
         url.addAttr(HtmlAttr.CLASS, "url");
         url.addContent(" ");
-        
+
         rightSide.addContent(graph);
         rightSide.addContent(url);
-        
+
         navList.addContent(rightSide);
         navList.addContent(leftSide);
 
@@ -149,7 +149,7 @@ public class PerformanceWriterImpl {
 
         //then comes the string Configuration finally followed by all sliders/textboxes/...
         HtmlTree configurationTree = new HtmlTree(HtmlTag.P);
-        
+
         configurationTree.addContent("Configuration:");
         content.addContent(configurationTree);
 
@@ -244,8 +244,6 @@ public class PerformanceWriterImpl {
                 } else if (enumValues.length == 0) {
                     throw new NoEnumValueException(param.name());
                 } else {
-                    //debug
-                    System.out.println("adding");
                     addParameterEnum(enumValues, description, content, workloadName, number);
                 }
 
@@ -367,7 +365,7 @@ public class PerformanceWriterImpl {
     public String getUniqueInfo(String fullMethodInfo) {
         String[] chunks = fullMethodInfo.split("#");
         String result = chunks[0] + "#" + chunks[1] + "#" + chunks[2] + "#" + chunks[4];
-        
+
         return result.replaceAll("\\.", "_").replaceAll("#", "_");
     }
 

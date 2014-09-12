@@ -304,7 +304,6 @@ public class MethodMeasurer {
         //the candidate for the step must be normalized = we need to find the highest smaller (or equal) value that can be reached be adding the step to the min
         double myStep = findNearestSmallerPossibleValue(possibleStep, minVal, step);
 
-        //TODO check whether is it possible to find so many values in the interval
         double[] arr = new double[howMany];
 
         for (int i = 0; i < arr.length; i++) {

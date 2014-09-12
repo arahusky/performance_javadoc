@@ -130,7 +130,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         String[] genParametersText = getDescriptions(generatorChunks[0], generator);
 
         if (genParametersText == null) {
-            //TODO return some error
             return sb.toString();
         }
         
@@ -142,7 +141,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             sb.append("</td>");
         }
         
-        System.out.println("sitlll");
         sb.append("<td>number of measurements</td>");
         sb.append("<td>time (ms)</td></tr>");
 
@@ -209,7 +207,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
                         result[i - 2] = ((ParamNum) a).description();
                     } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
                         result[i - 2] = ((ParamDesc) a).description();
-                        System.out.println(((ParamDesc) a).description());
                     }
                 }
             }

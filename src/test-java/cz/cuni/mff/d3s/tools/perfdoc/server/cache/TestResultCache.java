@@ -19,7 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

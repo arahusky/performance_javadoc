@@ -24,7 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class, that loads measurement configuration
+ * Class, that loads measurement configuration (source is
+ * config/measurement.properties, if no is found, than default values are used)
  *
  * @author Jakub Naplava
  */
@@ -41,7 +42,7 @@ public class MeasurementConfiguration {
     private static boolean propertiesError = false;
 
     public static int returnHowManyValuesToMeasure(int priority) {
-        
+
         if (!propertiesLoaded && !propertiesError) {
             loadProperties();
         }
@@ -61,7 +62,7 @@ public class MeasurementConfiguration {
     }
 
     public static int returnHowManyTimesToMeasure(int priority) {
-        
+
         if (!propertiesLoaded && !propertiesError) {
             loadProperties();
         }

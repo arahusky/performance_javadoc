@@ -27,7 +27,7 @@ import com.sun.tools.javadoc.Main;
 import java.util.ArrayList;
 
 /**
- * Class that maintains searching of generators (including loading .java file
+ * Class that maintains searching of generators (including loading .java file)
  * (using doclet API))
  *
  * @author Jakub Naplava
@@ -58,10 +58,7 @@ public class ClassParser {
         if (sourcePath == null) {
             Main.execute("", Analyzer.class.getName(), new String[]{className});
         } else {
-            //debug
-            System.out.println("searching for class:" + sourcePath[1] + "/" + className);
             
-            //todo fixme
             String[] args = new String[]{sourcePath[0], sourcePath[1], sourcePath[1] + "/" + className};
             
             Main.execute("", Analyzer.class.getName(), args);
@@ -84,16 +81,12 @@ public class ClassParser {
 
         if (sourcePath == null) {
             Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
-        } else {
-            //debug
-            System.out.println("searching for class:" + sourcePath[1] + "/" + className);
+        } else {                        
+            String[] args = new String[]{sourcePath[0], sourcePath[1], sourcePath[1] + "/" + className};
             
-            //TODO fixme
-            Main.execute("", EnumAnalyzer.class.getName(), new String[]{sourcePath[1] + "/" + className});
+            Main.execute("", EnumAnalyzer.class.getName(), args);
         }
 
-        Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
-        System.out.println("succesfull");
         return EnumAnalyzer.enumValues;
     }
     
@@ -182,13 +175,9 @@ public class ClassParser {
         public static FieldDoc[] enumValues = null;
 
         public static boolean start(RootDoc root) {
-            //debug
-            System.out.println("I started");
             ClassDoc[] classes = root.classes();
 
             if (classes.length == 0) {
-                //debug
-                System.out.println("ended first");
                 return false;
             }
 
@@ -198,8 +187,6 @@ public class ClassParser {
                 enumValues = cd.enumConstants();
             }
 
-            //debug
-            System.out.println("still here");
             return true;
         }
 

@@ -58,8 +58,6 @@ public abstract class PerformanceWriter {
         JSAjaxHandler.testedMethod = perfWriter.getUniqueFullInfo(doc);
 
         //list, that will contain all generators for the given method (doc) 
-        //debug
-        System.out.println(workloadNames.length);
         ArrayList<MethodDoc> list = new ArrayList<>();
         for (String w : workloadNames) {
             MethodDoc[] docs = ClassParser.findMethods(w);

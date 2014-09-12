@@ -294,7 +294,6 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                         result[i - 2] = ((ParamNum) a).description();
                     } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
                         result[i - 2] = ((ParamDesc) a).description();
-                        System.out.println(((ParamDesc) a).description());
                     }
                 }
             }
