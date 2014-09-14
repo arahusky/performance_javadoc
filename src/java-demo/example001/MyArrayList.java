@@ -14,14 +14,25 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package example001;
 
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads;
+import java.util.ArrayList;
 
 /**
  *
  * @author Jakub Naplava
  */
-public interface ServiceWorkload {
-    public int getNumberCalls();
-    public int getPriority();
+public class MyArrayList<T> extends ArrayList<T> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Workloads({
+        @Workload("example001.MyListGenerator#prepareDataBad"),
+        @Workload("example001.MyListGenerator#prepareDataGood")})
+    @Override
+    public boolean contains(Object o) {
+        return super.contains(o);
+    }
 }

@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -82,7 +81,9 @@ class MeasureRequestHandler implements HttpHandler {
             sendErrorMessage("Unable to find a generator class", exchange, responseBody);
         } catch (InstantiationException ex) {
             sendErrorMessage("Unable to make an instance of generator class", exchange, responseBody);
-        } catch (IllegalAccessException | InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
+            sendErrorMessage("The generator or tested method throw exception (" + ex.getCause() + ")", exchange, responseBody);
+        } catch (IllegalAccessException ex) {
             sendErrorMessage("Some other error", exchange, responseBody);
         } catch (IllegalArgumentException ex) {
             sendErrorMessage("The bad parameters were sent to server (There might be an error in generator).", exchange, responseBody);

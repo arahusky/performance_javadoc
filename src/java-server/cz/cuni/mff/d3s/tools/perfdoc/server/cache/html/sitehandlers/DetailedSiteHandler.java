@@ -142,7 +142,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("</td>");
 
         sb.append("<td>number of measurements</td>");
-        sb.append("<td>time (ms)</td></tr></thead>");
+        sb.append("<td>time (ns)</td></tr></thead>");
 
         List<Map<String, Object>> list = res.getResults(testedMethod, generator);
 

@@ -27,11 +27,11 @@ public class ServiceWorkloadImpl implements ServiceWorkload{
     private int priority = 1;
     
     @Override
-    public int getNumberResults() {
+    public int getNumberCalls() {
         return numberResults;
     }
     
-    public void setNumberResults(int i) {
+    public void setNumberCalls(int i) {
         numberResults = i;
     }
 

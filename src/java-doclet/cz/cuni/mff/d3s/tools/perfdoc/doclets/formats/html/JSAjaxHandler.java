@@ -57,8 +57,8 @@ public class JSAjaxHandler {
                 + " console.log( \"Status: \" + status );"
                 + " console.dir( xhr );"
                 + "if (priority < 2) {"
-                + " if (xhr.status == 0) { $(\"#\" + graphName + \" .right\").text(\"Server is shut-down, or could not connect to him.\"); }"
-                + "else { $(\"#\" + graphName + \" .right\").text(xhr.status + \": \" + xhr.responseText); }"
+                + " if (xhr.status == 0) { $(\"#\" + graphName + \" .right .graph\").text(\"Server is shut-down, or could not connect to him.\"); }"
+                + "else { $(\"#\" + graphName + \" .right .graph\").text(xhr.status + \": \" + xhr.responseText); }"
                 + "} }\n";
 
         return errorFunction;
@@ -129,7 +129,7 @@ public class JSAjaxHandler {
                 + "    document.getElementById(\""+ divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
                 + "    JSON.parse(json).data," 
                 + "    {"
-                + "      ylabel: 'Search time (' + JSON.parse(json).units + ')',"
+                + "      ylabel: 'Elapsed time (' + JSON.parse(json).units + ')',"
                 + "      xlabel: graph"
                 + "    }"
                 + "  );");

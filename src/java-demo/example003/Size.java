@@ -14,14 +14,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+package example003;
 
 /**
  *
  * @author Jakub Naplava
  */
-public interface ServiceWorkload {
-    public int getNumberCalls();
-    public int getPriority();
+public enum Size {
+
+    QVGA,
+    VGA,
+    SVGA,
+    XGA,
+    HD720,
+    HD1080  
 }

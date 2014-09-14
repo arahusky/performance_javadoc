@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 
-package simplehtmldoclet.enums.next;
+package example002.enums;
 
 /**
  *
- * @author arahusky
+ * @author Jakub Naplava
  */
 public enum SomeOtherEnum {
-    FirstValue, SecondValue, ThirdValue
+    ONE, TWO, FOUR
 }

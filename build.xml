@@ -12,12 +12,13 @@
 	<property name="doclet.build.dir" location="${build.dir}/classes/java-doclet" />
 	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
 	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
-	<property name="server.build.dir" location="${build.dir}/classes/java-server" />
+	<property name="server.build.dir" location="${build.dir}/classes/java-server" />	
 	
 	<!-- external libraries -->
 	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
 	<property name="json.parser.jar" location="lib/json-20140107.jar"/>
 	<property name="derby.jar" location="lib/derby.jar"/>
+	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
 
 	<target name="main" depends="compile-doclet,compile-demo,compile-server" description="Main target: compiles everything.">
 	</target>
@@ -46,6 +47,7 @@
 			<classpath>
 				<pathelement path="${doclet.build.dir}"/>
 				<pathelement path="${jdk.tools.jar}"/>
+				<pathelement path="${demo.graph.jar}"/>
 			</classpath>
 		</javac>
 	</target>
@@ -84,7 +86,10 @@
 		<mkdir dir="${demo.build.javadoc.dir}" />
 		<javadoc destdir="${demo.build.javadoc.dir}">
 			<fileset dir="${demo.src.dir}" defaultexcludes="yes">
-				<include name="**/SimpleHTMLDoclet.java"/>
+				<include name="**/SimpleWaiting.java"/>
+				<include name="**/MyArrayList.java"/>
+				<include name="**/MyArrayListMoreOps.java"/>
+				<include name="**/GralTest.java"/>
 			</fileset>
 			<doclet
 				name="cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard"
@@ -92,6 +97,7 @@
 			/>
 			<classpath>
 				<pathelement path="${doclet.build.dir}"/>
+				<pathelement path="${demo.graph.jar}"/>
 			</classpath>
 			<arg value="-sourcepath" />
             <arg value="${demo.src.dir}" />

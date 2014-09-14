@@ -85,10 +85,7 @@ public class MethodMeasurer {
 
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
-
-        //passing the amount of wanted results to generator
-        serviceImpl.setNumberResults(1);
-
+       
         //passing the priority to generator
         serviceImpl.setPriority(priority);
 
@@ -104,6 +101,9 @@ public class MethodMeasurer {
 
         //how many times to measure the method in one cycle
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
+        
+        //passing the amount of wanted results to generator
+        serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
         //wait until we can measure (there is no lock for our hash)
         lockBase.waitUntilFree(hash);
@@ -129,23 +129,28 @@ public class MethodMeasurer {
             try {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
 
-                Object[] objs;
+                Object[] objs;                                
+                long totalDuration = 0;
+                int times = 0;
+                
                 //the generator prepared us the arguments for tested method in workloadImpl
                 //we just get one and measure the tested method with it
                 while ((objs = workloadImpl.getCall()) != null) {
 
-                    //TODO if is an array, if not ...
+                    Object[] o = (Object[]) objs[1];
+                    
                     long before = System.nanoTime();
-                    for (int a = 0; a < howManyTimesToMeasure; a++) {
-                        method.invoke(objs[0], objs[1]);
-                    }
+                    method.invoke(objs[0], o);
                     long after = System.nanoTime();
 
-                    long duration = (after - before) / howManyTimesToMeasure;
-                    result.add(new Object[]{valuesToMeasure[i], duration});
-
-                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, duration);
+                    long duration = after - before;                    
+                    totalDuration += duration;
+                    times++;
                 }
+                    totalDuration = totalDuration / times;
+                    result.add(new Object[]{valuesToMeasure[i], totalDuration});
+
+                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, totalDuration);                
             } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
                 lockBase.freeLock(hash);

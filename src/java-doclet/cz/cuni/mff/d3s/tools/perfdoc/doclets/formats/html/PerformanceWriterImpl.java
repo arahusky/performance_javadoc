@@ -150,7 +150,7 @@ public class PerformanceWriterImpl {
         //then comes the string Configuration finally followed by all sliders/textboxes/...
         HtmlTree configurationTree = new HtmlTree(HtmlTag.P);
 
-        configurationTree.addContent("Configuration:");
+        configurationTree.addContent(new RawHtml("<b>Configuration:</b>"));
         content.addContent(configurationTree);
 
         Parameter[] param = doc.parameters();

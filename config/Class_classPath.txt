@@ -1,1 +1,2 @@
 out/classes/java-demo
+src/java-demo/gral-core-0.10.jar

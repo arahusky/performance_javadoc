@@ -142,7 +142,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         }
         
         sb.append("<td>number of measurements</td>");
-        sb.append("<td>time (ms)</td></tr>");
+        sb.append("<td>time (ns)</td></tr>");
 
         List<Map<String, Object>> list = res.getResults(testedMethod, generator);
 
