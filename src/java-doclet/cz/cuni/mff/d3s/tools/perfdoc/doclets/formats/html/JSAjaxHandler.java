@@ -66,27 +66,34 @@ public class JSAjaxHandler {
 
     /**
      * To the local javascript code adds the succesfunction for current
-     * generator
+     * generator, this function handles incoming JSON results (puts them in the
+     * right graph, changes graph color, ...)
      */
     public static void addSuccessFunction() {
         String successFunctionName = returnSuccesFunctionName();
 
         String success = "function " + successFunctionName + "(json, data, myName, graphName, graph, priority) {"
                 + "    if (priority == 1) {"
-                +      returnStartGraphCode(returnDivName())
+                + returnStartGraphCode(returnDivName())
                 + "    var jsonData = JSON.parse(data); "
                 + "    jsonData.priority++; "
                 + "    var newData = JSON.stringify(jsonData, null, 2);"
                 + "    callServer(newData, myName, graphName, myGraph, ++priority);" //here must be graph variable passing the graph reference
                 + "    } else if (priority < 4) {"
                 + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
+                + "    if (priority == 2) {"
+                + "    graph.updateOptions( { 'colors': ['#B0171F'] }); graph.updateOptions( { 'strokeWidth': 0.75 });"
+                + "    } else {"
+                + "    graph.updateOptions( { 'colors': ['#9400D3'] }); graph.updateOptions( { 'strokeWidth': 1.0 }); } "
                 + "    var jsonData = JSON.parse(data); "
                 + "    jsonData.priority++; "
                 + "    var newData = JSON.stringify(jsonData, null, 2);"
                 + "    callServer(newData, myName, graphName, graph, ++priority);"
                 + "    } else {"
                 + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
-                + "    alert(\"Measurement done\");"
+                + "    graph.updateOptions( { 'colors': ['#0000FF'] });"
+                + "    graph.updateOptions( { 'strokeWidth': 1.25 });"
+                + "    graph.updateOptions( { 'strokePattern': null })"
                 + "    }"
                 + "    }\n ";
 
@@ -126,11 +133,16 @@ public class JSAjaxHandler {
         StringBuilder sb = new StringBuilder();
         sb.append(""
                 + " var myGraph = new Dygraph("
-                + "    document.getElementById(\""+ divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
-                + "    JSON.parse(json).data," 
+                + "    document.getElementById(\"" + divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
+                + "    JSON.parse(json).data,"
                 + "    {"
                 + "      ylabel: 'Elapsed time (' + JSON.parse(json).units + ')',"
-                + "      xlabel: graph"
+                + "      xlabel: graph,"
+                + "      strokeWidth: 0.5,"
+                + "      colors: ['#FF82AB'],"
+                + "      strokePattern: Dygraph.DASHED_LINE,"
+                + "      drawPoints : true," 
+                + "      pointSize : 2,"
                 + "    }"
                 + "  );");
 

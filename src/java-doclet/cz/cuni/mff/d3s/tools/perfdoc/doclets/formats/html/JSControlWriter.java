@@ -106,6 +106,7 @@ public class JSControlWriter {
         sb.append("var adress = '" + adress 
                 + "' + method1 + 'separator=' +"
                 + "method2 + 'separator=' + stringData;");
+        sb.append("$(\"#" + divName + " .right .graph\").html('All parameteres checked succesfully. Sending request to the server. <br /> Please wait...');");
         sb.append("$(\"#" + divName + " .right .url\").html(\"<a target=\\\"_blank\\\" href=\" + adress + \"> Results in a table.</a> \");");
         
         JSAjaxHandler.addSuccessFunction();
