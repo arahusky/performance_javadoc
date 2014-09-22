@@ -116,8 +116,8 @@ public class MethodInfo {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder(className + "#" + methodName + "#");
-        for (int i = 0; i < params.size(); i++) {
-            result.append("@" + params.get(i));
+        for (String param : params) {
+            result.append("@" + param);
         }
 
         return result.toString();

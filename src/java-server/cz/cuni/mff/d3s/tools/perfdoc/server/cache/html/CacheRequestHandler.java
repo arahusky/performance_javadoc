@@ -18,6 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.javascript.JavascriptCodeHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.ClassSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.DetailedSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.FullDebugSiteHandler;
@@ -51,7 +52,7 @@ public class CacheRequestHandler implements HttpHandler {
         if (path.charAt(path.length() - 1) == '/') {
             path = path.substring(0, path.length() - 1);
         }
-
+        
         switch (path) {
             case "/cache":
                 handler = new OverviewSiteHandler();
@@ -70,6 +71,9 @@ public class CacheRequestHandler implements HttpHandler {
                 break;
             case "/cache/full":
                 handler = new FullDebugSiteHandler();
+                break;
+            case "/cache/js":
+                handler = new JavascriptCodeHandler();
                 break;
             default:
                 log.log(Level.CONFIG, "User tried to go on a page ({0}), that does not exist", path);

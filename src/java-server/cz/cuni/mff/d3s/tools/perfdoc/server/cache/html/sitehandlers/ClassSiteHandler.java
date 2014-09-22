@@ -42,7 +42,7 @@ private static final Logger log = Logger.getLogger(ClassSiteHandler.class.getNam
         if (res != null) {
 
             ArrayList<String> testedMethod = res.getDistinctClassMethods(className);
-            
+                        
             addCode(returnHeading(className));
             String classOutput = formatMethods(testedMethod);
             addCode(classOutput);
@@ -102,9 +102,14 @@ private static final Logger log = Logger.getLogger(ClassSiteHandler.class.getNam
         String[] chunks = method.split("#");
         
         if (chunks.length < 3) {
-            return "";
+            //situation, where we are forcing either some mistake input or method with no parameters
+            //if is it method with no params
+            if (chunks.length == 2 && method.endsWith("#")) {
+                String[] newChunks = new String[] {chunks[0], chunks[1], ""};
+                chunks = newChunks;
+            }
+            else return "";
         }
-        
         String methodName = chunks[1];
         String parameterInfo = getParameterInfo(chunks[2]);
         

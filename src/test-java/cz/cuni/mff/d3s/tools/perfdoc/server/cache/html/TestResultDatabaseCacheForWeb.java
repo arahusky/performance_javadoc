@@ -16,13 +16,14 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("method", "generator", "[data]", 10, 1000);
         res.insertResult("method", "generator1", "[data2]", 9, 200);
         res.insertResult("method2", "generator2", "[data3]", 90, 1200);
-        List<Map<String, Object>> list = res.getResults();
+        List<DatabaseMeasurementResult> list = res.getResults();
 
         Assert.assertNotNull(list);
 
@@ -154,7 +155,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("package1.class1#method", "someGen", "someData", 10, 300);
         res.insertResult("package1.class3#method2", "someGen", "someData", 10, 300);
         res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
-        List<Map<String, Object>> list = res.getResults("package1.class1#method", "generator");
+        List<DatabaseMeasurementResult> list = res.getResults("package1.class1#method", "generator");
 
         Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
@@ -178,17 +179,17 @@ public class TestResultDatabaseCacheForWeb {
         rowEquals2(alist, list.get(2));
     }
 
-    private void rowEquals2(ArrayList<Object> row, Map<String, Object> map) {
-        Assert.assertEquals(row.get(0), map.get("data"));
-        Assert.assertEquals(row.get(1), map.get("numberOfMeasurements"));
-        Assert.assertEquals(row.get(2), map.get("time"));
+    private void rowEquals2(ArrayList<Object> row, DatabaseMeasurementResult resultItem) {
+        Assert.assertEquals(row.get(0), resultItem.getData());
+        Assert.assertEquals(row.get(1), resultItem.getNumberOfMeasurements());
+        Assert.assertEquals(row.get(2), resultItem.getTime());
     }
 
-    private void rowEquals(ArrayList<Object> row, Map<String, Object> map) {
-        Assert.assertEquals(row.get(0), map.get("methodName"));
-        Assert.assertEquals(row.get(1), map.get("generator"));
-        Assert.assertEquals(row.get(2), map.get("data"));
-        Assert.assertEquals(row.get(3), map.get("numberOfMeasurements"));
-        Assert.assertEquals(row.get(4), map.get("time"));
+    private void rowEquals(ArrayList<Object> row, DatabaseMeasurementResult resultItem) {
+        Assert.assertEquals(row.get(0), resultItem.getTestedMethod());
+        Assert.assertEquals(row.get(1), resultItem.getGenerator());
+        Assert.assertEquals(row.get(2), resultItem.getData());
+        Assert.assertEquals(row.get(3), resultItem.getNumberOfMeasurements());
+        Assert.assertEquals(row.get(4), resultItem.getTime());
     }
 }

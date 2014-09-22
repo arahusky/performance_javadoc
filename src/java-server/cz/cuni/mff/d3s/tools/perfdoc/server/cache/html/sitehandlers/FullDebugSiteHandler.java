@@ -18,11 +18,11 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,8 +45,8 @@ private static final Logger log = Logger.getLogger(FullDebugSiteHandler.class.ge
 
             ArrayList<String> testedMethod = res.getDistinctClassMethods(className);
             
-            List<Map<String, Object>> map = res.getResults();
-            addCode(formatOutput(map));
+            List<DatabaseMeasurementResult> item = res.getResults();
+            addCode(formatOutput(item));
             String output = getCode();
 
             try {
@@ -68,7 +68,7 @@ private static final Logger log = Logger.getLogger(FullDebugSiteHandler.class.ge
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
     
-    private String formatOutput(List<Map<String, Object>> output) {
+    private String formatOutput(List<DatabaseMeasurementResult> output) {
         StringBuilder sb = new StringBuilder("<table border = \"1\">");
         sb.append("<tr>");
         sb.append("<td><b>methodName</b></td>");
@@ -78,21 +78,21 @@ private static final Logger log = Logger.getLogger(FullDebugSiteHandler.class.ge
         sb.append("<td><b>time</b></td>");
         sb.append("</tr>");
         
-        for (Map<String, Object> map : output) {
+        for (DatabaseMeasurementResult item : output) {
             sb.append("<tr>");
-            String methodName = (String) map.get("methodName");
+            String methodName = item.getTestedMethod();
             sb.append("<td>" + methodName + "</td>");
             
-            String generator = (String) map.get("generator");
+            String generator = item.getGenerator();
             sb.append("<td>" + generator + "</td>");
             
-            String data = (String) map.get("data");
+            String data = item.getData();
             sb.append("<td>" + data + "</td>");
             
-            int numberOfMeasurements = (int) map.get("numberOfMeasurements");
+            int numberOfMeasurements = item.getNumberOfMeasurements();
             sb.append("<td>" + numberOfMeasurements + "</td>");
             
-            long time = (long) map.get("time");
+            long time = item.getTime();
             sb.append("<td>" + time + "</td>");
             
             sb.append("</tr>");

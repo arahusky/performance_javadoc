@@ -51,16 +51,19 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     }    
 
     /**
-     * Gets current html code
+     * Gets the html code
      * @return 
      */
     protected String getCode() {
         if (code.length() == 0) {
             startNewCode();
-            endCode();
+            endCode(code);
+            return code.toString();
         }
 
-        return code.toString();
+        StringBuilder sb = new StringBuilder(code.toString());
+        endCode(sb);
+        return sb.toString();
     }
 
     /**
@@ -87,10 +90,10 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     private void addHeader() {
         code.append("<head>");
         code.append(head);
-        code.append("</head>");
+        code.append("</head> <body>");
     }
 
-    private void endCode() {
+    private void endCode(StringBuilder code) {
         code.append("</body>");
         code.append("</html>");
     }

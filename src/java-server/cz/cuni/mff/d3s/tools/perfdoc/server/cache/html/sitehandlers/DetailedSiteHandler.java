@@ -21,13 +21,12 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,6 +64,9 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             //adding links to JQquery in order to be able to use sort
             addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
             addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
+            addToHeader("<script src=\"js?tablesorter.js\"></script>");
+            addToHeader("<script>$(document).ready(function()  { " +
+                        "        $(\"#myTable\").tablesorter(); } ); </script> ");
 
             addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
@@ -135,22 +137,22 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
         double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
 
-        sb.append("<table border = \"1\"><thead><tr>");
+        sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
 
-        sb.append("<td>");
+        sb.append("<th>");
         sb.append(genParametersText[range] + " (" + genParameters[range + 2] + ")");
-        sb.append("</td>");
+        sb.append("</th>");
 
-        sb.append("<td>number of measurements</td>");
-        sb.append("<td>time (ns)</td></tr></thead>");
+        sb.append("<th>number of measurements</th>");
+        sb.append("<th>time (ns)</th></tr></thead>");
 
-        List<Map<String, Object>> list = res.getResults(testedMethod, generator);
+        List<DatabaseMeasurementResult> list = res.getResults(testedMethod, generator);
 
         sb.append("<tbody>");
         if (list != null) {
-            for (Map<String, Object> map : list) {
+            for (DatabaseMeasurementResult item : list) {
 
-                sb.append(getRowIfPass(normalizedParameters, map, min, max, range));
+                sb.append(getRowIfPass(normalizedParameters, item, min, max, range));
             }
         }
 
@@ -159,10 +161,10 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    String getRowIfPass(String[] normalizedData, Map<String, Object> mapDB, double min, double max, int rangeValue) {
+    String getRowIfPass(String[] normalizedData, DatabaseMeasurementResult resultItem, double min, double max, int rangeValue) {
         StringBuilder sb = new StringBuilder();
 
-        String data = (String) mapDB.get("data");
+        String data = resultItem.getData();
         String[] datas = data.split(";");
 
         for (int i = 0; i < datas.length; i++) {
@@ -182,10 +184,10 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<tr>");
         sb.append("<td>" + datas[rangeValue] + "</td>");
 
-        int numberOfMeasurements = (int) mapDB.get("numberOfMeasurements");
+        int numberOfMeasurements = resultItem.getNumberOfMeasurements();
         sb.append("<td>" + numberOfMeasurements + "</td>");
 
-        long time = (long) mapDB.get("time");
+        long time = resultItem.getTime();
         sb.append("<td>" + time + "</td>");
 
         sb.append("</tr>");

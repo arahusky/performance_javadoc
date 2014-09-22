@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,9 +50,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public List<Map<String, Object>> getResults() {
+    public List<DatabaseMeasurementResult> getResults() {
 
-        ArrayList<Map<String, Object>> list = new ArrayList<>();
+        ArrayList<DatabaseMeasurementResult> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
@@ -65,14 +66,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("methodName", methodName);
-                map.put("generator", generator);
-                map.put("data", data);
-                map.put("numberOfMeasurements", numberOfMeasurements);
-                map.put("time", time);
+                DatabaseMeasurementResult item = new DatabaseMeasurementResult(methodName, generator, data, numberOfMeasurements, time);
 
-                list.add(map);
+                list.add(item);
             }
             return list;
         } catch (SQLException e) {
@@ -164,8 +160,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
     }
 
     @Override
-    public List<Map<String, Object>> getResults(String testedMethod, String generator) {
-        ArrayList<Map<String, Object>> list = new ArrayList<>();
+    public List<DatabaseMeasurementResult> getResults(String testedMethod, String generator) {
+        ArrayList<DatabaseMeasurementResult> list = new ArrayList<>();
 
         try {
             String query = "SELECT * "
@@ -183,12 +179,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("data", data);
-                map.put("numberOfMeasurements", numberOfMeasurements);
-                map.put("time", time);
+                DatabaseMeasurementResult item = new DatabaseMeasurementResult(testedMethod, generator, data, numberOfMeasurements, time);
 
-                list.add(map);
+                list.add(item);
             }
             return list;
         } catch (SQLException e) {

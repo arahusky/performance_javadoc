@@ -21,12 +21,12 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -48,7 +48,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         if ((methods == null) || (methods.length != 2)) {
             try {
-                sentErrorHeaderAndClose(exchange, "The URL adress you passes seems not be correct.", 404);                
+                sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404);                
             } catch (IOException ex) {
                 Logger.getLogger(MethodGeneratorSiteHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -60,6 +60,13 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         if (res != null) {
 
+             //adding links to JQquery in order to be able to use sort
+            addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
+            addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
+            addToHeader("<script src=\"js?tablesorter.js\"></script>");
+            addToHeader("<script>$(document).ready(function()  { " +
+                        "        $(\"#myTable\").tablesorter(); } ); </script> ");
+            
             addCode(returnHeading(methods[0], testedMethod, generator));
             addCode(getBody(testedMethod, generator, res));
             String output = getCode();
@@ -133,40 +140,40 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             return sb.toString();
         }
         
-        sb.append("<table border = \"1\"><tr>");
+        sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
         
         for (int i = 0; i < genParametersText.length; i++) {
-            sb.append("<td>");
+            sb.append("<th>");
             sb.append(genParametersText[i] + " (" + genParameters[i+2] + ")");
-            sb.append("</td>");
+            sb.append("</th>");
         }
         
-        sb.append("<td>number of measurements</td>");
-        sb.append("<td>time (ns)</td></tr>");
+        sb.append("<th>number of measurements</th>");
+        sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
-        List<Map<String, Object>> list = res.getResults(testedMethod, generator);
+        List<DatabaseMeasurementResult> list = res.getResults(testedMethod, generator);
 
         if (list != null) {
-            for (Map<String, Object> map : list) {
+            for (DatabaseMeasurementResult resultItem : list) {
                 sb.append("<tr>");
 
-                String data = (String) map.get("data");
+                String data = resultItem.getData();
                 String[] datas = data.split(";");
                 for (String datum : datas) {
                     sb.append("<td>" + datum + "</td>");
                 }
 
-                int numberOfMeasurements = (int) map.get("numberOfMeasurements");
+                int numberOfMeasurements = resultItem.getNumberOfMeasurements();
                 sb.append("<td>" + numberOfMeasurements + "</td>");
 
-                long time = (long) map.get("time");
+                long time = resultItem.getTime();
                 sb.append("<td>" + time + "</td>");
 
                 sb.append("</tr>");
             }
         }
 
-        sb.append("</table>");
+        sb.append("</tbody></table>");
 
         return sb.toString();
     }

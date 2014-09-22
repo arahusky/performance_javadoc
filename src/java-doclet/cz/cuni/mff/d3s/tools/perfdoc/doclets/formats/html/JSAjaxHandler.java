@@ -128,7 +128,12 @@ public class JSAjaxHandler {
 
         return sb.toString();
     }
-
+    
+    /**
+     * Returns code, that creates new Dygraph in given divName
+     * @param divName the div, where the graph will be shown
+     * @return 
+     */
     private static String returnStartGraphCode(String divName) {
         StringBuilder sb = new StringBuilder();
         sb.append(""
@@ -150,7 +155,7 @@ public class JSAjaxHandler {
     }
 
     /**
-     * Returns the JSON format data
+     * Returns the data in JSON format
      */
     private static String returnDataJSON() {
         StringBuilder sb = new StringBuilder();
