@@ -3,16 +3,21 @@
 
 	<property environment="env"/>
 
-	<property name="doclet.src.dir" location="src/java-doclet" />
-	<property name="demo.src.dir" location="src/java-demo" />
-	<property name="server.src.dir" location="src/java-server" />
+	<!-- source directories -->
+	<property name="src.dir" location="src" />
+	<property name="doclet.src.dir" location="${src.dir}/java-doclet" />
+	<property name="demo.src.dir" location="${src.dir}/java-demo" />
+	<property name="server.src.dir" location="${src.dir}/java-server" />
+	<property name="test.src.dir" location="${src.dir}/test-java" />
 	
+	<!-- build directories -->
 	<property name="build.dir" location="out" />
 	<property name="javadoc.build.dir" location="${build.dir}/javadoc" />
 	<property name="doclet.build.dir" location="${build.dir}/classes/java-doclet" />
 	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
 	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
 	<property name="server.build.dir" location="${build.dir}/classes/java-server" />	
+	<property name="test.build.dir" location="${build.dir}/classes/test-java" />
 
 	<property name="jar.build.dir" location="${build.dir}/jars" />
 	
@@ -21,6 +26,10 @@
 	<property name="json.parser.jar" location="lib/json-20140107.jar"/>
 	<property name="derby.jar" location="lib/derby.jar"/>
 	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
+
+	<!-- external libraries used for unit-testing -->
+	<property name="junit.jar" location="lib/junit-4.11.jar"/>
+	<property name="hamcrest.jar" location="lib/hamcrest-all-1.3.jar"/>	
 
 	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar" description="Main target: compiles everything and creates JAR file for server.">
 	</target>
@@ -31,7 +40,7 @@
 				debug="true"
 				includeantruntime="false">
 			<compilerarg value="-Xlint:all"/>
-			<classpath>
+			<classpath>				
 				<pathelement path="${jdk.tools.jar}"/>
 			</classpath>
 		</javac>
@@ -62,6 +71,20 @@
 			<compilerarg value="-Xlint:all"/>
 			<classpath>
 				<pathelement path="${json.parser.jar}"/>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="compile-test" depends="compile-doclet,compile-server" description="Compile the test files.">
+		<mkdir dir="${test.build.dir}" />
+		<javac srcdir="${test.src.dir}" destdir="${test.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+			<classpath>
+				<pathelement path="${junit.jar}"/>
+				<pathelement path="${server.build.dir}"/>
+				<pathelement path="${doclet.build.dir}"/>
 			</classpath>
 		</javac>
 	</target>
@@ -126,9 +149,37 @@
  		</java>  
  	</target>
 
+ 	<target name="test" depends="compile-doclet,compile-server,compile-test" description="Run unit-tests.">
+  	  <mkdir dir="test"/>
+
+ 	   <junit printsummary="yes" haltonfailure="yes">
+    	   <classpath>
+				<pathelement path="${junit.jar}"/>
+				<pathelement path="${hamcrest.jar}"/>
+				<pathelement path="${derby.jar}"/>
+				<pathelement path="${server.build.dir}"/>
+				<pathelement path="${doclet.build.dir}"/>
+				<pathelement path="${test.build.dir}"/>								
+			</classpath>
+
+			<formatter type="plain"/>
+      		<formatter type="xml"/>
+
+    		<batchtest fork="yes" todir="test">
+       		 	<fileset dir="${test.build.dir}">         		 
+       			</fileset>
+      	    </batchtest>
+       </junit>
+
+       <delete dir="testDB" />
+       <echo message="Test results can be found in the directory 'test'..." />
+ 	</target>
+
 	<target name="clean" description="Remove all the generated files.">
 		<delete dir="${build.dir}" />
-		<delete dir="cacheDB" />
+		<delete dir="cacheDB" />		
+		<delete dir="test" />
 		<delete file="derby.log" />
+		<delete file="server.jar" />		
 	</target>
 </project>
