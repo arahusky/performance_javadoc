@@ -17,11 +17,11 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
 /**
- * Class that represents one measurement saved in database
+ * Class that represents one measurement
  * 
  * @author Jakub Naplava
  */
-public class DatabaseMeasurementResult {
+public class MeasurementResult {
 
     private final String testedMethod;
     private final String generator;
@@ -29,7 +29,7 @@ public class DatabaseMeasurementResult {
     private final int numberOfMeasurements;
     private final long time;
     
-    public DatabaseMeasurementResult(String testedMethod, String generator, String data, int numberOfMeasurements, long time) {
+    public MeasurementResult(String testedMethod, String generator, String data, int numberOfMeasurements, long time) {
         this.testedMethod = testedMethod;
         this.generator = generator;
         this.data = data;

@@ -16,7 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +64,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("method", "generator", "[data]", 10, 1000);
         res.insertResult("method", "generator1", "[data2]", 9, 200);
         res.insertResult("method2", "generator2", "[data3]", 90, 1200);
-        List<DatabaseMeasurementResult> list = res.getResults();
+        List<MeasurementResult> list = res.getResults();
 
         Assert.assertNotNull(list);
 
@@ -155,7 +155,7 @@ public class TestResultDatabaseCacheForWeb {
         res.insertResult("package1.class1#method", "someGen", "someData", 10, 300);
         res.insertResult("package1.class3#method2", "someGen", "someData", 10, 300);
         res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
-        List<DatabaseMeasurementResult> list = res.getResults("package1.class1#method", "generator");
+        List<MeasurementResult> list = res.getResults("package1.class1#method", "generator");
 
         Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
@@ -179,13 +179,12 @@ public class TestResultDatabaseCacheForWeb {
         rowEquals2(alist, list.get(2));
     }
 
-    private void rowEquals2(ArrayList<Object> row, DatabaseMeasurementResult resultItem) {
-        Assert.assertEquals(row.get(0), resultItem.getData());
-        Assert.assertEquals(row.get(1), resultItem.getNumberOfMeasurements());
+    private void rowEquals2(ArrayList<Object> row, MeasurementResult resultItem) {
+        Assert.assertEquals(row.get(0), resultItem.getData());     Assert.assertEquals(row.get(1), resultItem.getNumberOfMeasurements());
         Assert.assertEquals(row.get(2), resultItem.getTime());
     }
 
-    private void rowEquals(ArrayList<Object> row, DatabaseMeasurementResult resultItem) {
+    private void rowEquals(ArrayList<Object> row, MeasurementResult resultItem) {
         Assert.assertEquals(row.get(0), resultItem.getTestedMethod());
         Assert.assertEquals(row.get(1), resultItem.getGenerator());
         Assert.assertEquals(row.get(2), resultItem.getData());

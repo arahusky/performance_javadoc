@@ -22,7 +22,7 @@
 	<property name="derby.jar" location="lib/derby.jar"/>
 	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
 
-	<target name="main" depends="compile-doclet,compile-demo,compile-server" description="Main target: compiles everything.">
+	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar" description="Main target: compiles everything and creates JAR file for server.">
 	</target>
 	
 	<target name="compile-doclet" description="Compile the PerfDoc doclet.">
@@ -81,9 +81,19 @@
 		<copy todir="${javadoc.build.dir}">
 			<fileset dir="${java.src.dir}" includes="**/doc-files/**" erroronmissingdir="false"/>
 		</copy>
+	</target>	
+	
+	<target name="create-server-jar" depends="compile-server" description="Creates JAR file for server.">
+		<jar destfile="server.jar" basedir="${server.build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer" />
+                <attribute name="Class-Path" 
+                    value="./lib/derby.jar 
+                      ./lib/json-20140107.jar " />
+            </manifest>
+        </jar>
 	</target>
-	
-	
+
 	<target name="run-demo" depends="compile-demo,compile-doclet" description="Run doclet demo.">
 		<mkdir dir="${demo.build.javadoc.dir}" />
 		<javadoc destdir="${demo.build.javadoc.dir}">

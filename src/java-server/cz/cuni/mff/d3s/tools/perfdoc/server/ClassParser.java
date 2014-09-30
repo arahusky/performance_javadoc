@@ -31,18 +31,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class to load requested .class files
+ * Class to load and store requested .class files 
+ *
  * @author Jakub Naplava
  */
 public class ClassParser {
 
     private static final Logger log = Logger.getLogger(ClassParser.class.getName());
-    
+
+    //the cache where the tested classes and generators are stored in order to better performance
     private ReflectionCache refCache;
-     
+
     //loaded class
     public Class<?> clazz;
 
+    //classloader that is used to load all tested methods and generators
     static ClassLoader cl;
 
     /**
@@ -50,12 +53,13 @@ public class ClassParser {
      * determined by a className
      *
      * @param className
-     * @throws MalformedURLException when there was a problem when parsing class
-     * location
-     * @throws ClassNotFoundException when the class was not found
+     * @throws ClassNotFoundException when tested method or generator method
+     * were not found
+     * @throws MalformedURLException when files in which to search the files are
+     * in a bad format
      */
     public ClassParser(String className) throws MalformedURLException, ClassNotFoundException, IOException {
-        loadClass(className);        
+        loadClass(className);
     }
 
     /**
@@ -70,7 +74,7 @@ public class ClassParser {
     private void loadClass(String className) throws ClassNotFoundException, MalformedURLException, IOException {
         try {
             refCache = ReflectionConcurrentMapCache.getInstance();
-            
+
             if (cl == null) {
                 URL[] urls = findClassClassPaths();
                 cl = new URLClassLoader(urls);
@@ -95,9 +99,12 @@ public class ClassParser {
     }
 
     /**
-     * Finds all the classpaths (that will be used while loading classes), that are saved in configuration file
+     * Finds all the classpaths (that will be used while loading classes), that
+     * are saved in configuration file
+     *
      * @return
-     * @throws IOException when there is any problem when working with Class_classPath.txt
+     * @throws IOException when there is any problem when working with
+     * Class_classPath.txt
      */
     private URL[] findClassClassPaths() throws IOException {
         ArrayList<URL> urls = new ArrayList<>();
@@ -120,7 +127,7 @@ public class ClassParser {
      * @param methodInfo
      * @return the Method instance if found, otherwise null
      */
-     public Method findMethod(MethodInfo methodInfo) {
+    public Method findMethod(MethodInfo methodInfo) {
 
         String methodName = methodInfo.getMethodName();
         ArrayList<String> params = methodInfo.getParams();

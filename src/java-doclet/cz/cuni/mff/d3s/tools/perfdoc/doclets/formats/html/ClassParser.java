@@ -28,7 +28,7 @@ import java.util.ArrayList;
 
 /**
  * Class that maintains searching of generators (including loading .java file)
- * (using doclet API))
+ * (using doclet API)
  *
  * @author Jakub Naplava
  */

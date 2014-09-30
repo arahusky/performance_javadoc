@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of LockBase interface, that uses HashMap to store Locks under
+ * Implementation of LockBase interface that uses HashMap to store Locks under
  * given hashes
  *
  * @author Jakub Naplava

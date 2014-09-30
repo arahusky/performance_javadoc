@@ -17,13 +17,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.javascript;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.CacheRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.AbstractSiteHandler;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,32 +28,42 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author arahusky
+ * Class that returns requested javascript files
+ * 
+ * @author Jakub Naplava
  */
 public class JavascriptCodeHandler extends AbstractSiteHandler {
 
     private static final Logger log = Logger.getLogger(JavascriptCodeHandler.class.getName());
+    
+    //folder containing the javascript files
+    private static final String defaultFolder = "lib/js";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         String fileName = exchange.getRequestURI().getQuery();
 
-        try (InputStream input = new FileInputStream("config/" + fileName)) {
+        try (InputStream input = new FileInputStream( defaultFolder + "/" + fileName)) {
 
             //sending succesfull headers with length set 0, which means that arbitrary amount of data may be sent
             exchange.sendResponseHeaders(200, 0);
 
             try (OutputStream responseBody = exchange.getResponseBody()) {
-                int i;
-                
-                //copying the file into output byte per byte
+                int i;                
+                //copying the file into output stream byte per byte
                 while ((i = input.read()) != -1) {
                     responseBody.write(i);
                 }
             }
+        } catch (FileNotFoundException ex) {
+            try {
+                log.log(Level.INFO, "Unable to find class" + fileName, ex);
+                sentErrorHeaderAndClose(exchange, "The requested file was not found on the server.", 404);
+            } catch (IOException ex1) {
+               log.log(Level.INFO, "Unable to close comunication with client." + fileName, ex);
+            }
         } catch (IOException ex) {
-            log.log(Level.INFO, "Unable to send the results to the client", ex);
+            log.log(Level.INFO, "Unable to send the results to the client.", ex);
         }
     }
 }

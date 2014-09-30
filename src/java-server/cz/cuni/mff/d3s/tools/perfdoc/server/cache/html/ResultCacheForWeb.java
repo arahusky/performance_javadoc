@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +35,7 @@ public interface ResultCacheForWeb extends ResultCache {
      *
      * @return
      */
-    List<DatabaseMeasurementResult> getResults();
+    List<MeasurementResult> getResults();
 
     /**
      * Returns all data in table for testedMethod and generator
@@ -44,8 +44,8 @@ public interface ResultCacheForWeb extends ResultCache {
      * @param generator
      * @return
      */
-    List<DatabaseMeasurementResult> getResults(String testedMethod, String generator);
-    
+    List<MeasurementResult> getResults(String testedMethod, String generator);
+     
     /**
      * Returns all methods, that have already been tested and have some result
      * in cache

@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,9 +50,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public List<DatabaseMeasurementResult> getResults() {
+     public List<MeasurementResult> getResults() {
 
-        ArrayList<DatabaseMeasurementResult> list = new ArrayList<>();
+        ArrayList<MeasurementResult> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
@@ -66,8 +66,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                DatabaseMeasurementResult item = new DatabaseMeasurementResult(methodName, generator, data, numberOfMeasurements, time);
-
+                MeasurementResult item = new MeasurementResult(methodName, generator, data, numberOfMeasurements, time);
                 list.add(item);
             }
             return list;
@@ -159,15 +158,14 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         }
     }
 
-    @Override
-    public List<DatabaseMeasurementResult> getResults(String testedMethod, String generator) {
-        ArrayList<DatabaseMeasurementResult> list = new ArrayList<>();
+@Override
+    public List<MeasurementResult> getResults(String testedMethod, String generator) {
+        ArrayList<MeasurementResult> list = new ArrayList<>();
 
         try {
             String query = "SELECT * "
                     + "FROM results "
                     + "WHERE (methodName = ? AND generator = ?)";
-            
              //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, testedMethod);
@@ -179,7 +177,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                DatabaseMeasurementResult item = new DatabaseMeasurementResult(testedMethod, generator, data, numberOfMeasurements, time);
+                MeasurementResult item = new MeasurementResult(testedMethod, generator, data, numberOfMeasurements, time);
 
                 list.add(item);
             }

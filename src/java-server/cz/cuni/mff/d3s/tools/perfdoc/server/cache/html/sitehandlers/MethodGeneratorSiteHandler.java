@@ -21,7 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -151,10 +151,10 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
-        List<DatabaseMeasurementResult> list = res.getResults(testedMethod, generator);
+        List<MeasurementResult> list = res.getResults(testedMethod, generator);
 
         if (list != null) {
-            for (DatabaseMeasurementResult resultItem : list) {
+            for (MeasurementResult resultItem : list) {
                 sb.append("<tr>");
 
                 String data = resultItem.getData();

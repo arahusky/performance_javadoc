@@ -21,7 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.DatabaseMeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -146,12 +146,11 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
 
-        List<DatabaseMeasurementResult> list = res.getResults(testedMethod, generator);
+        List<MeasurementResult> list = res.getResults(testedMethod, generator);
 
         sb.append("<tbody>");
         if (list != null) {
-            for (DatabaseMeasurementResult item : list) {
-
+             for (MeasurementResult item : list) {
                 sb.append(getRowIfPass(normalizedParameters, item, min, max, range));
             }
         }
@@ -161,8 +160,8 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    String getRowIfPass(String[] normalizedData, DatabaseMeasurementResult resultItem, double min, double max, int rangeValue) {
-        StringBuilder sb = new StringBuilder();
+    String getRowIfPass(String[] normalizedData, MeasurementResult resultItem, double min, double max, int rangeValue) {
+      StringBuilder sb = new StringBuilder();
 
         String data = resultItem.getData();
         String[] datas = data.split(";");
