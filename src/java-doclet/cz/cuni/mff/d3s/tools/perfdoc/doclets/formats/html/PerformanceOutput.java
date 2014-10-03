@@ -19,7 +19,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 
 /**
- * Interface, that represents performance output
+ * Interface, that defines performance output
+ * 
  * @author Jakub Naplava
  */
 public interface PerformanceOutput {

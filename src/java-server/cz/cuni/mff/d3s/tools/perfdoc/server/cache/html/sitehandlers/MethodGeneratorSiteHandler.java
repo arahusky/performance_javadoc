@@ -17,14 +17,12 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
-import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,7 +30,7 @@ import java.util.logging.Logger;
 
 /**
  * Site handler that shows all results for given tested method and its generator
- * 
+ *
  * @author Jakub Naplava
  */
 public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
@@ -47,112 +45,103 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         String[] methods = getMethods(query);
 
         if ((methods == null) || (methods.length != 2)) {
-            try {
-                sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404);                
-            } catch (IOException ex) {
-                Logger.getLogger(MethodGeneratorSiteHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
             return;
         }
 
-        String testedMethod = getMethodFromQuery(methods[0]);
-        String generator = getMethodFromQuery(methods[1]);
-
+        System.out.println("methods ok");
         if (res != null) {
+            MethodInfo testedMethod;
+            MethodInfo generator;
 
-             //adding links to JQquery in order to be able to use sort
+            try {
+                testedMethod = getMethodFromQuery(methods[0]);
+                generator = getMethodFromQuery(methods[1]);
+            } catch (IllegalArgumentException e) {
+                sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
+                return;
+            }
+
+            System.out.println("rested OK");
+
+            //adding links to JQquery in order to be able to use sort
             addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
             addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
             addToHeader("<script src=\"js?tablesorter.js\"></script>");
-            addToHeader("<script>$(document).ready(function()  { " +
-                        "        $(\"#myTable\").tablesorter(); } ); </script> ");
-            
+            addToHeader("<script>$(document).ready(function()  { "
+                    + "        $(\"#myTable\").tablesorter(); } ); </script> ");
+
             addCode(returnHeading(methods[0], testedMethod, generator));
+
+            System.out.println("heading OK");
             addCode(getBody(testedMethod, generator, res));
+
+            System.out.println("body OK");
             String output = getCode();
 
-            try {
-                sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes());
-            } catch (IOException ex) {
-                log.log(Level.INFO, "Unable to send the results to the client", ex);
-            }
+            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            try {
-                sentErrorHeaderAndClose(exchange, "Database not available.", 500);
-            } catch (IOException ex) {
-                //there is nothing we can do with it
-                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }
+            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(String testedMethodNet, String testedMethod, String generator) {
-        String[] testedMethodChunks = testedMethod.split("#");
-        String[] generatorChunks = generator.split("#");
-
-        if ((testedMethodChunks.length < 2) || (generatorChunks.length < 2)) {            
-            return "";
-        }
-
+    private String returnHeading(String testedMethodNet, MethodInfo testedMethod, MethodInfo generator) {
         StringBuilder sb = new StringBuilder();
         sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<p><a href = \"class?" + testedMethodChunks[0] + "\"><-- Back to class " + testedMethodChunks[0] + "</a></p>");
-        sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethodChunks[1] + "</a></p>");
-        sb.append("<h1>Method <i>" + testedMethodChunks[1] + "</i> with generator <i>" + generatorChunks[1] + "</i></h1>");
+        sb.append("<p><a href = \"class?" + testedMethod.getQualifiedClassName() + "\"><-- Back to class " + testedMethod.getQualifiedClassName() + "</a></p>");
+        sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethod.getMethodName() + "</a></p>");
+        sb.append("<h1>Method <i>" + testedMethod.getMethodName() + "</i> with generator <i>" + generator.getMethodName() + "</i></h1>");
 
         return sb.toString();
     }
 
-    public String getBody(String testedMethod, String generator, ResultCacheForWeb res) {
-        String[] testedMethodChunks = testedMethod.split("#");
-        String[] generatorChunks = generator.split("#");
-        
-        if (testedMethodChunks.length < 2 || generatorChunks.length < 2) {
-            return "";
-        }
-
+    public String getBody(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) {
         StringBuilder sb = new StringBuilder();
-
+        System.out.println("body1");
         sb.append("<h3>Tested method:</h3>"
                 + "<ul>"
-                + "<li>Method name: " + testedMethodChunks[1] + "</li>"
-                + "<li>Containing class: " + testedMethodChunks[0] + "</li>"
-                + "<li>Parameters: " + getParameterInfo(testedMethod) + "</li>"
+                + "<li>Method name: " + testedMethod.getMethodName() + "</li>"
+                + "<li>Containing class: " + testedMethod.getQualifiedClassName() + "</li>"
+                + "<li>Parameters: " + chainParameters(testedMethod.getParams()) + "</li>"
                 + "</ul>");
-
-        String genParams = getParameterInfo(generator);
+        System.out.println("body2");
         sb.append("<h3>Generator:</h3>"
                 + "<ul>"
-                + "<li>Method name: " + generatorChunks[1] + "</li>"
-                + "<li>Containing class: " + generatorChunks[0] + "</li>"
-                + "<li>Parameters: " + genParams + "</li>"
+                + "<li>Method name: " + generator.getMethodName() + "</li>"
+                + "<li>Containing class: " + generator.getQualifiedClassName() + "</li>"
+                + "<li>Parameters: " + chainParameters(generator.getParams()) + "</li>"
                 + "</ul>");
         sb.append("<h3>Measurements:<h3>");
-
-        String[] genParameters = genParams.split(",");
-        String[] genParametersText = getDescriptions(generatorChunks[0], generator);
-
+        
+        Method generatorMethod;
+        try {
+            generatorMethod = new MethodReflectionInfo(generator.toString()).getMethod();
+        } catch (ClassNotFoundException | IOException ex) {
+            log.log(Level.INFO, "User obtained method that does not exist.");
+            return sb.toString();
+        }
+        String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
         if (genParametersText == null) {
             return sb.toString();
         }
         
         sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
-        
+
         for (int i = 0; i < genParametersText.length; i++) {
             sb.append("<th>");
-            sb.append(genParametersText[i] + " (" + genParameters[i+2] + ")");
+            sb.append(genParametersText[i] + " (" + generator.getParams().get(i + 2) + ")");
             sb.append("</th>");
         }
-        
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
-        List<MeasurementResult> list = res.getResults(testedMethod, generator);
-
+        //TODO check whether woeking properly
+        List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
+       
         if (list != null) {
             for (MeasurementResult resultItem : list) {
                 sb.append("<tr>");
@@ -178,51 +167,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String getParameterInfo(String parameter) {
-        String[] parameters = parameter.split("@");
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < parameters.length - 1; i++) {
-            sb.append(parameters[i] + ",");
-        }
-
-        sb.append(parameters[parameters.length - 1]);
-
-        return sb.toString();
-    }
-
     private String[] getMethods(String query) {
         return query.split("separator=");
-    }
-
-    private String[] getDescriptions(String className, String methodName) {
-        ClassParser cp;
-        try {
-            cp = new ClassParser(className);
-            Method m = cp.findMethod(new MethodInfo(methodName));
-
-            Annotation[][] annotations = m.getParameterAnnotations();
-            String[] result = new String[annotations.length - 2];
-
-            //first two parameters are Workload and ServiceWorkload
-            for (int i = 2; i < annotations.length; i++) {;
-                Annotation[] annot = annotations[i];
-
-                for (Annotation a : annot) {
-                    if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
-                        result[i - 2] = ((ParamNum) a).description();
-                    } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
-                        result[i - 2] = ((ParamDesc) a).description();
-                    }
-                }
-            }
-
-            return result;
-        } catch (ClassNotFoundException | IOException ex) {
-            log.log(Level.INFO, "Unable to find some class", ex);
-        }
-
-        return null;
     }
 }

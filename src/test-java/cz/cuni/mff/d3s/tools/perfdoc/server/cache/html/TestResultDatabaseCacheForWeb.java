@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -95,7 +96,7 @@ public class TestResultDatabaseCacheForWeb {
         rowEquals(alist, list.get(2));
     }
 
-    @Test
+     @Test
     public void testGetDistinctTestedMethods() {
         res.insertResult("method", "generator", "[data]", 10, 1000);
         res.insertResult("method", "generator1", "[data2]", 9, 200);

@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,57 +39,44 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Got new method-site request. Starting to handle it.");
 
         String query = exchange.getRequestURI().getQuery();
-        String methodName = getMethodFromQuery(query);
+        MethodInfo methodName;
+
+        try {
+            methodName = getMethodFromQuery(query);
+        } catch (IllegalArgumentException e) {
+            //there is a problem with URL (probably own written URL)
+            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+            return;
+        }
 
         if (methodName == null) {
-            //there was some problem with URL (probably own written URL)
-            try {
-                sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404);
-            } catch (IOException ex) {
-                //there is nothing we can do with it
-                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }
+            //there is a problem with URL (probably own written URL)
+            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
         if (res != null) {
-
-            ArrayList<String> availableGenerators = res.getDistinctGenerators(methodName);
+            ArrayList<String> availableGenerators = res.getDistinctGenerators(methodName.toString());
 
             addCode(returnHeading(methodName));
-            String classOutput = formatGenerators(methodName, availableGenerators);
+
+            String classOutput = formatGenerators(methodName.toString(), availableGenerators);
             addCode(classOutput);
             String output = getCode();
 
-            try {
-                sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes());
-            } catch (IOException ex) {
-                log.log(Level.INFO, "Unable to send the results to the client", ex);
-            }
+            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            try {
-                sentErrorHeaderAndClose(exchange, "Database not available.", 500);
-            } catch (IOException ex) {
-                //there is nothing we can do with it
-                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }
+            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(String method) {
-
-        String[] chunks = method.split("#");
-
-        if (chunks.length < 2) {
-            return "";
-        }
-
-        String className = chunks[0];
-        String methodName = chunks[1];
+    private String returnHeading(MethodInfo method) {
+        String className = method.getQualifiedClassName();
+        String methodName = method.getMethodName();
 
         StringBuilder sb = new StringBuilder();
         sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
@@ -97,9 +85,9 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         sb.append("<h2>with parameters</h2>");
 
         sb.append("<ul>");
-        for (int i = 2; i < chunks.length; i++) {
+        for (String param : method.getParams()) {
             sb.append("<li>");
-            sb.append(chunks[i].substring(1));
+            sb.append(param);
             sb.append("</li>");
         }
         sb.append("</ul>");

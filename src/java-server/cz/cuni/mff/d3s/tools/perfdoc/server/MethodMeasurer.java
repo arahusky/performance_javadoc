@@ -42,8 +42,8 @@ import org.json.JSONObject;
  */
 public class MethodMeasurer {
 
-    private MethodInfo testedMethod;
-    private MethodInfo generator;
+    private MethodReflectionInfo testedMethod;
+    private MethodReflectionInfo generator;
 
     //which generator parameter is the range parameter
     private int rangeValue;
@@ -60,6 +60,12 @@ public class MethodMeasurer {
 
     private static final Logger log = Logger.getLogger(MethodMeasurer.class.getName());
 
+    /**
+     * Creates new instance of MethodMeasurer.
+     *
+     * @param data JSON request
+     * @param lockBase instance of LockBase
+     */
     public MethodMeasurer(String data, LockBase lockBase) throws ClassNotFoundException, MalformedURLException, IOException, SQLException {
         JSONParser parser = new JSONParser();
         parser.parseData(data);
@@ -76,6 +82,7 @@ public class MethodMeasurer {
      * measures the time duration of the method for given data and rangeValue
      *
      * @return JSONObject containing measured values with their time durations
+     * and units, in which the values are returned
      * @throws InstantiationException
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
@@ -85,7 +92,7 @@ public class MethodMeasurer {
 
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
-       
+
         //passing the priority to generator
         serviceImpl.setPriority(priority);
 
@@ -101,7 +108,7 @@ public class MethodMeasurer {
 
         //how many times to measure the method in one cycle
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
-        
+
         //passing the amount of wanted results to generator
         serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
@@ -129,28 +136,28 @@ public class MethodMeasurer {
             try {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
 
-                Object[] objs;                                
+                Object[] objs;
                 long totalDuration = 0;
                 int times = 0;
-                
+
                 //the generator prepared us the arguments for tested method in workloadImpl
                 //we just get one and measure the tested method with it
                 while ((objs = workloadImpl.getCall()) != null) {
 
                     Object[] o = (Object[]) objs[1];
-                    
+
                     long before = System.nanoTime();
                     method.invoke(objs[0], o);
                     long after = System.nanoTime();
 
-                    long duration = after - before;                    
+                    long duration = after - before;
                     totalDuration += duration;
                     times++;
                 }
-                    totalDuration = totalDuration / times;
-                    result.add(new Object[]{valuesToMeasure[i], totalDuration});
+                totalDuration = totalDuration / times;
+                result.add(new Object[]{valuesToMeasure[i], totalDuration});
 
-                    resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, totalDuration);                
+                resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, totalDuration);
             } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
                 lockBase.freeLock(hash);
@@ -182,7 +189,7 @@ public class MethodMeasurer {
         }
 
         jsonResults.accumulate("units", units);
-        
+
         if (resultCache != null) {
             //we do not need the connection to database anymore
             resultCache.closeConnection();
@@ -415,8 +422,8 @@ public class MethodMeasurer {
             String methodName = obj.getString("testedMethod");
             String generatorName = obj.getString("generator");
 
-            testedMethod = new MethodInfo(methodName);
-            generator = new MethodInfo(generatorName);
+            testedMethod = new MethodReflectionInfo(methodName);
+            generator = new MethodReflectionInfo(generatorName);
 
             rangeValue = obj.getInt("rangeValue");
             priority = obj.getInt("priority");
@@ -475,7 +482,7 @@ public class MethodMeasurer {
                         }
                     } else if (!parameter.equals("java.lang.String") && !parameter.equals("String")) {
                         //enum
-                        data.set(i, Enum.valueOf((Class<? extends Enum>) new ClassParser(parameter).clazz, (String) item));
+                        data.set(i, Enum.valueOf((Class<? extends Enum>) new ClassParser(parameter).getLoadedClass(), (String) item));
                     }
                 }
             }

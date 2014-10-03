@@ -43,7 +43,7 @@ public class ClassParser {
     private ReflectionCache refCache;
 
     //loaded class
-    public Class<?> clazz;
+    private Class<?> clazz;
 
     //classloader that is used to load all tested methods and generators
     static ClassLoader cl;
@@ -127,7 +127,7 @@ public class ClassParser {
      * @param methodInfo
      * @return the Method instance if found, otherwise null
      */
-    public Method findMethod(MethodInfo methodInfo) {
+    public Method findMethod(MethodReflectionInfo methodInfo) {
 
         String methodName = methodInfo.getMethodName();
         ArrayList<String> params = methodInfo.getParams();
@@ -162,11 +162,19 @@ public class ClassParser {
         return null;
     }
 
-    private Method searchMethodInCache(MethodInfo methodInfo) {
+    /**
+     * Return class loaded by this ClassParser
+     * @return 
+     */
+    public Class<?> getLoadedClass() {
+        return clazz;
+    }
+    
+    private Method searchMethodInCache(MethodReflectionInfo methodInfo) {
         return refCache.getMethod(methodInfo.toString());
     }
 
-    private void addMethodInCache(MethodInfo methodInfo, Method method) {
+    private void addMethodInCache(MethodReflectionInfo methodInfo, Method method) {
         refCache.addMethod(methodInfo.toString(), method);
     }
 }

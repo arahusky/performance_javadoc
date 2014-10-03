@@ -17,13 +17,18 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Abstract class that defines method that are common for all site handlers
- * 
+ *
  * @author Jakub Naplava
  */
 public abstract class AbstractSiteHandler implements SiteHandler {
@@ -34,25 +39,50 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     @Override
     public abstract void handle(HttpExchange exchange, ResultCacheForWeb res);
 
-    protected void sentSuccesHeaderAndBodyAndClose(HttpExchange exchange, byte[] message) throws IOException {
-        exchange.sendResponseHeaders(200, message.length);
+    /**
+     * Sends the given message to the client with the success
+     * headers
+     *
+     * @param exchange stands for client's representation
+     * @param message Message to pass to the client
+     * @param log Logger to log exceptions
+     */
+    protected void sentSuccesHeaderAndBodyAndClose(HttpExchange exchange, byte[] message, Logger log) {
+        try {
+            exchange.sendResponseHeaders(200, message.length);
 
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(message);
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(message);
+            }
+        } catch (IOException e) {
+            log.log(Level.INFO, "Unable to send the results to the client", e);
         }
     }
 
-    protected void sentErrorHeaderAndClose(HttpExchange exchange, String errorMessage, int errorCode) throws IOException {
+    /**
+     * Reports client of the occurred error
+     *
+     * @param exchange stands for client's representation
+     * @param errorMessage
+     * @param errorCode the ErrorCode to add to the header
+     * @param log Logger to log exceptions
+     */
+    protected void sentErrorHeaderAndClose(HttpExchange exchange, String errorMessage, int errorCode, Logger log) {
+        try {
         exchange.sendResponseHeaders(errorCode, errorMessage.getBytes().length);
 
         try (OutputStream responseBody = exchange.getResponseBody()) {
             responseBody.write(errorMessage.getBytes());
         }
-    }    
+        } catch (IOException e) {
+            log.log(Level.INFO, "Unable to send the results to the client", e);
+        }
+    }
 
     /**
      * Gets the html code
-     * @return 
+     *
+     * @return
      */
     protected String getCode() {
         if (code.length() == 0) {
@@ -68,7 +98,8 @@ public abstract class AbstractSiteHandler implements SiteHandler {
 
     /**
      * Adds the code to the current code
-     * @param code 
+     *
+     * @param code
      */
     protected void addCode(String code) {
         if (this.code.length() == 0) {
@@ -77,7 +108,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
 
         this.code.append(code);
     }
-    
+
     protected void addToHeader(String code) {
         head.append(code);
     }
@@ -99,28 +130,26 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     }
 
     /**
-     * Encodes method (in database format), so that it can be easily passes
-     * as an URL query Format: className&methodName&param1&param2&...&paramN
+     * Encodes method (in database format), so that it can be easily passes as
+     * an URL query Format: className&methodName&param1&param2&...&paramN
      *
      * @param method
      * @return
      */
     protected String getQueryURL(String method) {
-        
+
         String result = method.replaceAll("#@", "&").replaceAll("#", "&").replaceAll("@", "&");
-        
+
         return result;
     }
 
     /**
-     * Inverse method to getQueryURL, decodes given query to the format of
-     * results in database Format:
-     * className#methodName#@param1&param2&...&paramN
+     * Inverse method to getQueryURL, decodes given query to MethodInfo instance
      *
      * @param query
      * @return as described; else if there is anything wrong null
      */
-    protected String getMethodFromQuery(String query) {
+    protected MethodInfo getMethodFromQuery(String query) {
         String[] chunks = query.split("&");
 
         if (chunks.length < 2) {
@@ -129,13 +158,32 @@ public abstract class AbstractSiteHandler implements SiteHandler {
         String className = chunks[0];
         String methodName = chunks[1];
 
-        StringBuilder method = new StringBuilder(className + "#" + methodName + "#");
+        ArrayList<String> params = new ArrayList<>();
 
         for (int i = 2; i < chunks.length; i++) {
-            method.append("@" + chunks[i]);
+            params.add(chunks[i]);
         }
 
-        return method.toString();
+        return new MethodInfo(className, methodName, params);
     }
     
+    /**
+     * Chains the parameters in List.
+     * @param parameters
+     * @return chained parameters in format: param1,param2,...,paramN
+     */
+    protected String chainParameters(List<String> parameters) {
+        StringBuilder sb = new StringBuilder();
+
+        if (parameters == null || parameters.isEmpty()) {
+            return "";
+        }
+        
+        for (int i = 0; i < parameters.size() - 1; i++) {
+            sb.append(parameters.get(i) + ",");
+        }
+
+        sb.append(parameters.get(parameters.size() - 1));
+        return sb.toString();
+    }
 }

@@ -26,6 +26,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,14 +38,14 @@ public abstract class PerformanceWriter {
     static ConfigurationImpl configuration = ConfigurationImpl.getInstance();
 
     /**
-     * Return the return tag output.
+     * Method that prepares the title of Performance part
      *
-     * @return the output of the return tag.
+     * @return Performance output containing performance title
      */
     protected abstract PerformanceOutput returnTitleOutput();
 
     /**
-     * Generates performance measurement for the given method
+     * Generates performance measurement code for the given method
      *
      * @param doc measured method
      * @param output the PerformanceOutput to which the measurement code will be
@@ -60,11 +61,10 @@ public abstract class PerformanceWriter {
         //list, that will contain all generators for the given method (doc) 
         ArrayList<MethodDoc> list = new ArrayList<>();
         for (String w : workloadNames) {
+            //for given workloadName may exist 0..n of generators
             MethodDoc[] docs = ClassParser.findMethods(w);
             if (docs != null) {
-                for (MethodDoc md : docs) {
-                    list.add(md);
-                }
+                list.addAll(Arrays.asList(docs));
             }
         }
 
@@ -85,7 +85,7 @@ public abstract class PerformanceWriter {
      * Adds performance info with one workload
      *
      * @param method the measured method
-     * @param output the PerformanceOutput to insert the content
+     * @param output the PerformanceOutput to which to insert the content
      */
     private static void addPerfoInfoOneDiv(MethodDoc method, PerformanceOutput output) {
         PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
@@ -189,7 +189,7 @@ public abstract class PerformanceWriter {
 
         //then the tree (div), that will contain all content
         HtmlTree tree = new HtmlTree(HtmlTag.DIV);
-        //we need to give this div an unique id in order to be able to find it and replace it content
+        //we need to give this div an unique id in order to be able to find it and replace its content
         //in this case the uniqueMethodID is generated from the package + methodName + its argument + just for sure (should never happen) there's also hashmap to remember, whether there was no such id before
         String uniqueMethodID = perfWriter.getUniqueInfo(perfWriter.getUniqueFullInfo(doc));
         tree.addAttr(HtmlAttr.ID, uniqueMethodID);

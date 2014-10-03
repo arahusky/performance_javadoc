@@ -17,15 +17,14 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
-import cz.cuni.mff.d3s.tools.perfdoc.server.ClassParser;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,19 +45,21 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         String[] data = getData(query);
 
         if (data.length != 3) {
-            try {
-                sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404);
-            } catch (IOException ex) {
-                //there is nothing we can do with it
-                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }
+            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
-        if (res != null) {
-
-            String testedMethod = getMethodFromQuery(data[0]);
-            String generator = getMethodFromQuery(data[1]);
+        if (res != null) {            
+            MethodInfo testedMethod;
+            MethodInfo generator;
+            
+            try {
+                 testedMethod = getMethodFromQuery(data[0]);
+                 generator = getMethodFromQuery(data[1]);
+            } catch (IllegalArgumentException e) {
+                sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+                return;
+            }
             String parameters = data[2];
 
             //adding links to JQquery in order to be able to use sort
@@ -71,20 +72,11 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
 
-            try {
-                sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes());
-            } catch (IOException ex) {
-                log.log(Level.INFO, "Unable to send the results to the client", ex);
-            }
+            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            try {
-                sentErrorHeaderAndClose(exchange, "Database not available.", 500);
-            } catch (IOException ex) {
-                //there is nothing we can do with it
-                log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-            }
+            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
@@ -94,41 +86,39 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return query.split("separator=");
     }
 
-    public String getBody(String testedMethod, String generator, String parameters, ResultCacheForWeb res) {
-        String[] testedMethodChunks = testedMethod.split("#");
-        String[] generatorChunks = generator.split("#");
-
-        if (testedMethodChunks.length < 2 || generatorChunks.length < 2) {
-            return "";
-        }
-
+    public String getBody(MethodInfo testedMethod, MethodInfo generator, String parameters, ResultCacheForWeb res) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<h3>Tested method:</h3>"
                 + "<ul>"
-                + "<li>Method name: " + testedMethodChunks[1] + "</li>"
-                + "<li>Containing class: " + testedMethodChunks[0] + "</li>"
-                + "<li>Parameters: " + getParameterInfo(testedMethod) + "</li>"
+                + "<li>Method name: " + testedMethod.getMethodName() + "</li>"
+                + "<li>Containing class: " + testedMethod.getQualifiedClassName() + "</li>"
+                + "<li>Parameters: " + chainParameters(testedMethod.getParams()) + "</li>"
                 + "</ul>");
 
-        String genParams = getParameterInfo(generator);
         sb.append("<h3>Generator:</h3>"
                 + "<ul>"
-                + "<li>Method name: " + generatorChunks[1] + "</li>"
-                + "<li>Containing class: " + generatorChunks[0] + "</li>"
-                + "<li>Parameters: " + genParams + "</li>"
+                + "<li>Method name: " + generator.getMethodName() + "</li>"
+                + "<li>Containing class: " + generator.getQualifiedClassName() + "</li>"
+                + "<li>Parameters: " + chainParameters(generator.getParams()) + "</li>"
                 + "</ul>");
         sb.append("<h3>Measurements:<h3>");
 
-        String[] genParameters = genParams.split(",");
-        String[] genParametersText = getDescriptions(generatorChunks[0], generator);
-        int range = getRangeValue(parameters, genParameters);
+        Method generatorMethod;
+        try {
+            generatorMethod = new MethodReflectionInfo(generator.toString()).getMethod();
+        } catch (ClassNotFoundException | IOException ex) {
+            log.log(Level.INFO, "User obtained method that does not exist.");
+            return sb.toString();
+        }
+        String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
+        int range = getRangeValue(parameters, generator.getParams());
 
         if (genParametersText == null || (range == -1)) {
             return sb.toString();
         }
 
-        String[] normalizedParameters = normalizeParameters(parameters, range, genParameters);
+        String[] normalizedParameters = normalizeParameters(parameters, range, generator.getParams());
 
         if (normalizedParameters == null) {
             return sb.toString();
@@ -140,13 +130,14 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
 
         sb.append("<th>");
-        sb.append(genParametersText[range] + " (" + genParameters[range + 2] + ")");
+        sb.append(genParametersText[range] + " (" + generator.getParams().get(range + 2) + ")");
         sb.append("</th>");
 
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
 
-        List<MeasurementResult> list = res.getResults(testedMethod, generator);
+        //TODO check if works
+        List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
 
         sb.append("<tbody>");
         if (list != null) {
@@ -194,12 +185,12 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    int getRangeValue(String parameters, String[] paramTypeNames) {
+    int getRangeValue(String parameters, List<String> paramTypeNames) {
         String[] arrParams = parameters.split(",");
 
         //first two paramTypeNames are Workloads
-        for (int i = 2; i < paramTypeNames.length; i++) {
-            String s = paramTypeNames[i];
+        for (int i = 2; i < paramTypeNames.size(); i++) {
+            String s = paramTypeNames.get(i);
             if (s.equals("int") || s.equals("double") || s.equals("float")) {
                 String parameter = arrParams[i - 2];
 
@@ -217,18 +208,18 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return -1;
     }
 
-    String[] normalizeParameters(String params, int rangeValue, String[] paramTypeNames) {
+    String[] normalizeParameters(String params, int rangeValue, List<String> paramTypeNames) {
         String[] paramsArr = params.split(",");
         String[] res = new String[paramsArr.length];
 
         //first two paramTypeNames are Workloads
-        for (int i = 2; i < paramTypeNames.length; i++) {
+        for (int i = 2; i < paramTypeNames.size(); i++) {
             if (i == rangeValue + 2) {
                 res[i - 2] = paramsArr[i - 2];
                 continue;
             }
 
-            String s = paramTypeNames[i];
+            String s = paramTypeNames.get(i);
             String parameter = paramsArr[i - 2];
 
             if (s.equals("int") || s.equals("double") || s.equals("float")) {
@@ -261,49 +252,5 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         }
 
         return res;
-    }
-
-    private String getParameterInfo(String parameter) {
-        String[] parameters = parameter.split("@");
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < parameters.length - 1; i++) {
-            sb.append(parameters[i] + ",");
-        }
-
-        sb.append(parameters[parameters.length - 1]);
-
-        return sb.toString();
-    }
-
-    private String[] getDescriptions(String className, String methodName) {
-        ClassParser cp;
-        try {
-            cp = new ClassParser(className);
-            Method m = cp.findMethod(new MethodInfo(methodName));
-
-            Annotation[][] annotations = m.getParameterAnnotations();
-            String[] result = new String[annotations.length - 2];
-
-            //first two parameters are Workload and ServiceWorkload
-            for (int i = 2; i < annotations.length; i++) {;
-                Annotation[] annot = annotations[i];
-
-                for (Annotation a : annot) {
-                    if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
-                        result[i - 2] = ((ParamNum) a).description();
-                    } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
-                        result[i - 2] = ((ParamDesc) a).description();
-                    }
-                }
-            }
-
-            return result;
-        } catch (ClassNotFoundException | IOException ex) {
-            log.log(Level.INFO, "Unable to find some class", ex);
-        }
-
-        return null;
     }
 }

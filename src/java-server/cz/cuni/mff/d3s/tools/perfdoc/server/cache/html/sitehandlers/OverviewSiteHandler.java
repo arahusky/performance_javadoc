@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -28,82 +27,71 @@ import java.util.logging.Logger;
 
 /**
  * Site handler, that shows all classes, that have any measured method
- * 
+ *
  * @author Jakub Naplava
  */
-public class OverviewSiteHandler extends AbstractSiteHandler{
+public class OverviewSiteHandler extends AbstractSiteHandler {
 
     private static final Logger log = Logger.getLogger(OverviewSiteHandler.class.getName());
-    
+
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new overview-site request. Starting to handle it.");
-        
+
         if (res != null) {
 
             ArrayList<String> testedMethod = res.getDistinctTestedMethods();
-            
+
             addCode(returnHeading());
             String classOutput = formatClasses(testedMethod);
             addCode(classOutput);
             String output = getCode();
 
-            try {
-                sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes());
-            } catch (IOException ex) {
-                log.log(Level.INFO, "Unable to send the results to the client", ex);
-            } 
+            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            try {
-                   sentErrorHeaderAndClose(exchange, "Database not available.", 500);
-                } catch (IOException ex) {
-                    //there is nothing we can do with it
-                    log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
-                }            
+            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
-        
+
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
-    
-     private String returnHeading()
-     {
+
+    private String returnHeading() {
         String heading = "<h1>Measured classes:</h1>";
-        
+
         return heading;
-     }
-     
-     private String formatClasses(ArrayList<String> output) {
-        
+    }
+
+    private String formatClasses(ArrayList<String> output) {
+
         //unable to retrieve data from database
         if (output == null) {
             return "<p>Sorry, but there was an error when trying to connect to database.</p>";
         }
-        
+
         StringBuilder sb = new StringBuilder();
-        
-         Set<String> classes = parseClasess(output);
-         
-         sb.append("<ul>");
-         for (String className : classes) {
-             sb.append("<li><a href= \"cache/class?" + className + "\">" + className + "</a></li>" );
-         }
-         sb.append("</ul>");        
-         
+
+        Set<String> classes = parseClasess(output);
+
+        sb.append("<ul>");
+        for (String className : classes) {
+            sb.append("<li><a href= \"cache/class?" + className + "\">" + className + "</a></li>");
+        }
+        sb.append("</ul>");
+
         return sb.toString();
     }
-     
-     private Set<String> parseClasess(ArrayList<String> testedMethods) {
-         
-         Set<String> set = new HashSet<>();
-         
-         for (String method : testedMethods) {
-             String className = method.split("#")[0];
-             set.add(className);
-         }
-         
-         return set;
-     }
-    
+
+    private Set<String> parseClasess(ArrayList<String> testedMethods) {
+
+        Set<String> set = new HashSet<>();
+
+        for (String method : testedMethods) {
+            String className = method.split("#")[0];
+            set.add(className);
+        }
+
+        return set;
+    }
 }

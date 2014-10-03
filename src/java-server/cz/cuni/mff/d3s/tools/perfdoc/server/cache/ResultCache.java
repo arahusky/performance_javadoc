@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+
 /**
  * Interface to communicate with results in cache
  *

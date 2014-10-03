@@ -16,11 +16,10 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Interface, that extends ResultCache with methods for site handlers

@@ -25,8 +25,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestMethodMeasurer {
-    
+public class TestMethodMeasurer {    
     
     @Test
     public void testFindOtherValuesSimple()

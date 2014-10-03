@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+
 /**
  * Class that represents one measurement
  * 
@@ -23,13 +25,13 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
  */
 public class MeasurementResult {
 
-    private final String testedMethod;
-    private final String generator;
+    private final MethodInfo testedMethod;
+    private final MethodInfo generator;
     private final String data;
     private final int numberOfMeasurements;
     private final long time;
     
-    public MeasurementResult(String testedMethod, String generator, String data, int numberOfMeasurements, long time) {
+    public MeasurementResult(MethodInfo testedMethod, MethodInfo generator, String data, int numberOfMeasurements, long time) {
         this.testedMethod = testedMethod;
         this.generator = generator;
         this.data = data;
@@ -37,11 +39,11 @@ public class MeasurementResult {
         this.time = time;
     }
 
-    public String getTestedMethod() {
+    public MethodInfo getTestedMethod() {
         return testedMethod;
     }
 
-    public String getGenerator() {
+    public MethodInfo getGenerator() {
         return generator;
     }
 

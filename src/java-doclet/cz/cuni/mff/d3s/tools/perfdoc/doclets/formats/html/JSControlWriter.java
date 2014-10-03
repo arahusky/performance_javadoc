@@ -93,8 +93,6 @@ public class JSControlWriter {
         //if there are no errors
         sb.append("if ( error[0] == \"\") {");
         
-        sb.append("alert(\"All parameteres checked succesfully. Sending request to the server. \\n Please wait...\"); ");
-                
         JSAjaxHandler.generator = fullGeneratorName;
         
         //adding url adress, where the table formed results will be shown

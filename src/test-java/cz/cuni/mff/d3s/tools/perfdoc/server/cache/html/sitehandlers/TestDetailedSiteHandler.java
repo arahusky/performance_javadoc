@@ -16,6 +16,9 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,27 +26,32 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestSiteHandlers {
+public class TestDetailedSiteHandler {
 
     @Test
     public void testGetRangeValue() {
         String parameters = "0_to_0,0_to_20,0_to_0";
-        String[] paramTypeNames = new String[]{"Workload", "ServiceWorkload", "float", "String", "int"};
-
+        
+        String[] paramTypeNamesString = new String[]{"Workload", "ServiceWorkload", "float", "String", "int"};
+        List<String> paramTypeNames = Arrays.asList(paramTypeNamesString);
         Assert.assertEquals(-1, new DetailedSiteHandler().getRangeValue(parameters, paramTypeNames));
 
-        paramTypeNames = new String[]{"Workload", "ServiceWorkload", "float", "int", "int"};
+        paramTypeNamesString = new String[]{"Workload", "ServiceWorkload", "float", "int", "int"};
+        paramTypeNames = Arrays.asList(paramTypeNamesString);
         Assert.assertEquals(1, new DetailedSiteHandler().getRangeValue(parameters, paramTypeNames));
 
         parameters = "0_to_0,autobus,0_to_0";
-        paramTypeNames = new String[]{"Workload", "ServiceWorkload", "float", "int", "int"};
+        paramTypeNamesString = new String[]{"Workload", "ServiceWorkload", "float", "int", "int"};
+        paramTypeNames = Arrays.asList(paramTypeNamesString);
+        
         Assert.assertEquals(-1, new DetailedSiteHandler().getRangeValue(parameters, paramTypeNames));
     }
 
     @Test
     public void testNormalize() {
         String parameters = "0_to_5,0_to_20,0_to_0,Ahoj";
-        String[] paramTypeNames = new String[]{"Workload", "ServiceWorkload", "float", "int", "int", "String"};
+        String[] paramTypeNamesString = new String[]{"Workload", "ServiceWorkload", "float", "int", "int", "String"};
+        List<String> paramTypeNames = Arrays.asList(paramTypeNamesString);
 
         Assert.assertArrayEquals(null, new DetailedSiteHandler().normalizeParameters(parameters, 1, paramTypeNames));
 
@@ -52,7 +60,8 @@ public class TestSiteHandlers {
         String[] expectedRes = new String[] {"0.0", "0_to_20", "0", "Ahoj"};
         Assert.assertArrayEquals(expectedRes, new DetailedSiteHandler().normalizeParameters(parameters, 1, paramTypeNames));
         
-        paramTypeNames = new String[]{"Workload", "ServiceWorkload", "float", "int", "double", "String"};
+        paramTypeNamesString = new String[]{"Workload", "ServiceWorkload", "float", "int", "double", "String"};
+        paramTypeNames = Arrays.asList(paramTypeNamesString);
         expectedRes = new String[] {"0.0", "0_to_20", "0.0", "Ahoj"};
         Assert.assertArrayEquals(expectedRes, new DetailedSiteHandler().normalizeParameters(parameters, 1, paramTypeNames));
     }

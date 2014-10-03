@@ -29,13 +29,13 @@ import java.util.logging.Logger;
 
 /**
  * Class that returns requested javascript files
- * 
+ *
  * @author Jakub Naplava
  */
 public class JavascriptCodeHandler extends AbstractSiteHandler {
 
     private static final Logger log = Logger.getLogger(JavascriptCodeHandler.class.getName());
-    
+
     //folder containing the javascript files
     private static final String defaultFolder = "lib/js";
 
@@ -43,25 +43,21 @@ public class JavascriptCodeHandler extends AbstractSiteHandler {
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         String fileName = exchange.getRequestURI().getQuery();
 
-        try (InputStream input = new FileInputStream( defaultFolder + "/" + fileName)) {
+        try (InputStream input = new FileInputStream(defaultFolder + "/" + fileName)) {
 
             //sending succesfull headers with length set 0, which means that arbitrary amount of data may be sent
             exchange.sendResponseHeaders(200, 0);
 
             try (OutputStream responseBody = exchange.getResponseBody()) {
-                int i;                
+                int i;
                 //copying the file into output stream byte per byte
                 while ((i = input.read()) != -1) {
                     responseBody.write(i);
                 }
             }
         } catch (FileNotFoundException ex) {
-            try {
-                log.log(Level.INFO, "Unable to find class" + fileName, ex);
-                sentErrorHeaderAndClose(exchange, "The requested file was not found on the server.", 404);
-            } catch (IOException ex1) {
-               log.log(Level.INFO, "Unable to close comunication with client." + fileName, ex);
-            }
+            log.log(Level.INFO, "Unable to find class" + fileName, ex);
+            sentErrorHeaderAndClose(exchange, "The requested file was not found on the server.", 404, log);
         } catch (IOException ex) {
             log.log(Level.INFO, "Unable to send the results to the client.", ex);
         }

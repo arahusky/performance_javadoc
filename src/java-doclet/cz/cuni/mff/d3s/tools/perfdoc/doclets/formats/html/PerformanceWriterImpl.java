@@ -46,9 +46,7 @@ public class PerformanceWriterImpl {
     static ConfigurationImpl configuration = ConfigurationImpl.getInstance();
 
     /**
-     * Method that prepares the title of Performance part
-     *
-     * @return Performance output containing performance title
+     * {@inheritDoc}
      */
     public PerformanceOutput returnTitleOutput() {
         PerformanceOutput result = new PerformanceOutputImpl(DocletConstants.NL + "<dt>"

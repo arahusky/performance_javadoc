@@ -18,10 +18,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 /**
- *
+ * 
  * @author Jakub Naplava
  */
-public class PerformanceOutputImpl implements PerformanceOutput{
+public final class PerformanceOutputImpl implements PerformanceOutput{
     private StringBuffer output;
 
     public PerformanceOutputImpl(String o) {
@@ -31,6 +31,7 @@ public class PerformanceOutputImpl implements PerformanceOutput{
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setOutput (Object o) {
         output = new StringBuffer(o == null ? "" : (String) o);
     }
@@ -38,10 +39,12 @@ public class PerformanceOutputImpl implements PerformanceOutput{
     /**
      * {@inheritDoc}
      */
+    @Override
     public void appendOutput(PerformanceOutput o) {
         output.append(o.toString());
     }
     
+    @Override
     public String toString() {
         return output.toString();
     }

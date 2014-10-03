@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.sql.PreparedStatement;
@@ -23,9 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +65,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                MeasurementResult item = new MeasurementResult(methodName, generator, data, numberOfMeasurements, time);
+                MeasurementResult item = new MeasurementResult(new MethodInfo(methodName), new MethodInfo(generator), data, numberOfMeasurements, time);
                 list.add(item);
             }
             return list;
@@ -177,7 +176,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                MeasurementResult item = new MeasurementResult(testedMethod, generator, data, numberOfMeasurements, time);
+                MeasurementResult item = new MeasurementResult(new MethodInfo(testedMethod), new MethodInfo(generator), data, numberOfMeasurements, time);
 
                 list.add(item);
             }
