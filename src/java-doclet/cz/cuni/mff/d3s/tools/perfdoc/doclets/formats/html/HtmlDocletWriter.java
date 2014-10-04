@@ -24,6 +24,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;

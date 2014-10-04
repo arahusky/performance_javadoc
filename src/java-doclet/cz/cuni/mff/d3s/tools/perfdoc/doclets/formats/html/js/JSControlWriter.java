@@ -14,8 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
+package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
 import java.util.ArrayList;
@@ -88,17 +89,17 @@ public class JSControlWriter {
         sb.append("$(\"#" + buttonName + "\").click(function() {");
 
         //we call the function, that checks the parameters
-        sb.append("var error = " + returnCheckParameterFunctionName() + "(); ");
+        sb.append("var paramResult = " + returnCheckParameterFunctionName() + "(); ");
 
         //if there are no errors
-        sb.append("if ( error[0] == \"\") {");
+        sb.append("if ( paramResult.error == \"\") {");
         
         JSAjaxHandler.generator = fullGeneratorName;
         
         //adding url adress, where the table formed results will be shown
         String divName = JSAjaxHandler.returnDivName();
         String adress = JavascriptCodeBox.serverAdress + "/cache/detailed?";
-        sb.append("var stringData = (error[1] + \"\").replace(/ /g, '_');");
+        sb.append("var stringData = (paramResult.values + \"\").replace(/ /g, '_');");
         sb.append("var method1 = parseToUrl('" + JSAjaxHandler.testedMethod + "');");
         sb.append("var method2 = parseToUrl('" + JSAjaxHandler.generator + "');");
         sb.append("var adress = '" + adress 
@@ -113,7 +114,7 @@ public class JSControlWriter {
         sb.append("}");
 
         //otherwise if there were any errors, we just print them (alert)
-        sb.append("else { alert( \"Cannot send your request: \" + error[0]); }");
+        sb.append("else { alert( \"Cannot send your request: \" + paramResult.error); }");
 
         sb.append("}); \n");
 
@@ -165,7 +166,13 @@ public class JSControlWriter {
 
         //we add the control of number of range sliders (must be precisely one)
         sb.append(returnNumberIntervalsCheck());
-        sb.append("return [error, values, rangeValue, rangeValueName];");
+        sb.append("var paramResult = { ");
+        sb.append("error : error, ");
+        sb.append("values : values, ");
+        sb.append("rangeValue : rangeValue,");
+        sb.append("rangeValueName : rangeValueName ");
+        sb.append("}; ");
+        sb.append("return paramResult;");
         sb.append("} \n");
         return new RawHtml(sb.toString());
     }
@@ -307,15 +314,7 @@ public class JSControlWriter {
      * represents correct interval *
      */
     public static String returnIsIntervalFunction() {
-        return "function isInterval(str, min, max, step) {"
-                + "if (str.indexOf(\" to \") == -1) return \"false\"; "
-                + "var array = str.split(\" to \");"
-                + "if (array.length != 2) return \"false\"; "
-                + "if (isNaN(array[0]) || isNaN(array[1])) return \"false\";"
-                + "if (((array[0] * 1) < min) || ((array[1] * 1) > max) || ((array[0] * 1) > (array[1] * 1))) return \"false\";"
-                + "if (! (isDivisible(array[0] - min, step) && isDivisible(array[1] - min, step))) return \"false\";"
-                + "if (array[0] == array[1]) return \"single\";"
-                + "return \"true\"; } \n";
+        return JavascriptLoader.getFileContent("isinterval.js");
     }
 
     /**
@@ -324,12 +323,7 @@ public class JSControlWriter {
      * representation of numbers by translating them to integers and rounding
      */
     public static String returnIsDivisibleFunction() {
-        return "function isDivisible(u, d) {"
-                + "var numD = Math.max(u.toString().replace(/^\\d+\\./, '').length,"
-                + "d.toString().replace(/^\\d+\\./, '').length);"
-                + "u = Math.round(u * Math.pow(10, numD));"
-                + "d = Math.round(d * Math.pow(10, numD));"
-                + "return (u % d) === 0; } \n";
+        return JavascriptLoader.getFileContent("isdivisible.js");
     }   
     
      /**

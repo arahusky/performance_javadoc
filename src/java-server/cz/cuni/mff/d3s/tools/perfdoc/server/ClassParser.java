@@ -127,7 +127,7 @@ public class ClassParser {
      * @param methodInfo
      * @return the Method instance if found, otherwise null
      */
-    public Method findMethod(MethodReflectionInfo methodInfo) {
+    public Method findMethod(MethodInfo methodInfo) {
 
         String methodName = methodInfo.getMethodName();
         ArrayList<String> params = methodInfo.getParams();
@@ -170,11 +170,11 @@ public class ClassParser {
         return clazz;
     }
     
-    private Method searchMethodInCache(MethodReflectionInfo methodInfo) {
+    private Method searchMethodInCache(MethodInfo methodInfo) {
         return refCache.getMethod(methodInfo.toString());
     }
 
-    private void addMethodInCache(MethodReflectionInfo methodInfo, Method method) {
+    private void addMethodInCache(MethodInfo methodInfo, Method method) {
         refCache.addMethod(methodInfo.toString(), method);
     }
 }

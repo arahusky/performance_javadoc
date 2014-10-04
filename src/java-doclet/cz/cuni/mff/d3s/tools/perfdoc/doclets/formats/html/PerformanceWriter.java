@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
 import com.sun.javadoc.MethodDoc;
 import com.sun.tools.doclets.formats.html.markup.HtmlAttr;
 import com.sun.tools.doclets.formats.html.markup.HtmlTag;

@@ -134,6 +134,7 @@ public class MethodMeasurer {
             log.log(Level.CONFIG, msg);
 
             try {
+                //invoking generator in order to prepare the calls of tested method
                 generatorMethod.invoke(generatorClass.newInstance(), args);
 
                 Object[] objs;

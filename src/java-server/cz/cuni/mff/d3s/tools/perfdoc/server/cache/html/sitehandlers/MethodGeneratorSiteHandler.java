@@ -139,7 +139,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
-        //TODO check whether woeking properly
         List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
        
         if (list != null) {

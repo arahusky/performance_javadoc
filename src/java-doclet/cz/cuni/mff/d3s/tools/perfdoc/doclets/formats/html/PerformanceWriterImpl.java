@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSSliderWriter;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSControlWriter;
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.FieldDoc;
 import com.sun.javadoc.MethodDoc;

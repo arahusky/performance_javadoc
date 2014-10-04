@@ -18,7 +18,6 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,13 +35,15 @@ public class ClassSiteHandler extends AbstractSiteHandler {
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new class-site request. Starting to handle it.");
 
+        //the requested class
         String className = exchange.getRequestURI().getQuery();
 
         if (res != null) {
-            ArrayList<String> testedMethod = res.getDistinctClassMethods(className);
+            //the methods of the class that have been measured 
+            ArrayList<String> testedMethods = res.getDistinctClassMethods(className);
 
             addCode(returnHeading(className));
-            String classOutput = formatMethods(testedMethod);
+            String classOutput = formatMethods(testedMethods);
             addCode(classOutput);
             String output = getCode();
 

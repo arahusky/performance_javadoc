@@ -14,7 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
+package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
+
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriterImpl;
 
 /**
  *
@@ -51,17 +53,7 @@ public class JSAjaxHandler {
      * occured error
      */
     public static String returnErrorFunction() {
-        String errorFunction = " function printAjaxError(xhr, status, graphName, errorThrown, priority) {"
-                + " alert( \"Sorry, there was a problem! Detailed information can be found in debugger console.\" );"
-                + " console.log( \"Error: \" + errorThrown );"
-                + " console.log( \"Status: \" + status );"
-                + " console.dir( xhr );"
-                + "if (priority < 2) {"
-                + " if (xhr.status == 0) { $(\"#\" + graphName + \" .right .graph\").text(\"Server is shut-down, or could not connect to him.\"); }"
-                + "else { $(\"#\" + graphName + \" .right .graph\").text(xhr.status + \": \" + xhr.responseText); }"
-                + "} }\n";
-
-        return errorFunction;
+        return JavascriptLoader.getFileContent("printajaxerror.js");
     }
 
     /**
@@ -124,7 +116,7 @@ public class JSAjaxHandler {
         sb.append("var json = JSON.stringify(" + data + ", null, 2); ");
 
         //create graph
-        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", error[3], 1);");
+        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", paramResult.rangeValueName, 1);");
 
         return sb.toString();
     }
@@ -163,12 +155,12 @@ public class JSAjaxHandler {
         sb.append("{");
         sb.append("\"testedMethod\" : \"" + testedMethod + "\",");
         sb.append("\"generator\" : \"" + generator + "\",");
-        sb.append("\"rangeValue\" : error[2],");
+        sb.append("\"rangeValue\" : paramResult.rangeValue,");
         sb.append("\"priority\" : 1,");
         sb.append("\"id\" : globalIdentifier, ");
 
         //data are in this part stored in an array error on the index 1 (index 0 is reserved for the error message and the index 2 for the range value)
-        sb.append("\"data\" :  error[1] ");
+        sb.append("\"data\" :  paramResult.values ");
 
         sb.append("}");
 

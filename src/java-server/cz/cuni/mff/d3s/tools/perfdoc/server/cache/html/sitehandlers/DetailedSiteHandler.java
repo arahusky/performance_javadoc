@@ -136,7 +136,6 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
 
-        //TODO check if works
         List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
 
         sb.append("<tbody>");

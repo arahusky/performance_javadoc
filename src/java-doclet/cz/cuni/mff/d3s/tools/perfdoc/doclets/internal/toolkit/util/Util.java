@@ -358,6 +358,10 @@ public class Util {
      */
     public static void copyFile(Configuration configuration, String file, String source,
             String destination, boolean overwrite, boolean replaceNewLine) {
+        System.out.println("File:" + file);
+        System.out.println("Source:" + source);
+        System.out.println("Destination" + destination);
+        System.out.println("Some bullshit:" + source + DirectoryManager.URL_FILE_SEPARATOR + file);
         DirectoryManager.createDirectory(configuration, destination);
         File destfile = new File(destination, file);
         if(destfile.exists() && (! overwrite)) return;
