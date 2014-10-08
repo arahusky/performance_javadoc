@@ -112,6 +112,8 @@ public class MethodMeasurer {
         //passing the amount of wanted results to generator
         serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
+        Statistics statistics;
+        
         //wait until we can measure (there is no lock for our hash)
         lockBase.waitUntilFree(hash);
 
@@ -119,6 +121,7 @@ public class MethodMeasurer {
 
             //the arguments for the generator 
             Object[] args = prepareArgsToCall(valuesToMeasure[i], workloadImpl, serviceImpl);
+            statistics = new Statistics(testedMethod.getMethod(), args);
 
             //check, whether we do not have already data cached
             String dataCache = prepareDataForCache(args);
@@ -138,27 +141,22 @@ public class MethodMeasurer {
                 generatorMethod.invoke(generatorClass.newInstance(), args);
 
                 Object[] objs;
-                long totalDuration = 0;
-                int times = 0;
 
                 //the generator prepared us the arguments for tested method in workloadImpl
                 //we just get one and measure the tested method with it
                 while ((objs = workloadImpl.getCall()) != null) {
-
                     Object[] o = (Object[]) objs[1];
 
                     long before = System.nanoTime();
                     method.invoke(objs[0], o);
                     long after = System.nanoTime();
 
-                    long duration = after - before;
-                    totalDuration += duration;
-                    times++;
+                    statistics.addResult(after - before);
                 }
-                totalDuration = totalDuration / times;
-                result.add(new Object[]{valuesToMeasure[i], totalDuration});
+                long countedResult = statistics.compute();
+                result.add(new Object[]{valuesToMeasure[i], countedResult});
 
-                resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, totalDuration);
+                resultCache.insertResult(testedMethod.toString(), generator.toString(), dataCache, howManyTimesToMeasure, countedResult);
             } catch (IllegalAccessException ex) {
                 log.log(Level.SEVERE, "An IllegalAccessException occured", ex);
                 lockBase.freeLock(hash);

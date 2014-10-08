@@ -20,6 +20,11 @@
 	<property name="test.build.dir" location="${build.dir}/classes/test-java" />
 
 	<property name="jar.build.dir" location="${build.dir}/jars" />
+
+	<!-- test output directories -->
+	<property name="test.output.dir" location="${build.dir}/test" />
+	<property name="testhtml.output.dir" location="${test.output.dir}/html" />
+	<property name="testtxtxml.output.dir" location="${test.output.dir}/txtXml" />
 	
 	<!-- external libraries -->
 	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
@@ -150,9 +155,11 @@
  	</target>
 
  	<target name="test" depends="compile-doclet,compile-server,compile-test" description="Run unit-tests.">
-  	  <mkdir dir="test"/>
+  	  <mkdir dir="${test.output.dir}"/>
+  	  <mkdir dir="${testtxtxml.output.dir}"/>
+  	  <mkdir dir="${testhtml.output.dir}"/>
 
- 	   <junit printsummary="yes" haltonfailure="yes">
+ 	   <junit printsummary="yes">
     	   <classpath>
 				<pathelement path="${junit.jar}"/>
 				<pathelement path="${hamcrest.jar}"/>
@@ -165,11 +172,17 @@
 			<formatter type="plain"/>
       		<formatter type="xml"/>
 
-    		<batchtest fork="yes" todir="test">
+    		<batchtest fork="yes" todir="${testtxtxml.output.dir}">
        		 	<fileset dir="${test.build.dir}">         		 
        			</fileset>
       	    </batchtest>
        </junit>
+
+       <junitreport todir="${test.output.dir}">
+  			<fileset dir="${testtxtxml.output.dir}">
+  			</fileset>
+  			<report format="frames" todir="${testhtml.output.dir}"/>
+	   </junitreport>
 
        <delete dir="testDB" />
        <echo message="Test results can be found in the directory 'test'..." />

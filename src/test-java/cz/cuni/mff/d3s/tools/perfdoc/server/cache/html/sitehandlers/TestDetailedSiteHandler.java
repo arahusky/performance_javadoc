@@ -16,7 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;

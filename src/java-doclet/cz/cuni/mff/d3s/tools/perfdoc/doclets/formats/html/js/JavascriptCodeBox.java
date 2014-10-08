@@ -69,6 +69,7 @@ public class JavascriptCodeBox {
      */
     private static void addGlobalCode() {
         globalCode.append(JSAjaxHandler.returnCallServerFunction(serverAdress + "/measure"));
+        globalCode.append(JSAjaxHandler.addSuccessFunction());
         globalCode.append(JSAjaxHandler.returnErrorFunction());
 
         globalCode.append(JSControlWriter.returnIsDivisibleFunction());

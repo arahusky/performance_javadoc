@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import java.util.Objects;
 
 /**
  * Class that represents one measurement
@@ -57,5 +58,32 @@ public class MeasurementResult {
 
     public long getTime() {
         return time;
+    }
+        
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) { 
+            return true;
+        }        
+        if (!(o instanceof MeasurementResult)) {
+            return false;
+        }        
+        MeasurementResult res = (MeasurementResult) o;
+        return res.data.equals(data) 
+                && res.generator.equals(generator) 
+                && res.numberOfMeasurements == numberOfMeasurements
+                && res.testedMethod.equals(testedMethod)
+                && res.time == time;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Objects.hashCode(this.testedMethod);
+        hash = 47 * hash + Objects.hashCode(this.generator);
+        hash = 47 * hash + Objects.hashCode(this.data);
+        hash = 47 * hash + this.numberOfMeasurements;
+        hash = 47 * hash + (int) (this.time ^ (this.time >>> 32));
+        return hash;
     }
 }

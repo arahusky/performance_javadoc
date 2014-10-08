@@ -19,7 +19,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriterImpl;
 
 /**
- *
+ * Class that maintains Javascript code associated with an AJAX communication
+ * 
  * @author Jakub Naplava
  */
 public class JSAjaxHandler {
@@ -35,17 +36,10 @@ public class JSAjaxHandler {
      * @param serverAddress The address of the measuring server
      */
     public static String returnCallServerFunction(String serverAddress) {
-        String pattern = "function callServer(data, successFunc, graphName, graph, priority) {"
-                + "   $.ajax({"
-                + "   url: \"" + serverAddress + "\","
-                + "   data: data,"
-                + "   type: \"POST\","
-                + "   success: function(json) {successFunc(json, data, successFunc, graphName, graph, priority)},"
-                + "   error: function( xhr, status, errorThrown ) { printAjaxError(xhr, status, graphName, errorThrown, priority); }"
-                + "});"
-                + "  }\n";
-
-        return pattern;
+        String pattern = JavascriptLoader.getFileContent("callserver.js");
+        
+        //placing right serverAddress in the pattern by replacing $serverAddress
+        return pattern.replace("$serverAddress", serverAddress);
     }
 
     /**
@@ -61,35 +55,8 @@ public class JSAjaxHandler {
      * generator, this function handles incoming JSON results (puts them in the
      * right graph, changes graph color, ...)
      */
-    public static void addSuccessFunction() {
-        String successFunctionName = returnSuccesFunctionName();
-
-        String success = "function " + successFunctionName + "(json, data, myName, graphName, graph, priority) {"
-                + "    if (priority == 1) {"
-                + returnStartGraphCode(returnDivName())
-                + "    var jsonData = JSON.parse(data); "
-                + "    jsonData.priority++; "
-                + "    var newData = JSON.stringify(jsonData, null, 2);"
-                + "    callServer(newData, myName, graphName, myGraph, ++priority);" //here must be graph variable passing the graph reference
-                + "    } else if (priority < 4) {"
-                + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
-                + "    if (priority == 2) {"
-                + "    graph.updateOptions( { 'colors': ['#B0171F'] }); graph.updateOptions( { 'strokeWidth': 0.75 });"
-                + "    } else {"
-                + "    graph.updateOptions( { 'colors': ['#9400D3'] }); graph.updateOptions( { 'strokeWidth': 1.0 }); } "
-                + "    var jsonData = JSON.parse(data); "
-                + "    jsonData.priority++; "
-                + "    var newData = JSON.stringify(jsonData, null, 2);"
-                + "    callServer(newData, myName, graphName, graph, ++priority);"
-                + "    } else {"
-                + "    graph.updateOptions( { 'file': JSON.parse(json).data } );"
-                + "    graph.updateOptions( { 'colors': ['#0000FF'] });"
-                + "    graph.updateOptions( { 'strokeWidth': 1.25 });"
-                + "    graph.updateOptions( { 'strokePattern': null })"
-                + "    }"
-                + "    }\n ";
-
-        JavascriptCodeBox.addLocalCode(success);
+    public static String addSuccessFunction() {        
+        return JavascriptLoader.getFileContent("successfunction.js");
     }
 
     public static String returnSuccesFunctionName() {
@@ -105,8 +72,7 @@ public class JSAjaxHandler {
     /**
      * Returns the javascript code to call the server with right data
      */
-    public static String returnSuccessButtonHandleFunction() {
-        String successFunctionName = returnSuccesFunctionName();
+    public static String returnSuccessButtonHandleFunction() {        
         String graphName = returnDivName();
 
         //data in JSON format
@@ -115,33 +81,13 @@ public class JSAjaxHandler {
         StringBuilder sb = new StringBuilder();
         sb.append("var json = JSON.stringify(" + data + ", null, 2); ");
 
-        //create graph
-        sb.append("callServer( json," + successFunctionName + ", \"" + graphName + "\", paramResult.rangeValueName, 1);");
-
-        return sb.toString();
-    }
-    
-    /**
-     * Returns code, that creates new Dygraph in given divName
-     * @param divName the div, where the graph will be shown
-     * @return 
-     */
-    private static String returnStartGraphCode(String divName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(""
-                + " var myGraph = new Dygraph("
-                + "    document.getElementById(\"" + divName + "\").getElementsByClassName(\"right\")[0].getElementsByClassName(\"graph\")[0], "
-                + "    JSON.parse(json).data,"
-                + "    {"
-                + "      ylabel: 'Elapsed time (' + JSON.parse(json).units + ')',"
-                + "      xlabel: graph,"
-                + "      strokeWidth: 0.5,"
-                + "      colors: ['#FF82AB'],"
-                + "      strokePattern: Dygraph.DASHED_LINE,"
-                + "      drawPoints : true," 
-                + "      pointSize : 2,"
-                + "    }"
-                + "  );");
+        sb.append("var graphInfo = {"
+                + "divLocation : \"" + graphName + "\","
+                + "xAxisLabel : paramResult.rangeValueName,"
+                + "graph : null"
+                + "};");
+        
+        sb.append("callServer( json, graphInfo, 1);");
 
         return sb.toString();
     }
@@ -159,7 +105,7 @@ public class JSAjaxHandler {
         sb.append("\"priority\" : 1,");
         sb.append("\"id\" : globalIdentifier, ");
 
-        //data are in this part stored in an array error on the index 1 (index 0 is reserved for the error message and the index 2 for the range value)
+        //data are in this part stored in an paramResult.values
         sb.append("\"data\" :  paramResult.values ");
 
         sb.append("}");

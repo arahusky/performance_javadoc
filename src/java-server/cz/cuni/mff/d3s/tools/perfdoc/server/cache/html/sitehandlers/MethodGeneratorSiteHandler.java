@@ -48,8 +48,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
             return;
         }
-
-        System.out.println("methods ok");
+        
         if (res != null) {
             MethodInfo testedMethod;
             MethodInfo generator;
@@ -62,8 +61,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
                 return;
             }
 
-            System.out.println("rested OK");
-
             //adding links to JQquery in order to be able to use sort
             addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
             addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
@@ -72,11 +69,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
                     + "        $(\"#myTable\").tablesorter(); } ); </script> ");
 
             addCode(returnHeading(methods[0], testedMethod, generator));
-
-            System.out.println("heading OK");
             addCode(getBody(testedMethod, generator, res));
-
-            System.out.println("body OK");
             String output = getCode();
 
             sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
@@ -101,14 +94,12 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
     public String getBody(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) {
         StringBuilder sb = new StringBuilder();
-        System.out.println("body1");
         sb.append("<h3>Tested method:</h3>"
                 + "<ul>"
                 + "<li>Method name: " + testedMethod.getMethodName() + "</li>"
                 + "<li>Containing class: " + testedMethod.getQualifiedClassName() + "</li>"
                 + "<li>Parameters: " + chainParameters(testedMethod.getParams()) + "</li>"
                 + "</ul>");
-        System.out.println("body2");
         sb.append("<h3>Generator:</h3>"
                 + "<ul>"
                 + "<li>Method name: " + generator.getMethodName() + "</li>"

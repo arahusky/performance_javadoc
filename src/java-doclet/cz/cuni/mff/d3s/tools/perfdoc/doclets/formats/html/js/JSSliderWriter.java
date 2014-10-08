@@ -29,6 +29,10 @@ public class JSSliderWriter {
      */
     private static StringBuilder temporaryGeneratorCode;
 
+    //Cached template codes (so that we do not have to read from a file repeatedly)
+    private static String doubleSliderTemplate;    
+    private static String singleSliderTemplate;
+    
     /**
      * Starts a new temporary code
      */
@@ -41,17 +45,23 @@ public class JSSliderWriter {
      * added, otherwise normal slider)
      */
     public static void addNewSlider(String uniqueSliderName, String uniqueTextboxName, double minValue, double maxValue, double step, boolean axis) {
-        String script = "";
+        String script;
         if (axis) {
-            script = " $( \"#slider-range\" ).slider({ range: true, min:" + minValue + ", max: " + maxValue + ", step:" + step
-                    + ",slide: function( event, ui ) { if (ui.values[1] - ui.values[0] ==0) "
-                    + " { $( \"#amount\" ).val( ui.values[ 0 ]); } else { $( \"#amount\" ).val( ui.values[ 0 ] + \" to \" + ui.values[ 1 ] ); };	} });"
-                    + "\n $( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"values\", 0 ) + \" to \" + $( \"#slider-range\" ).slider( \"values\", 1 ) );  \n";
+            if (doubleSliderTemplate == null) {
+                doubleSliderTemplate = JavascriptLoader.getFileContent("doubleslider.js");
+            }
+            script = doubleSliderTemplate;
         } else {
-            script = " $( \"#slider-range\" ).slider({ min:" + minValue + ", max:" + maxValue + ", step:" + step + ", slide: function( event, ui ) {"
-                    + "$( \"#amount\" ).val( ui.value ); } }); \n $( \"#amount\" ).val( $( \"#slider-range\" ).slider( \"value\" ) );  \n";
+            if (singleSliderTemplate == null) {
+                singleSliderTemplate = JavascriptLoader.getFileContent("singleslider.js");
+            } 
+            script = singleSliderTemplate;
         }
-
+        
+        script = script.replace("$minValue", minValue + "");
+        script = script.replace("$maxValue", maxValue + "");
+        script = script.replace("$step", step + "");
+        
         script = script.replaceAll("slider-range", uniqueSliderName);
         script = script.replaceAll("amount", uniqueTextboxName);
 

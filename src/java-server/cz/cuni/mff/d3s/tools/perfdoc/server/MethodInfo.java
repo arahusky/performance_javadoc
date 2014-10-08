@@ -16,7 +16,9 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Class that provides basic information about a method that we get from JSON
@@ -44,7 +46,7 @@ public class MethodInfo {
     }
 
     /**
-     * Parses the method that we get from incoming JSON.
+     * Parses the method that we get from incoming JSON, or toString method
      *
      * @param method the incoming method name
      * @return String array containing the className, methodName and abbrParams
@@ -57,13 +59,13 @@ public class MethodInfo {
             this.containingClassQualifiedName = subs[0];
             this.methodName = subs[1];
             this.params = getParamNames(subs[2]);
-        } else if (subs.length == 5) {
+        } else if (subs.length == 4 || subs.length == 5) {
             //it is an incoming JSON
             this.containingClassQualifiedName = subs[0] + "." + subs[1];
             this.methodName = subs[2];
             this.params = getParamNames(subs[3]);
         } else {
-            throw new IllegalArgumentException("Given string does not represent correct method");
+            throw new IllegalArgumentException("MethodInfo.parseMethod: Given string does not represent correct method");
         }
     }
 
@@ -116,5 +118,28 @@ public class MethodInfo {
         }
 
         return result.toString();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) { 
+            return true;
+        }        
+        if (!(o instanceof MethodInfo)) {
+            return false;
+        }        
+        MethodInfo mi = (MethodInfo) o;
+        return mi.containingClassQualifiedName.equals(containingClassQualifiedName)
+                && mi.methodName.equals(methodName)
+                && mi.params.equals(params);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 71 * hash + Objects.hashCode(this.containingClassQualifiedName);
+        hash = 71 * hash + Objects.hashCode(this.methodName);
+        hash = 71 * hash + Objects.hashCode(this.params);
+        return hash;
     }
 }

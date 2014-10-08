@@ -15,9 +15,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
+package cz.cuni.mff.d3s.tools.perfdoc.server;
 
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,19 +24,22 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestJavascriptLoader {
+public class TestStatistics {
     
-    @Test
-    public void testGetFileContentNotExist() {
-        String test = JavascriptLoader.getFileContent("someNonExistingFile.js");
-        
-        Assert.assertNull(test);
+    @Test(expected= IllegalArgumentException.class)
+    public void testNullCreation() {
+        new Statistics(null, new Object[5]);
     }
     
     @Test
-    public void testGetFileContent() {
-        String test = JavascriptLoader.getFileContent("printajaxerror.js");
+    public void testSimpleCompute() throws SecurityException, NoSuchMethodException {
+        Statistics s = new Statistics(TestStatistics.class.getMethod("testSimpleCompute", null), new Object[0]);
         
-        Assert.assertTrue(test.contains("function printAjaxError("));
+        s.addResult(10);
+        s.addResult(12);
+        s.addResult(14);
+        s.addResult(16);
+        
+        Assert.assertEquals(13, s.compute());
     }
 }

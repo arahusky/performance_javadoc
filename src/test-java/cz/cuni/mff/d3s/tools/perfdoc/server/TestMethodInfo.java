@@ -65,20 +65,44 @@ public class TestMethodInfo {
     }
     
     @Test(expected= IllegalArgumentException.class)
-    public void testBadFormat1() {
-        //given String does not contain last hash with number
-        String methodJSON = "example001#MyListGenerator#prepareDataBad#@cz.cuni.mff.d3s.tools.perfdoc.workloads.Wo" +
-"rkload@cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload@int";
-        
-        new MethodInfo(methodJSON);
-    }
-    
-    @Test(expected= IllegalArgumentException.class)
     public void testIlegalArg1() {
         //too many hashes
         String methodJSON = "example001#MyListGenerator#prepareDataBad#@cz.cuni.mff.d3s.tools.perfdoc.workloads.Wo" +
 "rkload@cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload@int#1#2";
         
         new MethodInfo(methodJSON);
+    }
+    
+    @Test
+    public void testEqualsSimple() {
+        String methodJSON = "example001#MyArrayList#contains#@java.lang.Object#0";        
+        MethodInfo mi = new MethodInfo(methodJSON);
+        
+        Assert.assertFalse(mi.equals(new Object()));
+        
+        String almostSameJSON = "example001#MyArrayList#contains1#@java.lang.Object#0";  
+        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));
+                
+        Assert.assertTrue(mi.equals(new MethodInfo(methodJSON)));
+    }
+    
+    @Test
+    public void testEqualsMore() {
+        String moreParamsString = "example001#MyArrayList#contains#@java.lang.Object@int@String";     
+        String anotherMoreParamsString = "example001#MyArrayList#contains#@java.lang.Object@int@float";   
+        MethodInfo mi = new MethodInfo(moreParamsString);
+        
+        Assert.assertFalse(mi.equals(new Object()));
+        Assert.assertFalse(mi.equals(new MethodInfo(anotherMoreParamsString)));
+        Assert.assertTrue(mi.equals(new MethodInfo(moreParamsString)));
+        
+        String almostSameJSON = "example001#MyArrayList#contains1#@java.lang.Object#0";  
+        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));
+        
+        
+        String another = "example002#MyArrayList#contains#@java.lang.Object@int@String";        
+        MethodInfo miNoParams = new MethodInfo(another);        
+        Assert.assertFalse(miNoParams.equals(mi));        
+        Assert.assertTrue(miNoParams.equals(new MethodInfo(another)));
     }
 }

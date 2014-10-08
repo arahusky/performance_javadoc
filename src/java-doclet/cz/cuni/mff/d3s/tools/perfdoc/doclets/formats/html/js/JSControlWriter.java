@@ -16,7 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
 import java.util.ArrayList;
@@ -107,9 +106,7 @@ public class JSControlWriter {
                 + "method2 + 'separator=' + stringData;");
         sb.append("$(\"#" + divName + " .right .graph\").html('All parameteres checked succesfully. Sending request to the server. <br /> Please wait...');");
         sb.append("$(\"#" + divName + " .right .url\").html(\"<a target=\\\"_blank\\\" href=\" + adress + \"> Results in a table.</a> \");");
-        
-        JSAjaxHandler.addSuccessFunction();
-        
+                
         sb.append(JSAjaxHandler.returnSuccessButtonHandleFunction());
         sb.append("}");
 
@@ -356,7 +353,7 @@ public class JSControlWriter {
     }
 
     private enum ItemType {
-
+        
         slider, doubleSlider, select, textbox
     }
 }

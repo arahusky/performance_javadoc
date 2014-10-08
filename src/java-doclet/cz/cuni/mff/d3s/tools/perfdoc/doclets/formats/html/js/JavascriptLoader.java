@@ -22,6 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.util.Util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 /**
  * Class to provide access to stored javascript files (in resource folder)
@@ -54,5 +55,24 @@ public class JavascriptLoader {
         } catch (IOException | NullPointerException e) {
             return null;
         }
+    }
+    
+    //TODO test me
+    static String removeCommentsAndNewLines(String str) throws IOException {
+        StringReader reader = new StringReader(str);
+        
+        int letter = reader.read();
+        
+        //skipping whitespaces
+        while (Character.isWhitespace((char) letter)){
+            letter = reader.read();
+        }
+        
+        if (((char) letter) == '/') {
+            letter = reader.read();
+            //if (letter == '')
+        }
+        
+        return null;
     }
 }

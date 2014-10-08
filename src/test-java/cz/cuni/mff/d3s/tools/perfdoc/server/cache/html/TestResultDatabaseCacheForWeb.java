@@ -21,7 +21,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -62,38 +61,23 @@ public class TestResultDatabaseCacheForWeb {
 
     @Test
     public void testGetResults() {
-        res.insertResult("method", "generator", "[data]", 10, 1000);
-        res.insertResult("method", "generator1", "[data2]", 9, 200);
-        res.insertResult("method2", "generator2", "[data3]", 90, 1200);
+        res.insertResult("package#class1#method#@someParam", "package#class1#generator0#@someParam", "[data]", 10, 1000);
+        res.insertResult("package#class1#method#@someParam", "package#class1#generator1#@someParam", "[data2]", 9, 200);
+        res.insertResult("package#class1#method2#@someParam", "package#class1#generator2#@someParam", "[data3]", 90, 1200);
         List<MeasurementResult> list = res.getResults();
 
         Assert.assertNotNull(list);
 
         Assert.assertEquals(3, list.size());
 
-        ArrayList<Object> alist = new ArrayList<>();
-        alist.add("method");
-        alist.add("generator");
-        alist.add("[data]");
-        alist.add(10);
-        alist.add((long) 1000);
-        rowEquals(alist, list.get(0));
+        MeasurementResult res = new MeasurementResult(new MethodInfo("package#class1#method#@someParam"), new MethodInfo("package#class1#generator0#@someParam"), "[data]", 10, 1000);
+        Assert.assertTrue(res.equals(list.get(0)));
 
-        alist = new ArrayList<>();
-        alist.add("method");
-        alist.add("generator1");
-        alist.add("[data2]");
-        alist.add(9);
-        alist.add((long) 200);
-        rowEquals(alist, list.get(1));
+        res = new MeasurementResult(new MethodInfo("package#class1#method#@someParam"), new MethodInfo("package#class1#generator1#@someParam"), "[data2]", 9, 200);
+        Assert.assertTrue(res.equals(list.get(1)));
 
-        alist = new ArrayList<>();
-        alist.add("method2");
-        alist.add("generator2");
-        alist.add("[data3]");
-        alist.add(90);
-        alist.add((long) 1200);
-        rowEquals(alist, list.get(2));
+        res = new MeasurementResult(new MethodInfo("package#class1#method2#@someParam"), new MethodInfo("package#class1#generator2#@someParam"), "[data3]", 90, 1200);
+        Assert.assertTrue(res.equals(list.get(2)));
     }
 
      @Test
@@ -148,48 +132,29 @@ public class TestResultDatabaseCacheForWeb {
 
     @Test
     public void testGetResultsMethodAndGenerator() {
-        res.insertResult("package1.class1#method", "generator", "[data]", 10, 1000);
-        res.insertResult("package1.class1#method", "generator", "[data2]", 9, 200);
-        res.insertResult("package1.class1#method", "generator", "[data3]", 19, 2000);
-        res.insertResult("package1.class1#method2", "generator", "[data3]", 90, 1200);
-        res.insertResult("package1.class1#method3", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class1#method", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class3#method2", "someGen", "someData", 10, 300);
-        res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
-        List<MeasurementResult> list = res.getResults("package1.class1#method", "generator");
+        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data]", 10, 1000);
+        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data2]", 9, 200);
+        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data3]", 19, 2000);
+        res.insertResult("package#class1#method2#someParam", "package#class1#generator2#someParam", "[data3]", 90, 1200);
+        res.insertResult("package#class1#method3#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
+        res.insertResult("package#class1#method#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
+        res.insertResult("package1#class3#method2#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
+        res.insertResult("package2#class2#method2#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
+        List<MeasurementResult> list = res.getResults("package#class1#method#someParam", "package#class1#generator#someParam");
 
         Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
 
-        ArrayList<Object> alist = new ArrayList<>();
-        alist.add("[data]");
-        alist.add(10);
-        alist.add((long) 1000);
-        rowEquals2(alist, list.get(0));
+        MethodInfo testedMethod = new MethodInfo("package#class1#method#someParam");
+        MethodInfo generator = new MethodInfo("package#class1#generator#someParam");
+        
+        MeasurementResult mr = new MeasurementResult(testedMethod, generator, "[data]", 10, 1000);        
+        Assert.assertTrue(mr.equals(list.get(0)));
 
-        alist = new ArrayList<>();
-        alist.add("[data2]");
-        alist.add(9);
-        alist.add((long) 200);
-        rowEquals2(alist, list.get(1));
+        mr = new MeasurementResult(testedMethod, generator, "[data2]", 9, 200);
+        Assert.assertTrue(mr.equals(list.get(1)));
 
-        alist = new ArrayList<>();
-        alist.add("[data3]");
-        alist.add(19);
-        alist.add((long) 2000);
-        rowEquals2(alist, list.get(2));
-    }
-
-    private void rowEquals2(ArrayList<Object> row, MeasurementResult resultItem) {
-        Assert.assertEquals(row.get(0), resultItem.getData());     Assert.assertEquals(row.get(1), resultItem.getNumberOfMeasurements());
-        Assert.assertEquals(row.get(2), resultItem.getTime());
-    }
-
-    private void rowEquals(ArrayList<Object> row, MeasurementResult resultItem) {
-        Assert.assertEquals(row.get(0), resultItem.getTestedMethod());
-        Assert.assertEquals(row.get(1), resultItem.getGenerator());
-        Assert.assertEquals(row.get(2), resultItem.getData());
-        Assert.assertEquals(row.get(3), resultItem.getNumberOfMeasurements());
-        Assert.assertEquals(row.get(4), resultItem.getTime());
+        mr = new MeasurementResult(testedMethod, generator, "[data3]", 19, 2000);
+        Assert.assertTrue(mr.equals(list.get(2)));
     }
 }

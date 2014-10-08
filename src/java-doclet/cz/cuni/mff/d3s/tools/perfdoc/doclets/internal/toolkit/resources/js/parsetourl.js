@@ -1,3 +1,8 @@
+/**
+ * Transforms given String to be in right format for URL adress.
+ * (Common input will be like this: "example002#SimpleWaiting#simpleWait#@int@int#0")
+ * @param {string} str  
+ */
 function parseToUrl(str) {
 	var arr = str.split("#");
 	var className = arr[0] + "." + arr[1];
