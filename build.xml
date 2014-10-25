@@ -122,6 +122,11 @@
         </jar>
 	</target>
 
+	<target name="create-doclet-jar" depends="compile-doclet" description="Creates JAR file for doclet.">
+		<jar destfile="doclet.jar" basedir="${doclet.build.dir}">
+        </jar>
+	</target>
+
 	<target name="run-demo" depends="compile-demo,compile-doclet" description="Run doclet demo.">
 		<mkdir dir="${demo.build.javadoc.dir}" />
 		<javadoc destdir="${demo.build.javadoc.dir}">

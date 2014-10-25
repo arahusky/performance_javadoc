@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestMethodInfo {
+public class MethodInfoTest {
     
     @Test
     public void testSimpleGetters1()
@@ -97,8 +97,7 @@ public class TestMethodInfo {
         Assert.assertTrue(mi.equals(new MethodInfo(moreParamsString)));
         
         String almostSameJSON = "example001#MyArrayList#contains1#@java.lang.Object#0";  
-        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));
-        
+        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));        
         
         String another = "example002#MyArrayList#contains#@java.lang.Object@int@String";        
         MethodInfo miNoParams = new MethodInfo(another);        

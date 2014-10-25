@@ -18,6 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -31,14 +32,12 @@ public class JSControlWriter {
 
     private static ArrayList<InfoItem> list;
     private static String buttonName;
-    
-    private static String workloadName;
+
     private static String fullGeneratorName;
 
     public static void startNewControlButton(String workloadName, String fullGeneratorName) {
-        JSControlWriter.workloadName = workloadName;
         JSControlWriter.fullGeneratorName = fullGeneratorName;
-        
+
         buttonName = returnButtonName(workloadName);
         list = new ArrayList<>();
     }
@@ -87,26 +86,26 @@ public class JSControlWriter {
         StringBuilder sb = new StringBuilder();
         sb.append("$(\"#" + buttonName + "\").click(function() {");
 
-        //we call the function, that checks the parameters
+        //calling the function, that checks the parameters
         sb.append("var paramResult = " + returnCheckParameterFunctionName() + "(); ");
 
         //if there are no errors
         sb.append("if ( paramResult.error == \"\") {");
-        
+
         JSAjaxHandler.generator = fullGeneratorName;
-        
+
         //adding url adress, where the table formed results will be shown
         String divName = JSAjaxHandler.returnDivName();
         String adress = JavascriptCodeBox.serverAdress + "/cache/detailed?";
         sb.append("var stringData = (paramResult.values + \"\").replace(/ /g, '_');");
         sb.append("var method1 = parseToUrl('" + JSAjaxHandler.testedMethod + "');");
         sb.append("var method2 = parseToUrl('" + JSAjaxHandler.generator + "');");
-        sb.append("var adress = '" + adress 
+        sb.append("var adress = '" + adress
                 + "' + method1 + 'separator=' +"
                 + "method2 + 'separator=' + stringData;");
         sb.append("$(\"#" + divName + " .right .graph\").html('All parameteres checked succesfully. Sending request to the server. <br /> Please wait...');");
         sb.append("$(\"#" + divName + " .right .url\").html(\"<a target=\\\"_blank\\\" href=\" + adress + \"> Results in a table.</a> \");");
-                
+
         sb.append(JSAjaxHandler.returnSuccessButtonHandleFunction());
         sb.append("}");
 
@@ -142,7 +141,7 @@ public class JSControlWriter {
         sb.append("var intervals = 0;");
         sb.append("var pom;");
 
-        for (int i = 0; i<list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             InfoItem it = list.get(i);
             switch (it.type) {
                 case slider:
@@ -157,12 +156,14 @@ public class JSControlWriter {
                 case textbox:
                     sb.append(addStringControl(it));
                     break;
-            } 
+            }
             sb.append(" values.push(value);");
         }
 
         //we add the control of number of range sliders (must be precisely one)
         sb.append(returnNumberIntervalsCheck());
+        
+        //creating object containing results
         sb.append("var paramResult = { ");
         sb.append("error : error, ");
         sb.append("values : values, ");
@@ -200,7 +201,7 @@ public class JSControlWriter {
 
         //and also whether it could be reached by adding the step to minimal value
         sb.append(returnStepCheck(it.description));
-        sb.append("}; ");        
+        sb.append("}; ");
 
         return new RawHtml(sb.toString());
     }
@@ -229,14 +230,14 @@ public class JSControlWriter {
 
     private static Content addEnumControl(InfoItem it) {
         //there is just no limitation for enums given
-        
+
         //therefore the code that saves the value of the select tag into the variable "value"
         return new RawHtml(returnCodeValue(it.id));
     }
 
     private static Content addStringControl(InfoItem it) {
         //there is just no limitation for strings given
-        
+
         //therefore the code that saves the value of the textbox into the variable "value"
         return new RawHtml(returnCodeValue(it.id));
     }
@@ -293,12 +294,12 @@ public class JSControlWriter {
      * Checks whether value could be reached by adding step to minimal value.
      */
     private static String returnStepCheck(String description) {
-        return ("if (!isDivisible(value - min, step)) { error +=\"\\n The number in " + description + " could not be reached by the step of \" + step + \".\";}");
+        return ("if (!stepCheck(value, min, step)) { error +=\"\\n The number in " + description + " could not be reached by the step of \" + step + \".\";}");
     }
 
     private static String returnIntervalCheck(InfoItem it, int number) {
-        String labelName = it.textbox + "Label"; 
-        return ("pom = isInterval(value, min, max, step); if (pom == \"true\") { intervals++; rangeValue = " + number + "; rangeValueName = $(\"#"+ labelName + "\").text();}"
+        String labelName = it.textbox + "Label";
+        return ("pom = isInterval(value, min, max, step); if (pom == \"true\") { intervals++; rangeValue = " + number + "; rangeValueName = $(\"#" + labelName + "\").text();}"
                 + "else if (pom == \"false\") {" + addSliderControl(it, false) + "}");
     }
 
@@ -310,20 +311,19 @@ public class JSControlWriter {
      * returns the function, that checks, whether the specified variable
      * represents correct interval *
      */
-    public static String returnIsIntervalFunction() {
+    public static String returnIsIntervalFunction() throws IOException {
         return JavascriptLoader.getFileContent("isinterval.js");
     }
 
     /**
-     * returns the function that checks, whether the modulus of two numbers is 0
-     * (this function should handle the problems with floating point
-     * representation of numbers by translating them to integers and rounding
+     * returns the function, that checks, whether a number can be reached by
+     * adding step to another number
      */
-    public static String returnIsDivisibleFunction() {
-        return JavascriptLoader.getFileContent("isdivisible.js");
-    }   
-    
-     /**
+    public static String returnStepCheckFunction() throws IOException {
+        return JavascriptLoader.getFileContent("stepcheck.js");
+    }
+
+    /**
      * Class that describes the parameter (slider, range slider, textbox or
      * select)
      */
@@ -353,7 +353,7 @@ public class JSControlWriter {
     }
 
     private enum ItemType {
-        
+
         slider, doubleSlider, select, textbox
     }
 }

@@ -311,9 +311,14 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         String[] workloadNames;
         //if there's any workload annotation containing some generator
         if ((workloadNames = returnWorkloadNames(doc)) != null) {
-            if (JavascriptCodeBox.isUsedOnThePage == false) {
-                JavascriptCodeBox.isUsedOnThePage = true;
-                JavascriptCodeBox.addGlobalCodeToContentAndEmpty(htmltree);
+            if (JavascriptCodeBox.isGlobalCodePrinted == false) {
+                JavascriptCodeBox.isGlobalCodePrinted = true;
+                try {
+                    JavascriptCodeBox.addGlobalCodeToContentAndEmpty(htmltree);
+                } catch (IOException e) {
+                    configuration.root.printWarning(e.getMessage());
+                    return;
+                }
             }
             Content dl = new HtmlTree(HtmlTag.DL);
 
@@ -527,13 +532,13 @@ public class HtmlDocletWriter extends HtmlDocWriter {
             for (int i = 0; i < lengthFromMainFolder; i++) {
                 pre += "../";
             }
-            
+
             head.addContent(new RawHtml("<script src=\"" + pre + "dygraph-combined.js\"></script>"));
             head.addContent(HtmlTree.LINK("stylesheet", "text/css", pre + "perfoStylesheet.css", "Style"));
 
             //add sliders javascript and all control javascript code to the current body
             JavascriptCodeBox.addLocalCodeToContentAndEmpty(body);
-            JavascriptCodeBox.isUsedOnThePage = false;
+            JavascriptCodeBox.isGlobalCodePrinted = false;
         }
 
         Content htmlTree = HtmlTree.HTML(configuration.getLocale().getLanguage(),

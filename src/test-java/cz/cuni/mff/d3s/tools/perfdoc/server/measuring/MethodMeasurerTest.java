@@ -15,9 +15,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodMeasurer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +27,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestMethodMeasurer {    
+public class MethodMeasurerTest {    
     
     @Test
     public void testFindOtherValuesSimple()
@@ -43,7 +45,7 @@ public class TestMethodMeasurer {
     }
     
     @Test
-    public void testFindOtherValuesMore()
+    public void testFindOtherValuesMore1()
     {
         MethodMeasurer met = new MethodMeasurer();
         
@@ -53,6 +55,21 @@ public class TestMethodMeasurer {
         int howMany = 5;
         double[] arr = met.findOtherValues(step, minVal, maxVal, howMany);
         double[] expected = new double[] {16,20,24,28,32};
+        
+        arrayEquals(expected, arr);        
+    }
+    
+    @Test
+    public void testFindOtherValuesMore2()
+    {
+        MethodMeasurer met = new MethodMeasurer();
+        
+        double step = 0.2;
+        double minVal = 0.5;
+        double maxVal = 1.7;
+        int howMany = 10;
+        double[] arr = met.findOtherValues(step, minVal, maxVal, howMany);
+        double[] expected = new double[] {0.7,0.9,1.1,1.3,1.5};
         
         arrayEquals(expected, arr);        
     }
@@ -113,7 +130,7 @@ public class TestMethodMeasurer {
         
         Assert.assertEquals("ns", met.convertUnitsIfNeeded(copy));
        
-        arrayListEquals(list, copy);
+        Assert.assertArrayEquals(list.toArray(), copy.toArray());
     }
     
     @Test
@@ -134,7 +151,7 @@ public class TestMethodMeasurer {
         
         Assert.assertEquals("µs", met.convertUnitsIfNeeded(list));
        
-        arrayListEquals(expected, list);
+        Assert.assertArrayEquals(expected.toArray(), list.toArray());
     }
     
     @Test
@@ -155,15 +172,6 @@ public class TestMethodMeasurer {
         
         Assert.assertEquals("s", met.convertUnitsIfNeeded(list));
        
-        arrayListEquals(expected, list);
-    }
-    
-    private void arrayListEquals(ArrayList<Object[]>  first, ArrayList<Object[]> second) {
-        Assert.assertEquals(first.size(), second.size());
-        
-        for (int i = 0; i<first.size(); i++) {
-            Assert.assertArrayEquals(first.get(i), second.get(i));
-        }
-     }
-            
+        Assert.assertArrayEquals(expected.toArray(), list.toArray());
+    }            
 }

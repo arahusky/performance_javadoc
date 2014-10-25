@@ -14,11 +14,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
+import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
@@ -113,7 +116,7 @@ public class MethodMeasurer {
         serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
         Statistics statistics;
-        
+
         //wait until we can measure (there is no lock for our hash)
         lockBase.waitUntilFree(hash);
 
@@ -241,9 +244,8 @@ public class MethodMeasurer {
      * @param howMany how many data will be chosen
      * @return the double array containing chosen values
      */
-    public double[] getValuesToMeasure(int howMany) {
-
-        //the endpoints will be always contained in the values 
+    double[] getValuesToMeasure(int howMany) {
+        //the endpoints will always be contained in the values 
         String[] oarr = ((String) data.get(rangeValue)).split(" to ");
         double min = Double.parseDouble(oarr[0]);
         double max = Double.parseDouble(oarr[1]);
@@ -251,19 +253,12 @@ public class MethodMeasurer {
         //the distance of two measured values
         double step = findStepValue();
 
-        int howManyIsPossible = returnHowManyInInterval(min, max, step) + 2;
-
-        //if there is not enough point in the interval, we add as many as we can
-        if (howManyIsPossible < howMany) {
-            howMany = howManyIsPossible;
-        }
-
-        double[] values = new double[howMany];
+        //calling method to get values between min and max
+        double[] otherVals = findOtherValues(step, min, max, howMany - 2);
+        double[] values = new double[otherVals.length + 2];
 
         values[0] = min;
         values[values.length - 1] = max;
-
-        double[] otherVals = findOtherValues(step, min, max, howMany - 2);
 
         for (int i = 1; i < values.length - 1; i++) {
             values[i] = otherVals[i - 1];
@@ -301,26 +296,37 @@ public class MethodMeasurer {
      * @param howMany
      * @return
      */
-    public double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
+    double[] findOtherValues(double step, double minVal, double maxVal, int howMany) {
+        int howManyIsPossible = returnHowManyInInterval(minVal, maxVal, step);
+
+        //if there is not enough point in the interval, we add as many as we can
+        if (howManyIsPossible < howMany) {
+            howMany = howManyIsPossible;
+        }
+
         if (howMany < 1) {
             return new double[0];
         }
 
         double distance = maxVal - minVal;
+
         //how many units are between the endpoints
         double numberOfPossibleSteps = Math.floor(distance / step);
 
-        //the candidate for the step
-        double possibleStep = (numberOfPossibleSteps / (howMany + 1)) * step;
-        //the candidate for the step must be normalized = we need to find the highest smaller (or equal) value that can be reached be adding the step to the min
-        double myStep = findNearestSmallerPossibleValue(possibleStep, minVal, step);
+        //the step to be used
+        double myStep;
+        if (numberOfPossibleSteps == howMany) {
+            myStep = step;
+        } else {
+            double possibleStep = (numberOfPossibleSteps / (howMany + 1)) * step;
+            //the step must be normalized = we need to find the highest smaller (or equal) value that can be reached be adding the step to the min
+            myStep = findNearestSmallerPossibleValue(possibleStep, minVal, step);
+        }
 
         double[] arr = new double[howMany];
-
         for (int i = 0; i < arr.length; i++) {
             arr[i] = (minVal + ((i + 1) * myStep));
         }
-
         return arr;
     }
 
@@ -328,7 +334,7 @@ public class MethodMeasurer {
      * Finds the highest number smaller than the value that can be achieved by
      * adding step to min
      */
-    public double findNearestSmallerPossibleValue(double value, double min, double step) {
+    double findNearestSmallerPossibleValue(double value, double min, double step) {
         double actualValue = 0;
 
         while (actualValue + step <= value) {

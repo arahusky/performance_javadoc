@@ -37,11 +37,13 @@ public class JavascriptLoader {
     /**
      * Returns the content of the specified javascript file
      *
-     * @param jsFileName the name of the requested javascript file 
+     * @param jsFileName the name of the requested javascript file
      * @return the content of requested file. If no file is found, or any error
      * occurs while reading it, then null is returned.
+     * @throws java.io.IOException when the requested file was not found, or
+     * some problem occurred during the reading
      */
-    public static String getFileContent(String jsFileName) {
+    public static String getFileContent(String jsFileName) throws IOException {
         StringBuilder sb = new StringBuilder();
 
         //using getResourceAsStream called on Configuration ensures the correct folder location
@@ -53,26 +55,26 @@ public class JavascriptLoader {
             }
             return sb.toString();
         } catch (IOException | NullPointerException e) {
-            return null;
+            throw new IOException("File" + jsFolderLocation + DirectoryManager.URL_FILE_SEPARATOR + jsFileName + "was not found.");
         }
     }
-    
+
     //TODO test me
     static String removeCommentsAndNewLines(String str) throws IOException {
         StringReader reader = new StringReader(str);
-        
+
         int letter = reader.read();
-        
+
         //skipping whitespaces
-        while (Character.isWhitespace((char) letter)){
+        while (Character.isWhitespace((char) letter)) {
             letter = reader.read();
         }
-        
+
         if (((char) letter) == '/') {
             letter = reader.read();
             //if (letter == '')
         }
-        
+
         return null;
     }
 }

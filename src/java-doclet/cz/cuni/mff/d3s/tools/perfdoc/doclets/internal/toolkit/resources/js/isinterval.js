@@ -18,9 +18,9 @@
 
 	if (((array[0] * 1) < min) || ((array[1] * 1) > max) || ((array[0] * 1) > (array[1] * 1))) return "false";
 
-	if (! (isDivisible(array[0] - min, step) && isDivisible(array[1] - min, step))) return "false";
+	if (! (stepCheck(array[0], min, step) && stepCheck(array[1], min, step))) return "false";
 
-	//if it contains to, but left and right numbers are equal, it is so called single
+	//if it contains " to ", but left and right numbers are equal, it is so called single
 	if (array[0] == array[1]) return "single";
 
 	//otherwise, it is an interval

@@ -30,7 +30,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestResultCache {
+public class ResultCacheTest {
 
     private static ResultDatabaseCache res;
 

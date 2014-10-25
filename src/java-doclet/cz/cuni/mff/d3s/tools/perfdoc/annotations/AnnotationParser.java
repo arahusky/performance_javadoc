@@ -85,6 +85,4 @@ public class AnnotationParser {
         //default value of axis is true
         return true;
     }
-    
-    
 }

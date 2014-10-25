@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestDetailedSiteHandler {
+public class DetailedSiteHandlerTest {
 
     @Test
     public void testGetRangeValue() {

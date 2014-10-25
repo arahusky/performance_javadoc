@@ -16,7 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -106,7 +105,7 @@ public class MethodInfo {
     }
 
     /**
-     * @return String in format:
+     * @return String representation in format:
      * package.className#methodName#@param1&param2&...&paramN
      * This format is used for storing data in database.
      */

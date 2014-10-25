@@ -16,7 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriterImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceBodyWriter;
+import java.io.IOException;
 
 /**
  * Class that maintains Javascript code associated with an AJAX communication
@@ -35,7 +36,7 @@ public class JSAjaxHandler {
      *
      * @param serverAddress The address of the measuring server
      */
-    public static String returnCallServerFunction(String serverAddress) {
+    public static String returnCallServerFunction(String serverAddress) throws IOException {
         String pattern = JavascriptLoader.getFileContent("callserver.js");
         
         //placing right serverAddress in the pattern by replacing $serverAddress
@@ -46,7 +47,7 @@ public class JSAjaxHandler {
      * Returns the (global) javascript function, that tells the user about the
      * occured error
      */
-    public static String returnErrorFunction() {
+    public static String returnErrorFunction() throws IOException {
         return JavascriptLoader.getFileContent("printajaxerror.js");
     }
 
@@ -55,17 +56,21 @@ public class JSAjaxHandler {
      * generator, this function handles incoming JSON results (puts them in the
      * right graph, changes graph color, ...)
      */
-    public static String addSuccessFunction() {        
+    public static String returnSuccessFunction() throws IOException {        
         return JavascriptLoader.getFileContent("successfunction.js");
+    }    
+    
+    public static String returnIdentifierFunction() throws IOException {
+        return JavascriptLoader.getFileContent("identifier.js");
     }
 
     public static String returnSuccesFunctionName() {
-        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
+        PerformanceBodyWriter perfWriter = new PerformanceBodyWriter();
         return perfWriter.getUniqueInfo(generator) + "success";
     }
 
     public static String returnDivName() {
-        PerformanceWriterImpl perfwWriter = new PerformanceWriterImpl();
+        PerformanceBodyWriter perfwWriter = new PerformanceBodyWriter();
         return perfwWriter.getUniqueInfo(generator);
     }
 

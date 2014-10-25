@@ -14,11 +14,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,7 @@ import org.json.JSONObject;
  * Handler that handles incoming measure request
  * @author Jakub Naplava
  */
-class MeasureRequestHandler implements HttpHandler {
+public class MeasureRequestHandler implements HttpHandler {
 
     private LockBase lockBase;
     

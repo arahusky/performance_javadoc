@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestResultDatabaseCacheForWeb {
+public class ResultDatabaseCacheForWebTest {
 
     private static ResultDatabaseCacheForWeb res;
 

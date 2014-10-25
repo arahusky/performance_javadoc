@@ -18,6 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestAbstractSiteHandler {
+public class AbstractSiteHandlerTest {
 
     @Test
     public void testGetMethodFromQuery1() {
@@ -36,12 +37,8 @@ public class TestAbstractSiteHandler {
         
         Assert.assertEquals("example002.SimpleWaiting", mi.getQualifiedClassName());
         Assert.assertEquals("simpleWait", mi.getMethodName());
-        
-        ArrayList<String> params = new ArrayList<>();
-        params.add("int");
-        params.add("int");
-        
-        Assert.assertEquals(params, mi.getParams());
+                
+        Assert.assertEquals(Arrays.asList("int", "int"), mi.getParams());
     }
     
     @Test

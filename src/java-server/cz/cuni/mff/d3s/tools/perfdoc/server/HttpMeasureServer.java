@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasureRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.CacheRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;

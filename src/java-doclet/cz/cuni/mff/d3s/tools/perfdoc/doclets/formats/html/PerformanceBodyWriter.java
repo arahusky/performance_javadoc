@@ -37,13 +37,14 @@ import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
+import java.io.IOException;
 import java.util.HashMap;
 
 /**
  *
  * @author Jakub Naplava
  */
-public class PerformanceWriterImpl {
+public class PerformanceBodyWriter {
 
     static ConfigurationImpl configuration = ConfigurationImpl.getInstance();
 
@@ -102,6 +103,8 @@ public class PerformanceWriterImpl {
             String parameter = ex.getMessage();
             configuration.root.printWarning("The enum parameter \"" + parameter + "\" in generator " + doc.qualifiedName() + " has got no possible value defined. Therefore no performance info will be generated.");
             return null;
+        } catch (IOException ex) {
+            configuration.root.printWarning(ex.getMessage());
         }
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
@@ -136,10 +139,11 @@ public class PerformanceWriterImpl {
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, MethodDoc doc, String workloadName, String workloadFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
+    private void addFormPart(Content content, MethodDoc doc, String workloadName, String workloadFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException {
+        //getting all annotations of the workload
         AnnotationDesc[] annotations = doc.annotations();
 
-        //we get the generator annotation of the doc (it was already checked by classparser that it is not null)
+        //getting generator annotation of the doc (it was already checked by classparser that it is not null)
         Generator gen = AnnotationWorker.getGenerator(annotations);
 
         //first part of the left tree is the generator description
@@ -185,6 +189,7 @@ public class PerformanceWriterImpl {
         //telling controlWriter, that there's not error in the generator so that he can add the control code to his global code
         JSControlWriter.endCurrentButton();
 
+        //adding submit button action to the code
         content.addContent(JSControlWriter.returnButton(workloadName));
     }
 
@@ -201,7 +206,7 @@ public class PerformanceWriterImpl {
      * @throws GeneratorArgumentException when the param has no annotation and
      * is also not a Workload or ServiceWorkload
      */
-    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException {
+    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException {
         AnnotationDesc[] annotations = param.annotations();
 
         if (annotations.length == 0) {
@@ -221,7 +226,7 @@ public class PerformanceWriterImpl {
                 case "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum":
                     description = AnnotationParser.getAnnotationValueString(annot, "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum.description()");
                     break;
-                //we do not abandon user to have there another annotations 
+                //we do not forbid user to have there another annotations 
             }
         }
 
@@ -264,7 +269,7 @@ public class PerformanceWriterImpl {
      * @throws GeneratorParamNumException if there is no ParamNum annotation
      * associated with this parameter
      */
-    private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException {
+    private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException, IOException {
         AnnotationDesc[] annotations = param.annotations();
 
         ParamNum paramNum = AnnotationWorker.getParamNum(annotations);

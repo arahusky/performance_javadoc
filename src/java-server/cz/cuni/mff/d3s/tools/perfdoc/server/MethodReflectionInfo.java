@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.ClassParser;
 import java.io.IOException;
 import java.lang.reflect.Method;
 

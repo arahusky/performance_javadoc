@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class TestMeasurementResult {
+public class MeasurementResultTest {
     
     @Test
     public void testEquals() {

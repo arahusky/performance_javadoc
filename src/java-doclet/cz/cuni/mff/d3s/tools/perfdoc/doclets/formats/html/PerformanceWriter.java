@@ -39,6 +39,8 @@ public abstract class PerformanceWriter {
 
     static ConfigurationImpl configuration = ConfigurationImpl.getInstance();
 
+    static PerformanceBodyWriter perfWriter = new PerformanceBodyWriter();
+
     /**
      * Method that prepares the title of Performance part
      *
@@ -57,7 +59,6 @@ public abstract class PerformanceWriter {
     public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] workloadNames) {
 
         //passing full method name to the ajax handler
-        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
         JSAjaxHandler.testedMethod = perfWriter.getUniqueFullInfo(doc);
 
         //list, that will contain all generators for the given method (doc) 
@@ -90,7 +91,6 @@ public abstract class PerformanceWriter {
      * @param output the PerformanceOutput to which to insert the content
      */
     private static void addPerfoInfoOneDiv(MethodDoc method, PerformanceOutput output) {
-        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
 
         String workloadFullName = perfWriter.getUniqueFullInfo(method);
         String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
@@ -104,11 +104,12 @@ public abstract class PerformanceWriter {
     }
 
     /**
-     * Add the performance info with multiple wokloads
+     * Add the performance info with multiple workloads
      *
      * @param doc the measured method
      * @param list the List of all workloads
-     * @param output the PerformanceOutput to insert the content
+     * @param output the PerformanceOutput to which to insert the generated
+     * content
      * @throws GeneratorParameterException when there's some invalid content in
      * generator
      */
@@ -121,8 +122,6 @@ public abstract class PerformanceWriter {
             addPerfoInfoOneDiv(list.get(0), output);
             return;
         }
-
-        PerformanceWriterImpl perfWriter = new PerformanceWriterImpl();
 
         //first we need to check that the descriptions are different -> also the workloads are different
         ArrayList<String> genNames = new ArrayList<>();
@@ -139,10 +138,10 @@ public abstract class PerformanceWriter {
             }
         }
 
-        //arraylist, that contains the HtmlTrees of all workloads for the measured method
+        //list, that contains the HtmlTrees of all workloads for the measured method
         ArrayList<HtmlTree> generatorDivs = new ArrayList<>();
 
-        //arraylist, that contains the unique IDs of Divs, which are stored in generatorDivs
+        //list, that contains the unique IDs of Divs, which are stored in generatorDivs
         ArrayList<String> generatorDivsIDs = new ArrayList<>();
 
         //filling in these two arraylist by going through the workloads and generating their's code
@@ -157,9 +156,10 @@ public abstract class PerformanceWriter {
                 //if it is the first workload, we do not want it to be hidden
                 HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, false);
 
-                //if there was an error, we call ourselves, but without the first (= bad) method
                 if (t == null) {
+                    //if there was an error, we call ourselves, but without the first (= bad) method
                     addPerfoInfoMoreDivs(doc, list.subList(1, list.size()), output);
+                    //and exit the method
                     return;
                 } else {
                     generatorDivs.add(t);
@@ -167,7 +167,7 @@ public abstract class PerformanceWriter {
             } else {
                 HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, true);
 
-                //if there was an error, we call ourselves, but without the bad method (i-th), which we have to first locate
+                //if there was an error, we call ourselves, but without the bad method (i-th), which we have to first locate and exclude
                 if (t == null) {
                     List<MethodDoc> firstPart = list.subList(0, i);
 
@@ -176,6 +176,7 @@ public abstract class PerformanceWriter {
                         List<MethodDoc> secondPart = list.subList(i + 1, list.size());
                         firstPart.addAll(secondPart);
                     }
+                    //generating performance information without the bad method
                     addPerfoInfoMoreDivs(doc, firstPart, output);
                     return;
                 } else {
@@ -204,9 +205,8 @@ public abstract class PerformanceWriter {
         selectButton.addContent(contentLI);
         output.appendOutput(new PerformanceOutputImpl(selectButton.toString()));
 
-        //then we add all the workloads (divs)
-        for (int i = 0; i < generatorDivs.size(); i++) {
-            tree.addContent(generatorDivs.get(i));
+        for (HtmlTree generatorDiv : generatorDivs) {
+            tree.addContent(generatorDiv);
         }
         PerformanceOutput perfOutp = new PerformanceOutputImpl(tree.toString());
         output.appendOutput(perfOutp);

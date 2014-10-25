@@ -31,7 +31,8 @@ public class AnnotationWorker {
     private static final Logger log = Logger.getLogger(AnnotationWorker.class.getName());
 
     /**
-     * Returns description of every method parameter.
+     * Returns description of generator parameters (except for first two of
+     * them, which parameterless Workloads).
      *
      * @param method The method, which parameters will be obtained
      * @return the String[] where i-th item contains the description obtained
@@ -51,7 +52,7 @@ public class AnnotationWorker {
                 if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum".equals(a.annotationType().getName())) {
                     result[i - 2] = ((ParamNum) a).description();
                 } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc".equals(a.annotationType().getName())) {
-                    result[i - 2] = ((ParamDesc) a).description();
+                    result[i - 2] = ((ParamDesc) a).value();
                 }
             }
         }

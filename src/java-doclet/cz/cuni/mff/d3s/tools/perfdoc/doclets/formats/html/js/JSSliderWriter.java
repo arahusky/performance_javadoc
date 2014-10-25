@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
+import java.io.IOException;
+
 /**
  *
  * @author Jakub Naplava
@@ -23,13 +25,13 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 public class JSSliderWriter {
 
     /**
-     * the temporary code is the code where all the code for slider is saved
-     * when the signal, that the generator is in a good format comes, this code
-     * is saved in the global JavascriptCodeBox
+     * the temporary code is the code where all the code for slider is saved.
+     * When the signal, that the generator is in a good format comes, this code
+     * is saved in the global JavascriptCodeBox.
      */
     private static StringBuilder temporaryGeneratorCode;
 
-    //Cached template codes (so that we do not have to read from a file repeatedly)
+    //Cached template codes
     private static String doubleSliderTemplate;    
     private static String singleSliderTemplate;
     
@@ -44,7 +46,7 @@ public class JSSliderWriter {
      * Adds new slider into code (if axis is true, then the range slider will be
      * added, otherwise normal slider)
      */
-    public static void addNewSlider(String uniqueSliderName, String uniqueTextboxName, double minValue, double maxValue, double step, boolean axis) {
+    public static void addNewSlider(String uniqueSliderName, String uniqueTextboxName, double minValue, double maxValue, double step, boolean axis) throws IOException {
         String script;
         if (axis) {
             if (doubleSliderTemplate == null) {
@@ -74,5 +76,4 @@ public class JSSliderWriter {
     public static void endGeneratorCode() {
         JavascriptCodeBox.addLocalCode(temporaryGeneratorCode.toString());
     }
-
 }
