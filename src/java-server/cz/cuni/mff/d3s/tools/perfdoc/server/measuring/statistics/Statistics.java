@@ -14,11 +14,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,40 +26,100 @@ import java.util.logging.Logger;
  *
  * @author Jakub Naplava
  */
-public class Statistics {
-    
+public final class Statistics {
+
     private static final Logger log = Logger.getLogger(Statistics.class.getName());
-    
-    private final Method testedMethod;
-    private final Object[] parameters;
-    
+
     private final ArrayList<Long> measurementResults = new ArrayList<>();
-    
-    public Statistics(Method testedMethod, Object[] parameters) {
-        if (testedMethod == null) {
-            throw new IllegalArgumentException("Statistics: Tested method can not be null.");
-        } 
-        
-        if (parameters == null) {
-            throw new IllegalArgumentException("Statistics: Parameters can not be null.");
-        }
-        
-        this.testedMethod = testedMethod;
-        this.parameters = parameters;
-        log.log(Level.CONFIG, "New instance of Statistics created for testedMethod: {0}", testedMethod.getName());
+
+    public Statistics() {
+        log.log(Level.CONFIG, "New instance of Statistics created.");
     }
-    
+
+    /**
+     * Creates new instance of Statistics containing values from the given
+     * parameter. The parameter is in format: {value1, ..., valueN} - as stored
+     * in database
+     *
+     * @param values
+     */
+    public Statistics(String values) {
+        String[] items = values.substring(1, values.length()-1).split(",");
+        for (String item : items) {
+            try {
+                long value = Long.parseLong(item);
+                addResult(value);
+            } catch (NumberFormatException e) {
+                log.log(Level.WARNING, "There was a not-long number passed to Statistics.");
+            }
+        }
+    }
+
     public void addResult(long result) {
         measurementResults.add(result);
     }
-    
+
     public long compute() {
-        long totalTime = 0;
+        if (measurementResults.isEmpty()) {
+            return -1;
+        }
         
+        long totalTime = 0;
+
         for (long res : measurementResults) {
             totalTime += res;
         }
-        
-        return totalTime/measurementResults.size();
+
+        return totalTime / measurementResults.size();
+    }
+
+    public int getNumberOfMeasurements() {
+        return measurementResults.size();
+    }
+    
+    public boolean isEmpty() {
+        return measurementResults.isEmpty();
+    }
+    
+    /**
+     * *
+     * @return String representation of Statistic results in format: {result1,
+     * ..., resultN}
+     */
+    @Override
+    public String toString() {
+        if (measurementResults.isEmpty()) {
+            return "{}";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append(measurementResults.get(0));
+
+        for (int i = 1; i < measurementResults.size(); i++) {
+            sb.append(",").append(measurementResults.get(i));
+        }
+
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + Objects.hashCode(this.measurementResults);
+        return hash;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Statistics)) {
+            return false;
+        }
+        Statistics s = (Statistics) o;
+        return s.measurementResults.equals(this.measurementResults);
     }
 }

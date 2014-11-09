@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- *Class to cache loaded method and classes
+ * Class to cache loaded method and classes
  * 
  * @author Jakub Naplava
  */

@@ -14,21 +14,23 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 
 /**
+ * Binds together all the information describing single point. That is method,
+ * workload, parameters (for workload) and the priority.
  *
  * @author Jakub Naplava
  */
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ParamDesc {
-    //destination enum to represent
-    String value();
+public interface BenchmarkSetting {
+
+    MethodInfo getTestedMethod();
+
+    MethodInfo getWorkload();
+
+    MethodArguments getWorkloadArguments();
+    
+    int getPriority();
 }

@@ -20,16 +20,18 @@ import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Site handler that is shows specific results for given method, workload and
+ * some of the workload argument values.
  *
  * @author Jakub Naplava
  */
@@ -40,22 +42,24 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new detailed request. Starting to handle it.");
-
+        
+        //URL adress should be in format: .../detailed?methodseparator=workloadseparator=workloadArgs
         String query = exchange.getRequestURI().getQuery();
         String[] data = getData(query);
 
+        //the data array should contain: method, workload, workloadArguments
         if (data.length != 3) {
             sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
-        if (res != null) {            
+        if (res != null) {
             MethodInfo testedMethod;
             MethodInfo generator;
-            
+
             try {
-                 testedMethod = getMethodFromQuery(data[0]);
-                 generator = getMethodFromQuery(data[1]);
+                testedMethod = getMethodFromQuery(data[0]);
+                generator = getMethodFromQuery(data[1]);
             } catch (IllegalArgumentException e) {
                 sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
                 return;
@@ -66,8 +70,8 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
             addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
             addToHeader("<script src=\"js?tablesorter.js\"></script>");
-            addToHeader("<script>$(document).ready(function()  { " +
-                        "        $(\"#myTable\").tablesorter(); } ); </script> ");
+            addToHeader("<script>$(document).ready(function()  { "
+                    + "        $(\"#myTable\").tablesorter(); } ); </script> ");
 
             addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
@@ -103,27 +107,27 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                 + "<li>Parameters: " + chainParameters(generator.getParams()) + "</li>"
                 + "</ul>");
         sb.append("<h3>Measurements:<h3>");
-
         Method generatorMethod;
         try {
             generatorMethod = new MethodReflectionInfo(generator.toString()).getMethod();
         } catch (ClassNotFoundException | IOException ex) {
-            log.log(Level.INFO, "User obtained method that does not exist.");
+            log.log(Level.INFO, "User obtained method that is not actually present on the server.");
+            sb.append("Sorry, but the requested method is not actually present on the server.");
             return sb.toString();
         }
         String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
         int range = getRangeValue(parameters, generator.getParams());
-
+        
         if (genParametersText == null || (range == -1)) {
             return sb.toString();
         }
-
+        
         String[] normalizedParameters = normalizeParameters(parameters, range, generator.getParams());
-
+        
         if (normalizedParameters == null) {
             return sb.toString();
         }
-
+        
         double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
         double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
 
@@ -135,52 +139,47 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
 
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
-
-        List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
-
+        
+        List<BenchmarkResult> list = res.getResults(testedMethod, generator);
+        
         sb.append("<tbody>");
         if (list != null) {
-             for (MeasurementResult item : list) {
+            for (BenchmarkResult item : list) {
                 sb.append(getRowIfPass(normalizedParameters, item, min, max, range));
             }
         }
-
+        
         sb.append("</tbody></table>");
 
         return sb.toString();
     }
 
-    String getRowIfPass(String[] normalizedData, MeasurementResult resultItem, double min, double max, int rangeValue) {
-      StringBuilder sb = new StringBuilder();
-
-        String data = resultItem.getData();
-        String[] datas = data.split(";");
-
-        for (int i = 0; i < datas.length; i++) {
+    String getRowIfPass(String[] normalizedData, BenchmarkResult resultItem, double min, double max, int rangeValue) {
+        StringBuilder sb = new StringBuilder();
+        Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
+        for (int i = 0; i < data.length; i++) {
             if (i != rangeValue) {
-                if (!datas[i].equals(normalizedData[i])) {
-                    return ""; 
+                if (!data[i].equals(normalizedData[i])) {
+                    return "";
                 }
             }
         }
-
-        double value = Double.parseDouble(datas[rangeValue]);
-
+        double value = Double.parseDouble(data[rangeValue].toString());
         if (value > max || value < min) {
             return "";
         }
-
         sb.append("<tr>");
-        sb.append("<td>" + datas[rangeValue] + "</td>");
+        sb.append("<td>").append(data[rangeValue]).append("</td>");
 
-        int numberOfMeasurements = resultItem.getNumberOfMeasurements();
-        sb.append("<td>" + numberOfMeasurements + "</td>");
+        //TODO proper statistics ... uncomment, delete
+        //int numberOfMeasurements = resultItem.getStatistics().getNumberOfMeasurements();
+        int numberOfMeasurements = resultItem.getBenchmarkSetting().getPriority();
+        sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
-        long time = resultItem.getTime();
-        sb.append("<td>" + time + "</td>");
+        long time = resultItem.getStatistics().compute();
+        sb.append("<td>").append(time).append("</td>");
 
         sb.append("</tr>");
-
         return sb.toString();
     }
 
@@ -229,16 +228,16 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                         if (!parts[0].equals(parts[1])) {
                             return null;
                         }
-                        
+
                         switch (s) {
                             case "int":
                                 res[i - 2] = Integer.parseInt(parts[0]) + "";
                                 break;
                             case "float":
-                                res[i-2] = Float.parseFloat(parts[0]) + "";
+                                res[i - 2] = Float.parseFloat(parts[0]) + "";
                                 break;
                             case "double":
-                                res[i-2] = Double.parseDouble(parts[0]) + "";
+                                res[i - 2] = Double.parseDouble(parts[0]) + "";
                                 break;
                         }
                     }
@@ -249,7 +248,6 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                 res[i - 2] = parameter;
             }
         }
-
         return res;
     }
 }

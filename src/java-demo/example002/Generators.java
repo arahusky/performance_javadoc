@@ -37,7 +37,7 @@ public class Generators {
               ServiceWorkload sw,
               @ParamNum(description = "Waiting time (*3ms)", min = 0, max = 100) int wait,
               @ParamNum(description = "Waiting time (*4ms)", min = 0, max = 100, step = 2) int wait2,
-              @ParamDesc(description = "Multiple waiting time by") SomeEnum en
+              @ParamDesc("Multiple waiting time by") SomeEnum en
               )
       {
           int times = sw.getNumberCalls();          
@@ -64,7 +64,7 @@ public class Generators {
               Workload workload,
               ServiceWorkload sw,
               @ParamNum(description = "Waiting time (*2ms)", min = 0, max = 100) int wait,
-              @ParamDesc(description = "Multiple waiting time by") SomeOtherEnum en
+              @ParamDesc("Multiple waiting time by") SomeOtherEnum en
               )
       {
           int times = sw.getNumberCalls();          

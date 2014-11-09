@@ -17,10 +17,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +40,7 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
 
         if (res != null) {
 
-            ArrayList<String> testedMethod = res.getDistinctTestedMethods();
+            List<MethodInfo> testedMethod = res.getDistinctTestedMethods();
 
             addCode(returnHeading());
             String classOutput = formatClasses(testedMethod);
@@ -63,35 +63,30 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
         return heading;
     }
 
-    private String formatClasses(ArrayList<String> output) {
+    private String formatClasses(List<MethodInfo> output) {
 
         //unable to retrieve data from database
         if (output == null) {
             return "<p>Sorry, but there was an error when trying to connect to database.</p>";
         }
 
+        Set<String> distinctClasses = getDistinctClasses(output);
+        
         StringBuilder sb = new StringBuilder();
-
-        Set<String> classes = parseClasess(output);
-
         sb.append("<ul>");
-        for (String className : classes) {
+        for (String className : distinctClasses) {
             sb.append("<li><a href= \"cache/class?" + className + "\">" + className + "</a></li>");
         }
         sb.append("</ul>");
 
         return sb.toString();
     }
-
-    private Set<String> parseClasess(ArrayList<String> testedMethods) {
-
+    
+    private Set<String> getDistinctClasses(List<MethodInfo> testedMethods) {
         Set<String> set = new HashSet<>();
-
-        for (String method : testedMethods) {
-            String className = method.split("#")[0];
-            set.add(className);
+        for (MethodInfo method : testedMethods) {            
+            set.add(method.getQualifiedClassName());
         }
-
         return set;
     }
 }

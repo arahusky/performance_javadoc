@@ -137,7 +137,6 @@ public abstract class AbstractSiteHandler implements SiteHandler {
      * @return
      */
     protected String getQueryURL(String method) {
-
         String result = method.replaceAll("#@", "&").replaceAll("#", "&").replaceAll("@", "&");
 
         return result;

@@ -14,24 +14,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 /**
  *
  * @author Jakub Naplava
  */
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ParamNum {
-    String description();
-    double min();
-    double max();
-    double step() default 1;
-    boolean axis() default true;
+public interface MethodArguments {
+
+    Object[] getValues();
+
+    /**
+     * Returns arguments in the database (cache) format.
+     *
+     * @param omit boolean indicator saying whether to omit first two arguments
+     * (ussualy because it is Workload and Service Workload, which should not be
+     * saved in DB).
+     */
+    String getValuesDBFormat(Boolean omit);
 }

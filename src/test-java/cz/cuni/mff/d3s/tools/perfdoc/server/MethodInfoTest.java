@@ -30,18 +30,18 @@ public class MethodInfoTest {
     @Test
     public void testSimpleGetters1()
     {
-        String methodJSON = "example001#MyArrayList#contains#@java.lang.Object#0";
+        String methodJSON = "package1#class1#method1#@param1#0";
         
         MethodInfo mi = new MethodInfo(methodJSON);
         
-        Assert.assertEquals("example001.MyArrayList", mi.getQualifiedClassName());
-        Assert.assertEquals("contains", mi.getMethodName());
+        Assert.assertEquals("package1.class1", mi.getQualifiedClassName());
+        Assert.assertEquals("method1", mi.getMethodName());
         
         ArrayList<String> expectedParams = new ArrayList<>();
-        expectedParams.add("java.lang.Object");        
+        expectedParams.add("param1");        
         Assert.assertEquals(expectedParams, mi.getParams());
         
-        Assert.assertEquals("example001.MyArrayList#contains#@java.lang.Object", mi.toString());
+        Assert.assertEquals("package1.class1#method1#@param1", mi.toString());
     }
     
     @Test
@@ -103,5 +103,20 @@ public class MethodInfoTest {
         MethodInfo miNoParams = new MethodInfo(another);        
         Assert.assertFalse(miNoParams.equals(mi));        
         Assert.assertTrue(miNoParams.equals(new MethodInfo(another)));
+    }
+    
+    @Test
+    public void testGetParamsNullParams() {
+        String method = "example001#MyArrayList#contains#";   
+        MethodInfo mi = new MethodInfo(method);
+        Assert.assertArrayEquals(new String[0], mi.getParams().toArray());
+    }
+    
+    @Test
+    public void testGetParams() {
+        String method = "example001#MyArrayList#contains#@java.lang.Object@int@float";   
+        MethodInfo mi = new MethodInfo(method);
+        
+        Assert.assertArrayEquals(new String[]{"java.lang.Object","int","float"}, mi.getParams().toArray());
     }
 }

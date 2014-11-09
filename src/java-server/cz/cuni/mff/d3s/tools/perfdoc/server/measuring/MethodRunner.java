@@ -15,20 +15,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 /**
  *
  * @author Jakub Naplava
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Workloads {
-    //destination enum to represent
-    Workload[] value();
+public abstract class MethodRunner implements BenchmarkRunner{
+    
 }

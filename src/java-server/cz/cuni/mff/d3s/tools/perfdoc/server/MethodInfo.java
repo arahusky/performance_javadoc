@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * Class that provides basic information about a method that we get from JSON
- * request.
+ * Structure containing basic information about a method. This structure is used
+ * in whole project as parameter as well as the item in database (toString).
  *
  * @author Jakub Naplava
  */
@@ -35,9 +35,10 @@ public class MethodInfo {
      * @param methodData data either from incoming JSON
      */
     public MethodInfo(String methodData) throws IllegalArgumentException {
-        parseMethod(methodData);
+        //just a little trick to recognize parameterless methods
+        parseMethod(methodData + " ");
     }
-    
+
     public MethodInfo(String containingClassQualifiedName, String methodName, ArrayList<String> parameters) {
         this.containingClassQualifiedName = containingClassQualifiedName;
         this.methodName = methodName;
@@ -64,7 +65,7 @@ public class MethodInfo {
             this.methodName = subs[2];
             this.params = getParamNames(subs[3]);
         } else {
-            throw new IllegalArgumentException("MethodInfo.parseMethod: Given string does not represent correct method");
+            throw new IllegalArgumentException("MethodInfo.parseMethod: Given string (" + method + ") does not represent correct method.");
         }
     }
 
@@ -78,6 +79,7 @@ public class MethodInfo {
      * parameter
      */
     private ArrayList<String> getParamNames(String params) {
+        params = params.trim();
         String[] paramNames = params.split("@");
         ArrayList<String> res = new ArrayList<>();
 
@@ -107,26 +109,26 @@ public class MethodInfo {
     /**
      * @return String representation in format:
      * package.className#methodName#@param1&param2&...&paramN
-     * This format is used for storing data in database.
+     * This format is used for storing method in database.
      */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder(containingClassQualifiedName + "#" + methodName + "#");
         for (String param : params) {
-            result.append("@" + param);
+            result.append("@").append(param);
         }
 
         return result.toString();
     }
-    
+
     @Override
     public boolean equals(Object o) {
-        if (o == this) { 
+        if (o == this) {
             return true;
-        }        
+        }
         if (!(o instanceof MethodInfo)) {
             return false;
-        }        
+        }
         MethodInfo mi = (MethodInfo) o;
         return mi.containingClassQualifiedName.equals(containingClassQualifiedName)
                 && mi.methodName.equals(methodName)

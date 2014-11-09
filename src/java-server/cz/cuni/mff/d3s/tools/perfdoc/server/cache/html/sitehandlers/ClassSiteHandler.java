@@ -17,8 +17,9 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,12 +36,12 @@ public class ClassSiteHandler extends AbstractSiteHandler {
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new class-site request. Starting to handle it.");
 
-        //the requested class
+        //the requested class (format: package.className)
         String className = exchange.getRequestURI().getQuery();
 
         if (res != null) {
             //the methods of the class that have been measured 
-            ArrayList<String> testedMethods = res.getDistinctClassMethods(className);
+            List<MethodInfo> testedMethods = res.getDistinctClassMethods(className);
 
             addCode(returnHeading(className));
             String classOutput = formatMethods(testedMethods);
@@ -61,13 +62,13 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<h1>Class <i>" + className + "</i></h1>");
+        sb.append("<h1>Class <i>").append(className).append("</i></h1>");
         sb.append("<h2>Methods</h2>");
 
         return sb.toString();
     }
 
-    private String formatMethods(ArrayList<String> methods) {
+    private String formatMethods(List<MethodInfo> methods) {
 
         //unable to retrieve data from database
         if (methods == null) {
@@ -77,9 +78,9 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<ul>");
-        for (String method : methods) {
+        for (MethodInfo method : methods) {
             String methodInfo = formatMethod(method);
-            String url = getQueryURL(method);
+            String url = getQueryURL(method.toString());
             sb.append("<li><a href= \"method?" + url + "\">" + methodInfo + "</a></li>");
         }
         sb.append("</ul>");
@@ -87,36 +88,18 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String formatMethod(String method) {
-        String[] chunks = method.split("#");
-
-        if (chunks.length < 3) {
-            //situation, where we are forcing either some mistake input or method with no parameters
-            //if is it method with no params
-            if (chunks.length == 2 && method.endsWith("#")) {
-                String[] newChunks = new String[]{chunks[0], chunks[1], ""};
-                chunks = newChunks;
-            } else {
-                return "";
-            }
+    private String formatMethod(MethodInfo method) {
+        if (method.getParams().isEmpty()) {
+            return method.getMethodName() + "()";
         }
-        String methodName = chunks[1];
-        String parameterInfo = getParameterInfo(chunks[2]);
-
+        String methodName = method.getMethodName();        
+        
+        StringBuilder parameterInfo = new StringBuilder();
+        List<String> paramNames = method.getParams();
+        for (int i = 0; i<paramNames.size() - 1; i++) {
+            parameterInfo.append(paramNames.get(i)).append(",");
+        }
+        parameterInfo.append(paramNames.get(paramNames.size() - 1));
         return (methodName + "(" + parameterInfo + ")");
-    }
-
-    private String getParameterInfo(String parameter) {
-        String[] parameters = parameter.split("@");
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < parameters.length - 1; i++) {
-            sb.append(parameters[i] + ",");
-        }
-
-        sb.append(parameters[parameters.length - 1]);
-
-        return sb.toString();
     }
 }

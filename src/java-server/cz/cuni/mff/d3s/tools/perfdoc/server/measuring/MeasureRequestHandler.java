@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -34,12 +33,13 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
- * Handler that handles incoming measure request
+ * Handler that handles incoming measure request.
+ * 
  * @author Jakub Naplava
  */
 public class MeasureRequestHandler implements HttpHandler {
 
-    private LockBase lockBase;
+    private final LockBase lockBase;
     
     public MeasureRequestHandler(LockBase lockBase) {
         this.lockBase = lockBase;
@@ -68,10 +68,9 @@ public class MeasureRequestHandler implements HttpHandler {
             
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
-            MethodMeasurer m = new MethodMeasurer(requestBody, lockBase);
-            userID = m.hash;
+            MethodMeasurer m = new MethodMeasurer(new MeasureRequest(requestBody), lockBase);
             
-            JSONObject obj = m.measureTime();
+            JSONObject obj = m.measure();
             try {
                 exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
                 responseBody.write(obj.toString().getBytes());
@@ -79,19 +78,13 @@ public class MeasureRequestHandler implements HttpHandler {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
         } catch (ClassNotFoundException ec) {
-            sendErrorMessage("Unable to find a generator class", exchange, responseBody);
-        } catch (InstantiationException ex) {
-            sendErrorMessage("Unable to make an instance of generator class", exchange, responseBody);
-        } catch (InvocationTargetException ex) {
-            sendErrorMessage("The generator or tested method throw exception (" + ex.getCause() + ")", exchange, responseBody);
-        } catch (IllegalAccessException ex) {
-            sendErrorMessage("Some other error", exchange, responseBody);
+            sendErrorMessage("Unable to find a testedMethod/generator class", exchange, responseBody);
         } catch (IllegalArgumentException ex) {
             sendErrorMessage("The bad parameters were sent to server (There might be an error in generator).", exchange, responseBody);
         } catch (IOException ex) {
-            sendErrorMessage("There was some problem while reading some file on the server", exchange, responseBody);
+            sendErrorMessage("There was some problem while reading some file on the server.", exchange, responseBody);
         } catch (SQLException ex) {
-            log.log(Level.SEVERE, "There was some problem when connecting to database", ex);
+             log.log(Level.SEVERE, "There was some problem when connecting to database", ex);
         } finally {
             try {
                 in.close();

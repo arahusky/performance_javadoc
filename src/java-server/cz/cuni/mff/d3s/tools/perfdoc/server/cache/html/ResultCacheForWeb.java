@@ -16,9 +16,9 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
-import java.util.ArrayList;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.util.List;
 
 /**
@@ -34,16 +34,16 @@ public interface ResultCacheForWeb extends ResultCache {
      *
      * @return
      */
-    List<MeasurementResult> getResults();
+    List<BenchmarkResult> getResults();
 
     /**
      * Returns all data in table for testedMethod and generator
      *
      * @param testedMethod
      * @param generator
-     * @return
+     * @return BenchmarkResult if found, otherwise null
      */
-    List<MeasurementResult> getResults(String testedMethod, String generator);
+    List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
      
     /**
      * Returns all methods, that have already been tested and have some result
@@ -52,17 +52,17 @@ public interface ResultCacheForWeb extends ResultCache {
      * @return ArrayList containing the names of searched methods; if there was
      * an error, then null
      */
-    ArrayList<String> getDistinctTestedMethods();
+    List<MethodInfo> getDistinctTestedMethods();
 
     /**
      * Returns all method, that are in specified class and have some result in
      * cache
      *
-     * @param className
+     * @param className (format: package.className)
      * @return ArrayList containing the names of searched methods; if there was
      * an error, then null
      */
-    ArrayList<String> getDistinctClassMethods(String className);
+    List<MethodInfo> getDistinctClassMethods(String className);
 
     /**
      * Returns all generators for given methodName, that have some result in
@@ -72,5 +72,5 @@ public interface ResultCacheForWeb extends ResultCache {
      * @return ArrayList containing the names of searched generators; if there
      * was an error, then null
      */
-    ArrayList<String> getDistinctGenerators(String methodName);
+    List<MethodInfo> getDistinctGenerators(MethodInfo methodName);
 }

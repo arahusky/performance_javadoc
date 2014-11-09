@@ -20,8 +20,9 @@ import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -130,23 +131,24 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
-        List<MeasurementResult> list = res.getResults(testedMethod.toString(), generator.toString());
+        List<BenchmarkResult> list = res.getResults(testedMethod, generator);
        
         if (list != null) {
-            for (MeasurementResult resultItem : list) {
+            for (BenchmarkResult resultItem : list) {
                 sb.append("<tr>");
 
-                String data = resultItem.getData();
-                String[] datas = data.split(";");
-                for (String datum : datas) {
-                    sb.append("<td>" + datum + "</td>");
+                Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
+                for (Object datum : data) {
+                    sb.append("<td>").append(datum).append("</td>");
                 }
 
-                int numberOfMeasurements = resultItem.getNumberOfMeasurements();
-                sb.append("<td>" + numberOfMeasurements + "</td>");
+                //TODO proper statistics -> uncomment and delete
+                //int numberOfMeasurements = resultItem.getStatistics().getNumberOfMeasurements();
+                int numberOfMeasurements = resultItem.getBenchmarkSetting().getPriority();
+                sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
-                long time = resultItem.getTime();
-                sb.append("<td>" + time + "</td>");
+                long time = resultItem.getStatistics().compute();
+                sb.append("<td>").append(time).append("</td>");
 
                 sb.append("</tr>");
             }

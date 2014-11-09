@@ -17,7 +17,6 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,15 +25,10 @@ import org.junit.Test;
  * @author Jakub Naplava
  */
 public class StatisticsTest {
-    
-    @Test(expected= IllegalArgumentException.class)
-    public void testNullCreation() {
-        new Statistics(null, new Object[5]);
-    }
-    
+        
     @Test
     public void testSimpleCompute() throws SecurityException, NoSuchMethodException {
-        Statistics s = new Statistics(StatisticsTest.class.getMethod("testSimpleCompute", null), new Object[0]);
+        Statistics s = new Statistics();
         
         s.addResult(10);
         s.addResult(12);
@@ -42,5 +36,42 @@ public class StatisticsTest {
         s.addResult(16);
         
         Assert.assertEquals(13, s.compute());
+    }
+    
+    @Test
+    public void testToString() throws NoSuchMethodException
+    {
+        Statistics s = new Statistics();
+        
+        Assert.assertEquals("{}", s.toString());
+        
+        s.addResult(10);
+        s.addResult(12);
+        s.addResult(14);
+        
+        Assert.assertEquals("{10,12,14}", s.toString());
+    }
+    
+    @Test
+    public void testNewStatisticsFromToString() {
+        Statistics s = new Statistics();     
+        s.addResult(10);
+        s.addResult(12);
+        s.addResult(14);
+        String toStringStatistics = s.toString();
+        Statistics second = new Statistics(toStringStatistics);
+        Assert.assertEquals("{10,12,14}", second.toString());
+    }
+    
+    @Test
+    public void testEquals() {
+        Statistics s1 = new Statistics();
+        Statistics s2 = new Statistics("{1,2,3,4,5}");
+        Statistics s3 = new Statistics("{1,2,3,4}");
+        Statistics s4 = new Statistics("{1,2,3,4,5}");
+        
+        Assert.assertEquals(s1, new Statistics());
+        Assert.assertEquals(s2, s4);
+        Assert.assertFalse(s3.equals(s4));
     }
 }

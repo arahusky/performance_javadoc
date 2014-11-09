@@ -4,7 +4,6 @@ var cookieName = "perfJavaDocUID";
 if (navigator.cookieEnabled) {
 	//if cookies are enabled, we first check, whether cookie with name perfJavaDocUID exists
 	var pom = getCookie(cookieName);
-	alert(pom);
 	if (pom == "") {
 		globalIdentifier = Math.random().toString(36).substring(7);
 		setCookie(cookieName, globalIdentifier);

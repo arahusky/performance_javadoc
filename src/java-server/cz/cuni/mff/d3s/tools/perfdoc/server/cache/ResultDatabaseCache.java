@@ -16,6 +16,10 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -149,33 +153,37 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * {@inheritDoc}
      */
     @Override
-    public long getResult(String methodName, String generatorName, String data, int numberOfMeasurements) {
+    public BenchmarkResult getResult(BenchmarkSetting setting, int numberOfMeasurements) {
+        String methodName = setting.getTestedMethod().toString();
+        String generatorName = setting.getWorkload().toString();
+        String data = setting.getWorkloadArguments().getValuesDBFormat(true);
+        
         try {
             Statement stmt = conn.createStatement();
             String query = "SELECT numberOfMeasurements, time "
                     + "FROM results "
                     + "WHERE (methodName = '" + methodName + "' AND generator='" + generatorName + "' AND data='" + data + "')";
             ResultSet rs = stmt.executeQuery(query);
-
             if (!rs.next()) {
                 //if there is no row in the table containing the measured method with the data
                 closeResultSet(rs);
-                return -1;
+                return new BenchmarkResultImpl(new Statistics(), setting);
             } else {
                 //the first column (numberOfMeasurements) is saved under index 1
                 int savedNumberOfMeasurements = rs.getInt("numberOfMeasurements");
                 if (savedNumberOfMeasurements >= numberOfMeasurements) {
                     long savedResult = rs.getLong("time");
                     closeResultSet(rs);
-                    return savedResult;
+                    Statistics statistics = new Statistics("{" + savedResult + "}");
+                    return new BenchmarkResultImpl(statistics, setting);
                 }
 
                 closeResultSet(rs);
-                return -1;
+                return new BenchmarkResultImpl(new Statistics(), setting);
             }
         } catch (SQLException e) {
             log.log(Level.CONFIG, "Unable to look in the database cache for measured result", e);
-            return -1;
+            return new BenchmarkResultImpl(new Statistics(), setting);
         }
     }
 
@@ -183,11 +191,14 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * {@inheritDoc}
      */
     @Override
-    public boolean insertResult(String methodName, String generatorName, String data, int numberOfMeasurements, long time) {
-
+    public boolean insertResult(BenchmarkSetting setting, int numberOfMeasurements, long time) {
+        
+        String methodName = setting.getTestedMethod().toString();
+        String generatorName = setting.getWorkload().toString();
+        String data = setting.getWorkloadArguments().getValuesDBFormat(true);
         Statement stmt;
         ResultSet rs;
-
+        
         try {
             stmt = conn.createStatement();
             String query = "SELECT numberOfMeasurements "

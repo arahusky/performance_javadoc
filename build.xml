@@ -9,6 +9,7 @@
 	<property name="demo.src.dir" location="${src.dir}/java-demo" />
 	<property name="server.src.dir" location="${src.dir}/java-server" />
 	<property name="test.src.dir" location="${src.dir}/test-java" />
+	<property name="annot.src.dir" location="${src.dir}/java-shared" />
 	
 	<!-- build directories -->
 	<property name="build.dir" location="out" />
@@ -16,10 +17,8 @@
 	<property name="doclet.build.dir" location="${build.dir}/classes/java-doclet" />
 	<property name="demo.build.dir" location="${build.dir}/classes/java-demo" />
 	<property name="demo.build.javadoc.dir" location="${build.dir}/demo/" />
-	<property name="server.build.dir" location="${build.dir}/classes/java-server" />	
+	<property name="server.build.dir" location="${build.dir}/classes/java-server" />
 	<property name="test.build.dir" location="${build.dir}/classes/test-java" />
-
-	<property name="jar.build.dir" location="${build.dir}/jars" />
 
 	<!-- test output directories -->
 	<property name="test.output.dir" location="${build.dir}/test" />
@@ -37,10 +36,24 @@
 	<property name="hamcrest.jar" location="lib/hamcrest-all-1.3.jar"/>	
 
 	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar" description="Main target: compiles everything and creates JAR file for server.">
-	</target>
-	
-	<target name="compile-doclet" description="Compile the PerfDoc doclet.">
+	</target>	
+
+	<target name="compile-annot" description="Compile the annotations.">
+		<mkdir dir="${server.build.dir}" />
 		<mkdir dir="${doclet.build.dir}" />
+		<javac srcdir="${annot.src.dir}" destdir="${doclet.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+		</javac>
+		<javac srcdir="${annot.src.dir}" destdir="${server.build.dir}"
+				debug="true"
+				includeantruntime="false">
+			<compilerarg value="-Xlint:all"/>
+		</javac>
+	</target>
+
+	<target name="compile-doclet" depends="compile-annot" description="Compile the PerfDoc doclet.">
 		<javac srcdir="${doclet.src.dir}" destdir="${doclet.build.dir}"
 				debug="true"
 				includeantruntime="false">
@@ -52,8 +65,8 @@
 		<copy todir="${doclet.build.dir}">
 			<fileset dir="${doclet.src.dir}" includes="**/resources/**" erroronmissingdir="false"/>
 		</copy>
-	</target>
-	
+	</target>	
+
 	<target name="compile-demo" depends="compile-doclet" description="Compile the doclet demo.">
 		<mkdir dir="${demo.build.dir}" />
 		<javac srcdir="${demo.src.dir}" destdir="${demo.build.dir}"
@@ -68,8 +81,8 @@
 		</javac>
 	</target>
 
-	<target name="compile-server" description="Compile the server.">
-		<mkdir dir="${server.build.dir}" />
+	<target name="compile-server" depends="compile-annot" description="Compile the server.">
+		
 		<javac srcdir="${server.src.dir}" destdir="${server.build.dir}"
 				debug="true"
 				includeantruntime="false">
@@ -178,7 +191,8 @@
       		<formatter type="xml"/>
 
     		<batchtest fork="yes" todir="${testtxtxml.output.dir}">
-       		 	<fileset dir="${test.build.dir}">         		 
+       		 	<fileset dir="${test.build.dir}"> 
+       		 		<include name="**/*Test.*"/>          		 
        			</fileset>
       	    </batchtest>
        </junit>

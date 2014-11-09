@@ -17,10 +17,8 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.IOException;
-import java.util.ArrayList;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,13 +36,8 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new full=debug-site request. Starting to handle it.");
 
-        String className = exchange.getRequestURI().getQuery();
-
         if (res != null) {
-
-            ArrayList<String> testedMethod = res.getDistinctClassMethods(className);
-
-            List<MeasurementResult> item = res.getResults();
+            List<BenchmarkResult> item = res.getResults();
             addCode(formatOutput(item));
             String output = getCode();
 
@@ -58,7 +51,7 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String formatOutput(List<MeasurementResult> output) {
+    private String formatOutput(List<BenchmarkResult> output) {
         StringBuilder sb = new StringBuilder("<table border = \"1\">");
         sb.append("<tr>");
         sb.append("<td><b>methodName</b></td>");
@@ -68,22 +61,23 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         sb.append("<td><b>time</b></td>");
         sb.append("</tr>");
 
-        for (MeasurementResult item : output) {
+        for (BenchmarkResult item : output) {
             sb.append("<tr>");
-            String methodName = item.getTestedMethod().toString();
-            sb.append("<td>" + methodName + "</td>");
+            String methodName = item.getBenchmarkSetting().getTestedMethod().toString();
+            sb.append("<td>").append(methodName).append("</td>");
 
-            String generator = item.getGenerator().toString();
-            sb.append("<td>" + generator + "</td>");
+            String generator = item.getBenchmarkSetting().getWorkload().toString();
+            sb.append("<td>").append(generator).append("</td>");
 
-            String data = item.getData();
-            sb.append("<td>" + data + "</td>");
+            String data = item.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(false);
+            sb.append("<td>").append(data).append("</td>");
+            //TODO when proper statistics table is added, change it to getting from statistics
+            //int numberOfMeasurements = item.getStatistics().getNumberOfMeasurements();
+            int numberOfMeasurements = item.getBenchmarkSetting().getPriority();
+            sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
-            int numberOfMeasurements = item.getNumberOfMeasurements();
-            sb.append("<td>" + numberOfMeasurements + "</td>");
-
-            long time = item.getTime();
-            sb.append("<td>" + time + "</td>");
+            long time = item.getStatistics().compute();
+            sb.append("<td>").append(time).append("</td>");
 
             sb.append("</tr>");
         }

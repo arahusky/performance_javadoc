@@ -16,7 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 
 /**
  * Interface to communicate with results in cache
@@ -26,27 +27,24 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 public interface ResultCache {
 
     /**
-     * Returns time that corresponds to given parameters.
+     * Returns the BenchmarkResult corresponding to the given BenchmarkSetting.
      *
-     * @param methodName
-     * @param generatorName
-     * @param data
+     * @param setting
      * @param numberOfMeasurements
-     * @return the measured time if saved in the cache, otherwise -1
+     * @return the BenchmarkResult with Statistics obtained from the cache. If
+     * no corresponding Statistics is found, an empty Statistics is returned.
      */
-    long getResult(String methodName, String generatorName, String data, int numberOfMeasurements);
- 
+    BenchmarkResult getResult(BenchmarkSetting setting, int numberOfMeasurements);
+
     /**
      * Inserts the data in cache
      *
-     * @param methodName
-     * @param generatorName
-     * @param data
+     * @param setting
      * @param numberOfMeasurements
      * @param time
      * @return true if data were inserted successfully, otherwise false
      */
-    boolean insertResult(String methodName, String generatorName, String data, int numberOfMeasurements, long time);
+    boolean insertResult(BenchmarkSetting setting, int numberOfMeasurements, long time);
 
     /**
      * Closes the current connection to database

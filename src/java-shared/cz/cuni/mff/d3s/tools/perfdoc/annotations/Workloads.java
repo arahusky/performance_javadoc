@@ -17,6 +17,7 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,9 +27,9 @@ import java.lang.annotation.Target;
  *
  * @author Jakub Naplava
  */
-@Target(ElementType.PARAMETER)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ParamDesc {
-    
-    String value();
+public @interface Workloads {
+    //destination enum to represent
+    Workload[] value();
 }

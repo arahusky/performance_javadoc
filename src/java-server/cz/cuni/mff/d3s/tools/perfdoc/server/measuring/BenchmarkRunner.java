@@ -15,20 +15,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
- *
+ * Runs the measurement. Mutual exclusion is the responsibility of the caller.
+ * 
  * @author Jakub Naplava
  */
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ParamDesc {
-    //destination enum to represent
-    String value();
+public interface BenchmarkRunner {
+    Statistics measure(BenchmarkSetting setting);
 }

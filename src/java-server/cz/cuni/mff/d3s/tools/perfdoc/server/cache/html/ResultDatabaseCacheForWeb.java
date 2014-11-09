@@ -18,7 +18,12 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,23 +54,23 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-     public List<MeasurementResult> getResults() {
-
-        ArrayList<MeasurementResult> list = new ArrayList<>();
+     public List<BenchmarkResult> getResults() {
+        List<BenchmarkResult> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
             String query = "SELECT * FROM results";
             ResultSet rs = stmt.executeQuery(query);
-
             while (rs.next()) {
                 String methodName = rs.getString("methodName");
                 String generator = rs.getString("generator");
                 String data = rs.getString("data");
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
-
-                MeasurementResult item = new MeasurementResult(new MethodInfo(methodName), new MethodInfo(generator), data, numberOfMeasurements, time);
+                
+                BenchmarkSetting bs = new BenchmarkSettingImpl(new MethodInfo(methodName), new MethodInfo(generator), new MethodArgumentsImpl(data), numberOfMeasurements);
+                //TODO proper statistics must be added after creating next table containing statistics
+                BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"), bs);
                 list.add(item);
             }
             return list;
@@ -79,8 +84,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public ArrayList<String> getDistinctTestedMethods() {
-        ArrayList<String> list = new ArrayList<>();
+    public List<MethodInfo> getDistinctTestedMethods() {
+        List<MethodInfo> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
@@ -90,7 +95,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             while (rs.next()) {
                 String methodName = rs.getString("methodName");
 
-                list.add(methodName);
+                list.add(new MethodInfo(methodName));
             }
             return list;
         } catch (SQLException e) {
@@ -103,8 +108,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public ArrayList<String> getDistinctClassMethods(String className) {
-        ArrayList<String> list = new ArrayList<>();
+    public List<MethodInfo> getDistinctClassMethods(String className) {
+        List<MethodInfo> list = new ArrayList<>();
 
         try {
             String query = "SELECT DISTINCT methodName "
@@ -118,7 +123,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             while (rs.next()) {
                 String methodName = rs.getString("methodName");
 
-                list.add(methodName);
+                list.add(new MethodInfo(methodName));
             }
             return list;
         } catch (SQLException e) {
@@ -131,8 +136,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public ArrayList<String> getDistinctGenerators(String methodName) {
-        ArrayList<String> list = new ArrayList<>();
+    public ArrayList<MethodInfo> getDistinctGenerators(MethodInfo method) {
+        ArrayList<MethodInfo> list = new ArrayList<>();
 
         try {
             String query = "SELECT DISTINCT generator "
@@ -141,14 +146,14 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
 
             //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, methodName);
+            stmt.setString(1, method.toString());
 
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 String generator = rs.getString("generator");
 
-                list.add(generator);
+                list.add(new MethodInfo(generator));
             }
             return list;
         } catch (SQLException e) {
@@ -158,8 +163,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
     }
 
 @Override
-    public List<MeasurementResult> getResults(String testedMethod, String generator) {
-        ArrayList<MeasurementResult> list = new ArrayList<>();
+    public List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator) {
+        ArrayList<BenchmarkResult> list = new ArrayList<>();
 
         try {
             String query = "SELECT * "
@@ -167,8 +172,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                     + "WHERE (methodName = ? AND generator = ?)";
              //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, testedMethod);
-            stmt.setString(2, generator);
+            stmt.setString(1, testedMethod.toString());
+            stmt.setString(2, generator.toString());
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
@@ -176,8 +181,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int numberOfMeasurements = rs.getInt("numberOfMeasurements");
                 long time = rs.getLong("time");
 
-                MeasurementResult item = new MeasurementResult(new MethodInfo(testedMethod), new MethodInfo(generator), data, numberOfMeasurements, time);
-
+                BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"),
+                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), numberOfMeasurements));
+                
                 list.add(item);
             }
             return list;

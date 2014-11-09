@@ -17,7 +17,12 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.MeasurementResult;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups.*;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,102 +64,112 @@ public class ResultDatabaseCacheForWebTest {
         res.close();
     }
 
+    /*the database data contain all parameters as String and do not contain the first two of them (workload, serviceWorkload) and also priority is set malformed. Therefore just partial test is possible*/
     @Test
     public void testGetResults() {
-        res.insertResult("package#class1#method#@someParam", "package#class1#generator0#@someParam", "[data]", 10, 1000);
-        res.insertResult("package#class1#method#@someParam", "package#class1#generator1#@someParam", "[data2]", 9, 200);
-        res.insertResult("package#class1#method2#@someParam", "package#class1#generator2#@someParam", "[data3]", 90, 1200);
-        List<MeasurementResult> list = res.getResults();
+        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benSet2, 9, 200);
+        res.insertResult(benSet3, 90, 1200);
+        List<BenchmarkResult> list = res.getResults();
 
         Assert.assertNotNull(list);
-
         Assert.assertEquals(3, list.size());
+        
+        Assert.assertEquals(new Statistics("{" + 1000 + "}"), list.get(0).getStatistics());
+        Assert.assertEquals(benSet1.getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(benSet1.getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
 
-        MeasurementResult res = new MeasurementResult(new MethodInfo("package#class1#method#@someParam"), new MethodInfo("package#class1#generator0#@someParam"), "[data]", 10, 1000);
-        Assert.assertTrue(res.equals(list.get(0)));
+        Assert.assertEquals(new Statistics("{" + 200 + "}"), list.get(1).getStatistics());
+        Assert.assertEquals(benSet2.getTestedMethod(), list.get(1).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(benSet2.getWorkload(), list.get(1).getBenchmarkSetting().getWorkload());
 
-        res = new MeasurementResult(new MethodInfo("package#class1#method#@someParam"), new MethodInfo("package#class1#generator1#@someParam"), "[data2]", 9, 200);
-        Assert.assertTrue(res.equals(list.get(1)));
-
-        res = new MeasurementResult(new MethodInfo("package#class1#method2#@someParam"), new MethodInfo("package#class1#generator2#@someParam"), "[data3]", 90, 1200);
-        Assert.assertTrue(res.equals(list.get(2)));
+        Assert.assertEquals(new Statistics("{" + 1200 + "}"), list.get(2).getStatistics());
+        Assert.assertEquals(benSet3.getTestedMethod(), list.get(2).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(benSet3.getWorkload(), list.get(2).getBenchmarkSetting().getWorkload());
     }
 
-     @Test
+    @Test
     public void testGetDistinctTestedMethods() {
-        res.insertResult("method", "generator", "[data]", 10, 1000);
-        res.insertResult("method", "generator1", "[data2]", 9, 200);
-        res.insertResult("method2", "generator2", "[data3]", 90, 1200);
-        res.insertResult("method2", "someGen", "someData", 10, 300);
-        ArrayList<String> list = res.getDistinctTestedMethods();
+        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benSet2, 9, 200);
+        res.insertResult(benSet3, 90, 1200);
+        res.insertResult(benSet4, 10, 300);
+        List<MethodInfo> list = res.getDistinctTestedMethods();
 
         Assert.assertNotNull(list);
-        Assert.assertEquals(2, list.size());
-        Assert.assertTrue(list.contains("method"));
-        Assert.assertTrue(list.contains("method2"));
+        Assert.assertEquals(4, list.size());
+        Assert.assertTrue(list.contains(method1));
+        Assert.assertTrue(list.contains(method2));
+        Assert.assertTrue(list.contains(method3));
+        Assert.assertTrue(list.contains(method4));
     }
 
     @Test
     public void testGetDistinctClassMethods() {
-        res.insertResult("package1.class1#method", "generator", "[data]", 10, 1000);
-        res.insertResult("package1.class1#method", "generator1", "[data2]", 9, 200);
-        res.insertResult("package1.class1#method2", "generator2", "[data3]", 90, 1200);
-        res.insertResult("package1.class1#method3", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class2#method3", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class3#method2", "someGen", "someData", 10, 300);
-        res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
-        ArrayList<String> list = res.getDistinctClassMethods("package1.class1");
+        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benSet2, 9, 200);
+        res.insertResult(benSet3, 90, 1200);
+        res.insertResult(benSet4, 10, 300);
+
+        List<MethodInfo> list = res.getDistinctClassMethods(method1.getQualifiedClassName());
 
         Assert.assertNotNull(list);
-        Assert.assertEquals(3, list.size());
-        Assert.assertTrue(list.contains("package1.class1#method"));
-        Assert.assertTrue(list.contains("package1.class1#method2"));
-        Assert.assertTrue(list.contains("package1.class1#method3"));
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.contains(method1));
+        Assert.assertTrue(list.contains(method2));
     }
 
     @Test
     public void testGetDistinctGenerators() {
-        res.insertResult("package1.class1#method", "generator", "[data]", 10, 1000);
-        res.insertResult("package1.class1#method", "generator1", "[data2]", 9, 200);
-        res.insertResult("package1.class1#method2", "generator2", "[data3]", 90, 1200);
-        res.insertResult("package1.class1#method3", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class1#method", "someGen", "someData", 10, 300);
-        res.insertResult("package1.class3#method2", "someGen", "someData", 10, 300);
-        res.insertResult("package2.class2#method2", "someGen", "someData", 10, 300);
-        ArrayList<String> list = res.getDistinctGenerators("package1.class1#method");
+        res.insertResult(benSet1, 10, 100);
+
+        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments3, 2);
+        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(method1, workload2, methodArguments4, 4);
+        res.insertResult(benSet5, 10, 100);
+        res.insertResult(benSet6, 10, 100);
+
+        ArrayList<MethodInfo> list = res.getDistinctGenerators(method1);
 
         Assert.assertNotNull(list);
-        Assert.assertEquals(3, list.size());
-        Assert.assertTrue(list.contains("generator"));
-        Assert.assertTrue(list.contains("generator1"));
-        Assert.assertTrue(list.contains("someGen"));
+        Assert.assertEquals(2, list.size());
+        Assert.assertTrue(list.contains(workload1));
+        Assert.assertTrue(list.contains(workload2));
     }
 
+    /*the database data contain all parameters as String and do not contain the first two of them (workload, serviceWorkload) and also priority is set malformed. Therefore just partial test is possible*/
     @Test
     public void testGetResultsMethodAndGenerator() {
-        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data]", 10, 1000);
-        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data2]", 9, 200);
-        res.insertResult("package#class1#method#someParam", "package#class1#generator#someParam", "[data3]", 19, 2000);
-        res.insertResult("package#class1#method2#someParam", "package#class1#generator2#someParam", "[data3]", 90, 1200);
-        res.insertResult("package#class1#method3#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
-        res.insertResult("package#class1#method#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
-        res.insertResult("package1#class3#method2#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
-        res.insertResult("package2#class2#method2#someParam", "package#class1#someGen#someParam", "someData", 10, 300);
-        List<MeasurementResult> list = res.getResults("package#class1#method#someParam", "package#class1#generator#someParam");
+        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benSet2, 20, 20);
+        res.insertResult(benSet3, 1, 1000);
+        res.insertResult(benSet4, 5, 5);
+
+        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments2, 1);
+        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(method1, workload1, methodArguments3, 2);
+        BenchmarkSetting benSet7 = new BenchmarkSettingImpl(method1, workload1, methodArguments4, 4);
+        res.insertResult(benSet5, 10, 200);
+        res.insertResult(benSet6, 210, 2);
+        res.insertResult(benSet7, 710, 70);
+
+        List<BenchmarkResult> list = res.getResults(method1, workload1);
 
         Assert.assertNotNull(list);
-        Assert.assertEquals(3, list.size());
+        Assert.assertEquals(4, list.size());
 
-        MethodInfo testedMethod = new MethodInfo("package#class1#method#someParam");
-        MethodInfo generator = new MethodInfo("package#class1#generator#someParam");
+        Assert.assertTrue(new Statistics("{" + 1000 + "}").equals(list.get(0).getStatistics()));
+        Assert.assertEquals(benSet1.getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(benSet1.getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
         
-        MeasurementResult mr = new MeasurementResult(testedMethod, generator, "[data]", 10, 1000);        
-        Assert.assertTrue(mr.equals(list.get(0)));
-
-        mr = new MeasurementResult(testedMethod, generator, "[data2]", 9, 200);
-        Assert.assertTrue(mr.equals(list.get(1)));
-
-        mr = new MeasurementResult(testedMethod, generator, "[data3]", 19, 2000);
-        Assert.assertTrue(mr.equals(list.get(2)));
+        Assert.assertTrue(new Statistics("{" + 200 + "}").equals(list.get(1).getStatistics()));
+        Assert.assertEquals(method1, list.get(1).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(workload1, list.get(1).getBenchmarkSetting().getWorkload());
+        
+        Assert.assertTrue(new Statistics("{" + 2 + "}").equals(list.get(2).getStatistics()));
+        Assert.assertEquals(method1, list.get(2).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(workload1, list.get(2).getBenchmarkSetting().getWorkload());
+        
+        Assert.assertTrue(new Statistics("{" + 70 + "}").equals(list.get(3).getStatistics()));
+        Assert.assertEquals(method1, list.get(3).getBenchmarkSetting().getTestedMethod());
+        Assert.assertEquals(workload1, list.get(3).getBenchmarkSetting().getWorkload());
     }
 }

@@ -19,8 +19,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +56,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         }
 
         if (res != null) {
-            ArrayList<String> availableGenerators = res.getDistinctGenerators(methodName.toString());
+            List<MethodInfo> availableGenerators = res.getDistinctGenerators(methodName);
 
             addCode(returnHeading(methodName));
 
@@ -97,7 +97,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String formatGenerators(String methodName, ArrayList<String> generators) {
+    private String formatGenerators(String methodName, List<MethodInfo> generators) {
 
         //unable to retrieve data from database
         if (generators == null) {
@@ -107,7 +107,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<ul>");
-        for (String generator : generators) {
+        for (MethodInfo generator : generators) {
             String generatorInfo = formatGenerator(generator);
             String methodgeneratorURL = getMethodGeneratorURL(methodName, generator);
             sb.append("<li><a href= \"methodgenerator?" + methodgeneratorURL + "\">" + generatorInfo + "</a></li>");
@@ -117,36 +117,17 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String formatGenerator(String generator) {
-        String[] chunks = generator.split("#");
-
-        if (chunks.length < 3) {
-            return "";
-        }
-
-        String methodName = chunks[1];
-        String parameterInfo = getParameterInfo(chunks[2]);
+    private String formatGenerator(MethodInfo generator) {
+       
+        String methodName = generator.getMethodName();
+        String parameterInfo = generator.getParams().get(2);
 
         return (methodName + "(" + parameterInfo + ")");
     }
 
-    private String getParameterInfo(String parameter) {
-        String[] parameters = parameter.split("@");
-
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 1; i < parameters.length - 1; i++) {
-            sb.append(parameters[i] + ",");
-        }
-
-        sb.append(parameters[parameters.length - 1]);
-
-        return sb.toString();
-    }
-
-    private String getMethodGeneratorURL(String method, String generator) {
+    private String getMethodGeneratorURL(String method, MethodInfo generator) {
         String methodQuery = getQueryURL(method);
-        String generatorQuery = getQueryURL(generator);
+        String generatorQuery = getQueryURL(generator.toString());
 
         return (methodQuery + "separator=" + generatorQuery);
     }
