@@ -40,46 +40,6 @@ public abstract class AbstractSiteHandler implements SiteHandler {
     public abstract void handle(HttpExchange exchange, ResultCacheForWeb res);
 
     /**
-     * Sends the given message to the client with the success
-     * headers
-     *
-     * @param exchange stands for client's representation
-     * @param message Message to pass to the client
-     * @param log Logger to log exceptions
-     */
-    protected void sentSuccesHeaderAndBodyAndClose(HttpExchange exchange, byte[] message, Logger log) {
-        try {
-            exchange.sendResponseHeaders(200, message.length);
-
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(message);
-            }
-        } catch (IOException e) {
-            log.log(Level.INFO, "Unable to send the results to the client", e);
-        }
-    }
-
-    /**
-     * Reports client of the occurred error
-     *
-     * @param exchange stands for client's representation
-     * @param errorMessage
-     * @param errorCode the ErrorCode to add to the header
-     * @param log Logger to log exceptions
-     */
-    protected void sentErrorHeaderAndClose(HttpExchange exchange, String errorMessage, int errorCode, Logger log) {
-        try {
-        exchange.sendResponseHeaders(errorCode, errorMessage.getBytes().length);
-
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(errorMessage.getBytes());
-        }
-        } catch (IOException e) {
-            log.log(Level.INFO, "Unable to send the results to the client", e);
-        }
-    }
-
-    /**
      * Gets the html code
      *
      * @return

@@ -17,8 +17,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,18 +43,18 @@ public class ClassSiteHandler extends AbstractSiteHandler {
 
         if (res != null) {
             //the methods of the class that have been measured 
-            List<MethodInfo> testedMethods = res.getDistinctClassMethods(className);
+            Collection<MethodInfo> testedMethods = res.getDistinctClassMethods(className);
 
             addCode(returnHeading(className));
             String classOutput = formatMethods(testedMethods);
             addCode(classOutput);
             String output = getCode();
 
-            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
@@ -68,7 +70,7 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String formatMethods(List<MethodInfo> methods) {
+    private String formatMethods(Collection<MethodInfo> methods) {
 
         //unable to retrieve data from database
         if (methods == null) {

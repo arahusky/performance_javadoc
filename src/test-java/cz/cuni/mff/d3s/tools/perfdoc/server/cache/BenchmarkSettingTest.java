@@ -21,6 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups.*;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
@@ -29,22 +30,22 @@ import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups
 public class BenchmarkSettingTest {
     @Test
     public void testEquals() {
-        Assert.assertFalse(benSet1.equals(benSet2));
-        Assert.assertFalse(benSet2.equals(benSet3));
-        Assert.assertFalse(benSet3.equals(benSet4));
-        Assert.assertFalse(benSet4.equals(benSet1));
+        Assert.assertThat(benSet1, not(equalTo(benSet2)));
+        Assert.assertThat(benSet2, not(equalTo(benSet3)));
+        Assert.assertThat(benSet3, not(equalTo(benSet4)));
+        Assert.assertThat(benSet4, not(equalTo(benSet1)));
         
         BenchmarkSettingImpl benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments1, 2);
-        Assert.assertFalse(benSet1.equals(benSet5));
+        Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
         benSet5 = new BenchmarkSettingImpl(method2,workload1, methodArguments1, 1);
-        Assert.assertFalse(benSet1.equals(benSet5));
+        Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
         benSet5 = new BenchmarkSettingImpl(method1,workload2, methodArguments1, 1);
-        Assert.assertFalse(benSet1.equals(benSet5));
+        Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
         benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments2, 1);
-        Assert.assertFalse(benSet1.equals(benSet5));
+        Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
         benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments1, 1);
         Assert.assertEquals(benSet1, benSet5);

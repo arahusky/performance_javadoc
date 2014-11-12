@@ -25,56 +25,7 @@ import org.junit.Test;
  * @author Jakub Naplava
  */
 public class MethodMeasurerTest {   
-    
-//    //the delta used for double comparison
-    private static final double delta = 0.00001;
-    
-    @Test
-    public void testFindOtherValuesSimple()
-    {
-        Assert.assertArrayEquals(new double[] {14,16,18}, MethodMeasurer.findOtherValues(2, 12, 20, 3), delta);
-    }
-    
-    @Test
-    public void testFindOtherValuesDecimalStep()
-    {        
-        Assert.assertArrayEquals(new double[] {16,20,24,28,32}, MethodMeasurer.findOtherValues(0.5, 12, 37.5, 5), delta);
-    }
-    
-    @Test
-    public void testFindOtherValuesDecimalNumbers()
-    {
-        Assert.assertArrayEquals(new double[] {0.7,0.9,1.1,1.3,1.5}, MethodMeasurer.findOtherValues(0.2, 0.5, 1.7, 10), delta);      
-    }
-    
-    @Test
-    public void testFindNearestPossibleValue()
-    {        
-        double val = MethodMeasurer.findNearestSmallerPossibleValue(37.999, 15, 1);
-        Assert.assertEquals(37, val, delta);
-        
-        val = MethodMeasurer.findNearestSmallerPossibleValue(37.999, 15, 0.1);
-        Assert.assertEquals(37.9, val, delta);
-        
-        val = MethodMeasurer.findNearestSmallerPossibleValue(38.01, 15, 0.1);
-        Assert.assertEquals(38, val, delta);
-    }
-    
-    @Test
-    public void testReturnHowManyInInterval()
-    {        
-        int val = MethodMeasurer.returnHowManyInInterval(1.0, 2.0, 0.1);
-        Assert.assertEquals(9, val);  
-        
-        val = MethodMeasurer.returnHowManyInInterval(1.0, 2.0, 0.01);
-        Assert.assertEquals(99, val);  
-        
-        val = MethodMeasurer.returnHowManyInInterval(2.0, 2.0, 0.01);
-        Assert.assertEquals(0, val);  
-        
-        val = MethodMeasurer.returnHowManyInInterval(2.5, 2.0, 0.01);
-        Assert.assertEquals(0, val);  
-    }
+       
     
 //    @Test
 //    public void testConvertUnitsIfNeededNoConvert()

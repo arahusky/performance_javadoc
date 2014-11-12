@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public interface ResultCacheForWeb extends ResultCache {
      *
      * @return
      */
-    List<BenchmarkResult> getResults();
+    Collection<BenchmarkResult> getResults();
 
     /**
      * Returns all data in table for testedMethod and generator
@@ -43,7 +44,7 @@ public interface ResultCacheForWeb extends ResultCache {
      * @param generator
      * @return BenchmarkResult if found, otherwise null
      */
-    List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
+    Collection<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
      
     /**
      * Returns all methods, that have already been tested and have some result
@@ -52,7 +53,7 @@ public interface ResultCacheForWeb extends ResultCache {
      * @return ArrayList containing the names of searched methods; if there was
      * an error, then null
      */
-    List<MethodInfo> getDistinctTestedMethods();
+    Collection<MethodInfo> getDistinctTestedMethods();
 
     /**
      * Returns all method, that are in specified class and have some result in
@@ -62,7 +63,7 @@ public interface ResultCacheForWeb extends ResultCache {
      * @return ArrayList containing the names of searched methods; if there was
      * an error, then null
      */
-    List<MethodInfo> getDistinctClassMethods(String className);
+    Collection<MethodInfo> getDistinctClassMethods(String className);
 
     /**
      * Returns all generators for given methodName, that have some result in
@@ -72,5 +73,5 @@ public interface ResultCacheForWeb extends ResultCache {
      * @return ArrayList containing the names of searched generators; if there
      * was an error, then null
      */
-    List<MethodInfo> getDistinctGenerators(MethodInfo methodName);
+    Collection<MethodInfo> getDistinctGenerators(MethodInfo methodName);
 }

@@ -41,6 +41,8 @@ public class MeasureRequest {
     private final int rangeVal;
     private final int priority;
     private final String userID;
+
+    //the arguments for workload with proper type. The only exception is the range-argument, which is being hold as String.
     private final Object[] values;
 
     /**

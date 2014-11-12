@@ -1,0 +1,74 @@
+/*
+ Copyright 2014 Jakub Naplava
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ *
+ * @author Jakub Naplava
+ */
+public class MeasuringUtilsTest {
+    
+    //the delta used for double comparison
+    private static final double delta = 0.00001;    
+    
+    @Test
+    public void getValuesToMeasureZeroResultsShallReturnNoResult() {
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 0);
+        
+        Assert.assertArrayEquals(new double[0], res, delta);
+    }
+    
+    @Test
+    public void getValuesToMeasureMoreResultsThanAvailableShallReturnAllValues() {
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 100);
+        Assert.assertArrayEquals(new double[]{0.,1.,2.,3.,4.,5.,6.,7.,8.,9.}, res, delta);
+    }
+    
+    @Test
+    public void getValuesToMeasureThreeResultsShallReturnMinMaxAndHalf() {
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 3);        
+        Assert.assertArrayEquals(new double[]{0.0,4.0,9.0}, res, delta);
+        
+        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 3);        
+        Assert.assertArrayEquals(new double[]{0.0,5.0,10.0}, res, delta);
+    }
+    
+    @Test
+    public void testGetValuesInWhichToMeasureMoreResults() {
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 6);        
+        Assert.assertArrayEquals(new double[]{0.0,2.0, 4.0, 6.0, 7.0,9.0}, res, delta);
+        
+        res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 5);        
+        Assert.assertArrayEquals(new double[]{0.0,2.0,4.0,6.0,9.0}, res, delta);
+        
+        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 5);        
+        Assert.assertArrayEquals(new double[]{0.0,2.0,5.0,7.0,10.0}, res, delta);
+    }
+    
+    @Test
+    public void testGetValuesInWhichToMeasureMoreResultsBinaryBadStep() {
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 6);        
+        Assert.assertArrayEquals(new double[]{0.0,0.2, 0.5, 0.7, 0.8, 1.0}, res, delta);
+        
+        res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 7);        
+        Assert.assertArrayEquals(new double[]{0.0,0.2, 0.3, 0.5, 0.7, 0.8, 1.0}, res, delta);
+    }
+}

@@ -20,6 +20,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server;
 import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
@@ -78,12 +79,12 @@ public class MethodInfoTest {
         String methodJSON = "example001#MyArrayList#contains#@java.lang.Object#0";        
         MethodInfo mi = new MethodInfo(methodJSON);
         
-        Assert.assertFalse(mi.equals(new Object()));
+        Assert.assertThat(mi, not(equalTo(new Object())));
         
         String almostSameJSON = "example001#MyArrayList#contains1#@java.lang.Object#0";  
-        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));
+        Assert.assertThat(mi, not(equalTo(new MethodInfo(almostSameJSON))));
                 
-        Assert.assertTrue(mi.equals(new MethodInfo(methodJSON)));
+        Assert.assertEquals(mi, new MethodInfo(methodJSON));
     }
     
     @Test
@@ -92,17 +93,17 @@ public class MethodInfoTest {
         String anotherMoreParamsString = "example001#MyArrayList#contains#@java.lang.Object@int@float";   
         MethodInfo mi = new MethodInfo(moreParamsString);
         
-        Assert.assertFalse(mi.equals(new Object()));
-        Assert.assertFalse(mi.equals(new MethodInfo(anotherMoreParamsString)));
-        Assert.assertTrue(mi.equals(new MethodInfo(moreParamsString)));
+        Assert.assertThat(mi, not(equalTo(new Object())));
+        Assert.assertThat(mi, not(equalTo(new MethodInfo(anotherMoreParamsString))));
+        Assert.assertEquals(mi, new MethodInfo(moreParamsString));
         
         String almostSameJSON = "example001#MyArrayList#contains1#@java.lang.Object#0";  
-        Assert.assertFalse(mi.equals(new MethodInfo(almostSameJSON)));        
+        Assert.assertThat(mi, not(equalTo(new MethodInfo(almostSameJSON)))); 
         
         String another = "example002#MyArrayList#contains#@java.lang.Object@int@String";        
-        MethodInfo miNoParams = new MethodInfo(another);        
-        Assert.assertFalse(miNoParams.equals(mi));        
-        Assert.assertTrue(miNoParams.equals(new MethodInfo(another)));
+        MethodInfo miNoParams = new MethodInfo(another); 
+        Assert.assertThat(mi, not(equalTo(miNoParams)));
+        Assert.assertEquals(miNoParams, new MethodInfo(another));
     }
     
     @Test

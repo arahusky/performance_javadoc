@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 
 /**
  * Class that returns requested javascript files
@@ -57,7 +58,7 @@ public class JavascriptCodeHandler extends AbstractSiteHandler {
             }
         } catch (FileNotFoundException ex) {
             log.log(Level.INFO, "Unable to find class" + fileName, ex);
-            sentErrorHeaderAndClose(exchange, "The requested file was not found on the server.", 404, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "The requested file was not found on the server.", 404, log);
         } catch (IOException ex) {
             log.log(Level.INFO, "Unable to send the results to the client.", ex);
         }

@@ -16,7 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Level;

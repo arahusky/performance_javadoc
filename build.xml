@@ -101,6 +101,7 @@
 			<compilerarg value="-Xlint:all"/>
 			<classpath>
 				<pathelement path="${junit.jar}"/>
+				<pathelement path="${hamcrest.jar}"/>
 				<pathelement path="${server.build.dir}"/>
 				<pathelement path="${doclet.build.dir}"/>
 			</classpath>

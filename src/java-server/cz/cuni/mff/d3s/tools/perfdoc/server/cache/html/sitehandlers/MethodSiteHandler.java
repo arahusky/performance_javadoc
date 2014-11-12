@@ -19,10 +19,11 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import java.util.Collection;
 
 /**
  * Site handler that shows all generators, that have any measured result for the
@@ -45,18 +46,18 @@ public class MethodSiteHandler extends AbstractSiteHandler {
             methodName = getMethodFromQuery(query);
         } catch (IllegalArgumentException e) {
             //there is a problem with URL (probably own written URL)
-            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
         if (methodName == null) {
             //there is a problem with URL (probably own written URL)
-            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
         if (res != null) {
-            List<MethodInfo> availableGenerators = res.getDistinctGenerators(methodName);
+            Collection<MethodInfo> availableGenerators = res.getDistinctGenerators(methodName);
 
             addCode(returnHeading(methodName));
 
@@ -64,11 +65,11 @@ public class MethodSiteHandler extends AbstractSiteHandler {
             addCode(classOutput);
             String output = getCode();
 
-            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
@@ -97,7 +98,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    private String formatGenerators(String methodName, List<MethodInfo> generators) {
+    private String formatGenerators(String methodName, Collection<MethodInfo> generators) {
 
         //unable to retrieve data from database
         if (generators == null) {

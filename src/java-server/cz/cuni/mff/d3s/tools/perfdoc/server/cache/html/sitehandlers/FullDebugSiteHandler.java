@@ -17,8 +17,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,21 +39,21 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Got new full=debug-site request. Starting to handle it.");
 
         if (res != null) {
-            List<BenchmarkResult> item = res.getResults();
+            Collection<BenchmarkResult> item = res.getResults();
             addCode(formatOutput(item));
             String output = getCode();
 
-            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String formatOutput(List<BenchmarkResult> output) {
+    private String formatOutput(Collection<BenchmarkResult> output) {
         StringBuilder sb = new StringBuilder("<table border = \"1\">");
         sb.append("<tr>");
         sb.append("<td><b>methodName</b></td>");

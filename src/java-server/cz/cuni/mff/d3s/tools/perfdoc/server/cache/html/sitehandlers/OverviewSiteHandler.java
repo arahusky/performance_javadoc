@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import java.util.Collection;
 
 /**
  * Site handler, that shows all classes, that have any measured method
@@ -40,18 +42,18 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
 
         if (res != null) {
 
-            List<MethodInfo> testedMethod = res.getDistinctTestedMethods();
+            Collection<MethodInfo> testedMethod = res.getDistinctTestedMethods();
 
             addCode(returnHeading());
             String classOutput = formatClasses(testedMethod);
             addCode(classOutput);
             String output = getCode();
 
-            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
@@ -63,7 +65,7 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
         return heading;
     }
 
-    private String formatClasses(List<MethodInfo> output) {
+    private String formatClasses(Collection<MethodInfo> output) {
 
         //unable to retrieve data from database
         if (output == null) {
@@ -82,7 +84,7 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
     
-    private Set<String> getDistinctClasses(List<MethodInfo> testedMethods) {
+    private Set<String> getDistinctClasses(Collection<MethodInfo> testedMethods) {
         Set<String> set = new HashSet<>();
         for (MethodInfo method : testedMethods) {            
             set.add(method.getQualifiedClassName());

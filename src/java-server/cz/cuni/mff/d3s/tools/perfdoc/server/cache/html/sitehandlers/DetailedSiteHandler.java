@@ -22,12 +22,13 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import java.util.Collection;
 
 /**
  * Site handler that is shows specific results for given method, workload and
@@ -49,7 +50,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
 
         //the data array should contain: method, workload, workloadArguments
         if (data.length != 3) {
-            sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
@@ -61,7 +62,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                 testedMethod = getMethodFromQuery(data[0]);
                 generator = getMethodFromQuery(data[1]);
             } catch (IllegalArgumentException e) {
-                sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
+                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
                 return;
             }
             String parameters = data[2];
@@ -76,11 +77,11 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
             addCode(getBody(testedMethod, generator, parameters, res));
             String output = getCode();
 
-            sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
-            sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
+            HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Database not available.", 500, log);
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
@@ -140,7 +141,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
         
-        List<BenchmarkResult> list = res.getResults(testedMethod, generator);
+        Collection<BenchmarkResult> list = res.getResults(testedMethod, generator);
         
         sb.append("<tbody>");
         if (list != null) {

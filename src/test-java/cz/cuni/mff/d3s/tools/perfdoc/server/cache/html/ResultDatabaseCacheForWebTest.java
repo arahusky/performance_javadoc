@@ -25,6 +25,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -94,7 +95,7 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benSet2, 9, 200);
         res.insertResult(benSet3, 90, 1200);
         res.insertResult(benSet4, 10, 300);
-        List<MethodInfo> list = res.getDistinctTestedMethods();
+        Collection<MethodInfo> list = res.getDistinctTestedMethods();
 
         Assert.assertNotNull(list);
         Assert.assertEquals(4, list.size());
@@ -111,7 +112,7 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benSet3, 90, 1200);
         res.insertResult(benSet4, 10, 300);
 
-        List<MethodInfo> list = res.getDistinctClassMethods(method1.getQualifiedClassName());
+        Collection<MethodInfo> list = res.getDistinctClassMethods(method1.getQualifiedClassName());
 
         Assert.assertNotNull(list);
         Assert.assertEquals(2, list.size());
@@ -128,7 +129,7 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benSet5, 10, 100);
         res.insertResult(benSet6, 10, 100);
 
-        ArrayList<MethodInfo> list = res.getDistinctGenerators(method1);
+        Collection<MethodInfo> list = res.getDistinctGenerators(method1);
 
         Assert.assertNotNull(list);
         Assert.assertEquals(2, list.size());

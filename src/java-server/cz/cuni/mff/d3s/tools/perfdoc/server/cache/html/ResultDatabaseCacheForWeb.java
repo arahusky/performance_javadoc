@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,8 +85,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public List<MethodInfo> getDistinctTestedMethods() {
-        List<MethodInfo> list = new ArrayList<>();
+    public Collection<MethodInfo> getDistinctTestedMethods() {
+        Collection<MethodInfo> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
@@ -108,8 +109,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public List<MethodInfo> getDistinctClassMethods(String className) {
-        List<MethodInfo> list = new ArrayList<>();
+    public Collection<MethodInfo> getDistinctClassMethods(String className) {
+        Collection<MethodInfo> list = new ArrayList<>();
 
         try {
             String query = "SELECT DISTINCT methodName "
@@ -136,8 +137,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public ArrayList<MethodInfo> getDistinctGenerators(MethodInfo method) {
-        ArrayList<MethodInfo> list = new ArrayList<>();
+    public Collection<MethodInfo> getDistinctGenerators(MethodInfo method) {
+        Collection<MethodInfo> list = new ArrayList<>();
 
         try {
             String query = "SELECT DISTINCT generator "
@@ -164,7 +165,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
 
 @Override
     public List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator) {
-        ArrayList<BenchmarkResult> list = new ArrayList<>();
+        List<BenchmarkResult> list = new ArrayList<>();
 
         try {
             String query = "SELECT * "
