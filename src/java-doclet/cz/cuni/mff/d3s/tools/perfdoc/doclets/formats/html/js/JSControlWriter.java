@@ -18,6 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.DocletArguments;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -96,9 +97,9 @@ public class JSControlWriter {
 
         //adding url adress, where the table formed results will be shown
         String divName = JSAjaxHandler.returnDivName();
-        String adress = JavascriptCodeBox.serverAdress + "/cache/detailed?";
+        String adress = DocletArguments.getServerAddress() + "/cache/detailed?";
         sb.append("var stringData = (paramResult.values + \"\").replace(/ /g, '_');");
-        sb.append("var method1 = parseToUrl('" + JSAjaxHandler.testedMethod + "');");
+        sb.append("var method1 = parseToUrl('" + JSAjaxHandler.getTestedMethod() + "');");
         sb.append("var method2 = parseToUrl('" + JSAjaxHandler.generator + "');");
         sb.append("var adress = '" + adress
                 + "' + method1 + 'separator=' +"

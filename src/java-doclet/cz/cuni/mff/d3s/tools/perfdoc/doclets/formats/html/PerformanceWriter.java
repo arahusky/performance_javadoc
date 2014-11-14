@@ -16,17 +16,18 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
 import com.sun.javadoc.MethodDoc;
 import com.sun.tools.doclets.formats.html.markup.HtmlAttr;
 import com.sun.tools.doclets.formats.html.markup.HtmlTag;
 import com.sun.tools.doclets.formats.html.markup.HtmlTree;
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationWorker;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,28 +57,28 @@ public abstract class PerformanceWriter {
      * added
      * @param workloadNames the workloadNames for the given method
      */
-    public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] workloadNames) {
+    public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] workloadNames) throws ClassNotFoundException, MalformedURLException {
 
         //passing full method name to the ajax handler
-        JSAjaxHandler.testedMethod = perfWriter.getUniqueFullInfo(doc);
+        JSAjaxHandler.setTestedMethod(perfWriter.getUniqueFullInfo(doc));
 
-        //list, that will contain all generators for the given method (doc) 
-        ArrayList<MethodDoc> list = new ArrayList<>();
+        //list, that will contain all workloads for the given method (doc) 
+        List<Method> workloads = new ArrayList<>();
         for (String w : workloadNames) {
             //for given workloadName may exist 0..n of generators
-            MethodDoc[] docs = ClassParser.findMethods(w);
+            Method[] docs = ClassParser.findMethods(w);
             if (docs != null) {
-                list.addAll(Arrays.asList(docs));
+                workloads.addAll(Arrays.asList(docs));
             }
         }
 
-        if (list.isEmpty()) {
+        if (workloads.isEmpty()) {
             configuration.root.printWarning("There were found no generators for method: " + doc.qualifiedName() + ". Therefore, no performance info for this method will be added.");
-        } else if (list.size() == 1) {
-            addPerfoInfoOneDiv(list.get(0), output);
+        } else if (workloads.size() == 1) {
+            addPerfoInfoOneDiv(workloads.get(0), output);
         } else {
             try {
-                addPerfoInfoMoreDivs(doc, list, output);
+                addPerfoInfoMoreDivs(doc, workloads, output);
             } catch (GeneratorParameterException ex) {
                 configuration.root.printWarning(ex.getMessage());
             }
@@ -90,9 +91,9 @@ public abstract class PerformanceWriter {
      * @param method the measured method
      * @param output the PerformanceOutput to which to insert the content
      */
-    private static void addPerfoInfoOneDiv(MethodDoc method, PerformanceOutput output) {
+    private static void addPerfoInfoOneDiv(Method method, PerformanceOutput output) {
 
-        String workloadFullName = perfWriter.getUniqueFullInfo(method);
+        String workloadFullName = perfWriter.getUniqueFullInfoReflection(method);
         String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
         HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueWorkloadName, workloadFullName, false);
 
@@ -113,7 +114,7 @@ public abstract class PerformanceWriter {
      * @throws GeneratorParameterException when there's some invalid content in
      * generator
      */
-    private static void addPerfoInfoMoreDivs(MethodDoc doc, List<MethodDoc> list, PerformanceOutput output) throws GeneratorParameterException {
+    private static void addPerfoInfoMoreDivs(MethodDoc doc, List<Method> list, PerformanceOutput output) throws GeneratorParameterException {
 
         if (list.isEmpty()) {
             configuration.root.printWarning(" There were found no generators for method: " + doc.qualifiedName() + ". Therefore, no performance info for this method will be added.");
@@ -126,10 +127,10 @@ public abstract class PerformanceWriter {
         //first we need to check that the descriptions are different -> also the workloads are different
         ArrayList<String> genNames = new ArrayList<>();
 
-        for (MethodDoc m : list) {
-            Generator gen = AnnotationWorker.getGenerator(m.annotations());
-
+        for (Method m : list) {
+            Generator gen = m.getAnnotation(cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.class);
             String genName = gen.genName();
+            
             if (genNames.contains(genName)) {
                 //if for the measured method already exists generator, that has the genName 
                 throw new GeneratorParameterException("The method: " + doc.qualifiedName() + " has two or more workloads that have the same genName. Therefore, no performance info for this method will be added.");
@@ -147,9 +148,9 @@ public abstract class PerformanceWriter {
         //filling in these two arraylist by going through the workloads and generating their's code
         for (int i = 0; i < list.size(); i++) {
             //the i-th generator
-            MethodDoc m = list.get(i);
+            Method m = list.get(i);
 
-            String workloadFullName = perfWriter.getUniqueFullInfo(m);
+            String workloadFullName = perfWriter.getUniqueFullInfoReflection(m);
             String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
 
             if (i == 0) {
@@ -169,11 +170,11 @@ public abstract class PerformanceWriter {
 
                 //if there was an error, we call ourselves, but without the bad method (i-th), which we have to first locate and exclude
                 if (t == null) {
-                    List<MethodDoc> firstPart = list.subList(0, i);
+                    List<Method> firstPart = list.subList(0, i);
 
                     //if the item is not the last one, we need to merge the first part (all before this) with second part (all after this)
                     if (i != list.size() - 1) {
-                        List<MethodDoc> secondPart = list.subList(i + 1, list.size());
+                        List<Method> secondPart = list.subList(i + 1, list.size());
                         firstPart.addAll(secondPart);
                     }
                     //generating performance information without the bad method

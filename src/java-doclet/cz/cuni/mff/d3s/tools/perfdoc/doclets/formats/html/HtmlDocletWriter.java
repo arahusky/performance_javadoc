@@ -36,6 +36,9 @@ import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.taglets.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.util.*;
+import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class for the Html Format Code Generation specific to JavaDoc. This Class
@@ -323,7 +326,14 @@ public class HtmlDocletWriter extends HtmlDocWriter {
             Content dl = new HtmlTree(HtmlTag.DL);
 
             PerformanceOutputImpl output = new PerformanceOutputImpl("");
+            
+            try {
             PerformanceWriter.genPerfOutput(doc, output, workloadNames);
+            } catch (ClassNotFoundException e) {
+                System.out.println(e);
+            } catch (MalformedURLException ex) {
+                System.out.println(ex);
+            }
 
             String outputString = output.toString().trim();
             if (!outputString.isEmpty()) {

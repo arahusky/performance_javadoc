@@ -17,6 +17,8 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -70,5 +72,24 @@ public class MeasuringUtilsTest {
         
         res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 7);        
         Assert.assertArrayEquals(new double[]{0.0,0.2, 0.3, 0.5, 0.7, 0.8, 1.0}, res, delta);
+    }
+    
+    @Test
+    public void testConvertUnitsNoConversion() {
+        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L,10000L,20000L})));
+    }
+    
+    @Test
+    public void testConvertUnitsOneConversion() {
+        List<Long> list = Arrays.asList(new Long[]{10000L,20000L,30000L});                
+        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list));
+        Assert.assertArrayEquals(list.toArray(), new Object[]{10L,20L,30L});
+    }
+    
+    @Test
+    public void testConvertUnitsMultipleConversions() {
+        List<Long> list = Arrays.asList(new Long[]{10000121L,20000922L,30009893L});                
+        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list));
+        Assert.assertArrayEquals(list.toArray(), new Object[]{10L,20L,30L});
     }
 }

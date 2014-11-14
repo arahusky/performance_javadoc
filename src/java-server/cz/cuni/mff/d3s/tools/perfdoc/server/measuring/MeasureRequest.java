@@ -54,7 +54,7 @@ public class MeasureRequest {
      * @throws IOException when the configuration file containing classpath can
      * not be handled
      */
-    public MeasureRequest(String JSONRequest) throws ClassNotFoundException, IOException {
+    public MeasureRequest(String JSONRequest) throws ClassNotFoundException, IOException, NoSuchMethodException {
         JSONObject obj = new JSONObject(JSONRequest);
 
         String methodName = obj.getString("testedMethod");

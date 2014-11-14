@@ -16,15 +16,13 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
-import com.sun.javadoc.AnnotationDesc;
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.Doclet;
-import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.LanguageVersion;
-import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.RootDoc;
-import com.sun.tools.javadoc.Main;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that maintains searching of generators (including loading .java file)
@@ -34,7 +32,7 @@ import java.util.ArrayList;
  */
 public class ClassParser {
 
-    public static String[][] arguments;
+    private static ClassLoader workloadClassLoader;
 
     /**
      *
@@ -42,161 +40,59 @@ public class ClassParser {
      * @return all methods, that are in the specified package with the specified
      * method name and contain generator annotation
      */
-    public static MethodDoc[] findMethods(String workloadName) {
-     
-        String[] field = workloadName.split("#");
-
-        //class part is containing dots instead of slashes (we need to replace it) and add .java to the end
-        String className = field[0].replaceAll("\\.", "/") + ".java";
-        String methodName = field[1];
-
-        //setting the Analyzer methodName to the correct one
-        Analyzer.methodName = methodName;
-
-        String[] sourcePath = returnSourcePath();
-                
-        if (sourcePath == null) {
-            Main.execute("", Analyzer.class.getName(), new String[]{className});
-        } else {
-            
-            String[] args = new String[]{sourcePath[0], sourcePath[1], sourcePath[1] + "/" + className};
-            
-            Main.execute("", Analyzer.class.getName(), args);
+    public static Method[] findMethods(String workloadName) throws ClassNotFoundException, MalformedURLException {
+        if (workloadClassLoader == null) {
+            initializeWorkloadClassLoader();
         }
 
-        return Analyzer.methods;
-    }    
+        String[] field = workloadName.split("#");
+
+        String className = field[0];
+        String methodName = field[1];
+
+        Class<?> cls = workloadClassLoader.loadClass(className);
+        Method[] methods = cls.getMethods();
+        List<Method> retMethods = new ArrayList<>();
+
+        for (Method m : methods) {
+            if (m.getName().equals(methodName)) {
+                retMethods.add(m);
+            }
+        }
+
+        return retMethods.toArray(new Method[retMethods.size()]);
+    }
 
     /**
      * Method that finds all the possible value of the given (enum) class
      *
-     * @param className1 the name of the .java file (without .java)
+     * @param className the name of the class
      * @return the FieldDoc[] containing all enum values of given enum or null
      * if the given name is not an enum
      */
-    public static FieldDoc[] findEnums(String className1) {
-        String className = className1.replaceAll("\\.", "/") + ".java";
-
-        String[] sourcePath = returnSourcePath();
-
-        if (sourcePath == null) {
-            Main.execute("", EnumAnalyzer.class.getName(), new String[]{className});
-        } else {                        
-            String[] args = new String[]{sourcePath[0], sourcePath[1], sourcePath[1] + "/" + className};
-            
-            Main.execute("", EnumAnalyzer.class.getName(), args);
+    public static Object[] findEnums(String className) throws MalformedURLException, ClassNotFoundException {
+        if (workloadClassLoader == null) {
+            initializeWorkloadClassLoader();
         }
 
-        return EnumAnalyzer.enumValues;
-    }
-    
-    private static String[] returnSourcePath() {
+        //load the Address class in 'c:\\other_classes\\'
+        Class<?> cls = workloadClassLoader.loadClass(className);
 
-        for (int i = 0; i < arguments.length; i++) {
-            String[] arr = arguments[i];
-            if (arr[0].equals("-sourcepath")) {
-                return new String[]{"-sourcepath", arr[1]};
-            }
-        }
-
-        return null;
+        return cls.getEnumConstants();
     }
 
-    /**
-     * doclet class, that gets the RootDoc from the javadoc and searches for the
-     * right methods in the specified class
-     */
-    public static class Analyzer extends Doclet {
+    private static void initializeWorkloadClassLoader() throws MalformedURLException {
+        List<URL> list = new ArrayList<>();
+        for (String wPath : DocletArguments.getWorkloadPath()) {
+            File file = new File(wPath);
 
-        //should be set before the javadoc run
-        public static String methodName;
-
-        public static MethodDoc[] methods;
-
-        /**
-         * The method in right format for javadoc (to behave as a doclet)
-         *
-         * @param root
-         * @return
-         */
-        public static boolean start(RootDoc root) {
-
-            //should never happen
-            if (root.classes().length != 1) {
-                return false;
-            }
-
-            ArrayList<MethodDoc> list = new ArrayList<>();
-
-            if (root.classes().length == 0) {
-                return false;
-            }
-
-            ClassDoc classDoc = root.classes()[0];
- 
-            for (MethodDoc methodDoc : classDoc.methods()) {
-                if (methodDoc.name().equals(methodName) && checkAnnotation(methodDoc)) {
-                    list.add(methodDoc);
-                }
-            }
-
-            methods = list.toArray(new MethodDoc[list.size()]);
-            return true;
+            //convert the file to URL format
+            list.add(file.toURI().toURL());
         }
+        
+        URL[] urls = list.toArray(new URL[list.size()]);
 
-        /**
-         * Checks, whether the specified method has just just one
-         * Generator-annotation
-         *
-         * @param doc the MethodDoc of the investigated method
-         * @return true, if the specified method has one Generator-annotation
-         */
-        private static boolean checkAnnotation(MethodDoc doc) {
-            AnnotationDesc[] annotations = doc.annotations();
-
-            int numberOfGenerators = 0;
-
-            for (AnnotationDesc annot : annotations) {
-                if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator".equals(annot.annotationType().toString())) {
-                    numberOfGenerators++;
-                }
-            }
-
-            return (numberOfGenerators == 1);
-        }
-    }
-
-    /**
-     * doclet class, that gets the RootDoc from the javadoc and searches for the
-     * enum values
-     */
-    public static class EnumAnalyzer extends Doclet {
-
-        public static FieldDoc[] enumValues = null;
-
-        public static boolean start(RootDoc root) {
-            ClassDoc[] classes = root.classes();
-
-            if (classes.length == 0) {
-                return false;
-            }
-
-            ClassDoc cd = classes[0];
-
-            if (cd.isEnum()) {
-                enumValues = cd.enumConstants();
-            }
-
-            return true;
-        }
-
-        /**
-         * needs to be added because otherwise it is working in pre-5.0
-         * compatibility mode which makes some methods behave unexpected, mostly
-         * because enum was added in Java 5.0
-         */
-        public static LanguageVersion languageVersion() {
-            return LanguageVersion.JAVA_1_5;
-        }
+        //load this folder into Class loader
+        workloadClassLoader = new URLClassLoader(urls, ClassParser.class.getClassLoader());
     }
 }

@@ -26,7 +26,7 @@ import java.io.IOException;
  */
 public class JSAjaxHandler {
 
-    public static String testedMethod;
+    private static String testedMethod;
 
     public static String generator;
 
@@ -116,5 +116,13 @@ public class JSAjaxHandler {
         sb.append("}");
 
         return sb.toString();
+    }
+
+    public static String getTestedMethod() {
+        return testedMethod;
+    }
+    
+    public static void setTestedMethod(String testedMethod) {
+        JSAjaxHandler.testedMethod = testedMethod;
     }
 }

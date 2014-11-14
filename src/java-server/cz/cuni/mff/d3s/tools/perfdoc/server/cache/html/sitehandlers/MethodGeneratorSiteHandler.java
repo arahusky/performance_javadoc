@@ -52,29 +52,34 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         }
         
         if (res != null) {
-            MethodInfo testedMethod;
-            MethodInfo generator;
-
             try {
-                testedMethod = getMethodFromQuery(methods[0]);
-                generator = getMethodFromQuery(methods[1]);
-            } catch (IllegalArgumentException e) {
-                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
+                MethodInfo testedMethod;
+                MethodInfo generator;
+                
+                try {
+                    testedMethod = getMethodFromQuery(methods[0]);
+                    generator = getMethodFromQuery(methods[1]);
+                } catch (IllegalArgumentException e) {
+                    HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
+                    return;
+                }
+                
+                //adding links to JQquery in order to be able to use sort
+                addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
+                addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
+                addToHeader("<script src=\"js?tablesorter.js\"></script>");
+                addToHeader("<script>$(document).ready(function()  { "
+                        + "        $(\"#myTable\").tablesorter(); } ); </script> ");
+                
+                addCode(returnHeading(methods[0], testedMethod, generator));
+                addCode(getBody(testedMethod, generator, res));
+                String output = getCode();
+                
+                HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            } catch (ClassNotFoundException | IOException | NoSuchMethodException ex) {
+                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, ex.getMessage(), 500, log);
                 return;
             }
-
-            //adding links to JQquery in order to be able to use sort
-            addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
-            addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
-            addToHeader("<script src=\"js?tablesorter.js\"></script>");
-            addToHeader("<script>$(document).ready(function()  { "
-                    + "        $(\"#myTable\").tablesorter(); } ); </script> ");
-
-            addCode(returnHeading(methods[0], testedMethod, generator));
-            addCode(getBody(testedMethod, generator, res));
-            String output = getCode();
-
-            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
         } else {
             //there is no database connection available
             //sending information about internal server error
@@ -94,7 +99,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
         return sb.toString();
     }
 
-    public String getBody(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) {
+    public String getBody(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
         StringBuilder sb = new StringBuilder();
         sb.append("<h3>Tested method:</h3>"
                 + "<ul>"

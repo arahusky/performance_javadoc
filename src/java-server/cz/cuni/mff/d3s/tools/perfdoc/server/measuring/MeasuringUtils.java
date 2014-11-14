@@ -223,4 +223,44 @@ public class MeasuringUtils {
 
         return -1; //some value to indicate non-succes
     }
+    
+    /**
+     * 
+     * @param results
+     * @return 
+     */
+    public static String convertUnits(List<Long> results) {
+        //supported units (may be added more)
+        String[] units = new String[]{"s", "ms", "µs", "ns"};
+        //pointer to units array showing actual unit
+        int index = 3;
+
+        long min = Long.MAX_VALUE;
+
+        //computing minValue
+        for (long d : results) {
+            if (d < min) {
+                min = d;
+            }
+        }
+        
+        //10,000 was chosen constant so that the minValue is not bigger than it
+        while (min >= 10000 && (index > 0)) {
+            index--;
+            min = min / 1000;
+        }
+
+        int divideBy = 1;
+
+        for (int i = index; i < units.length - 1; i++) {
+            divideBy *= 1000;
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            long newValue = results.get(i) / divideBy;
+            results.set(i, newValue);
+        }
+
+        return units[index];
+    }
 }

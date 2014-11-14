@@ -65,6 +65,7 @@ public class MeasureRequestHandler implements HttpHandler {
         
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
+            System.out.println(requestBody);
             
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
@@ -81,10 +82,15 @@ public class MeasureRequestHandler implements HttpHandler {
             sendErrorMessage("Unable to find a testedMethod/generator class", exchange, responseBody);
         } catch (IllegalArgumentException ex) {
             sendErrorMessage("The bad parameters were sent to server (There might be an error in generator).", exchange, responseBody);
+        } catch (NoSuchMethodException ex) {
+            sendErrorMessage(ex.getMessage(), exchange, responseBody);
         } catch (IOException ex) {
             sendErrorMessage("There was some problem while reading some file on the server.", exchange, responseBody);
         } catch (SQLException ex) {
              log.log(Level.SEVERE, "There was some problem when connecting to database", ex);
+        } catch (Exception e) {
+            System.out.println(e);
+            e.printStackTrace();
         } finally {
             try {
                 in.close();

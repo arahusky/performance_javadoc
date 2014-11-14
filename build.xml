@@ -26,9 +26,10 @@
 	<property name="testtxtxml.output.dir" location="${test.output.dir}/txtXml" />
 	
 	<!-- external libraries -->
+	<property name="lib.dir" location="lib" />
 	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
-	<property name="json.parser.jar" location="lib/json-20140107.jar"/>
-	<property name="derby.jar" location="lib/derby.jar"/>
+	<property name="json.parser.jar" location="${lib.dir}/json-20140107.jar"/>
+	<property name="derby.jar" location="${lib.dir}/derby.jar"/>
 	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
 
 	<!-- external libraries used for unit-testing -->
@@ -160,6 +161,8 @@
 			</classpath>
 			<arg value="-sourcepath" />
             <arg value="${demo.src.dir}" />
+			<arg value="-workloadpath" />
+            <arg value="${demo.build.dir};${lib.dir}" />
 		</javadoc>
 	</target>
 

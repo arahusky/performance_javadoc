@@ -118,6 +118,6 @@ public class MethodInfoTest {
         String method = "example001#MyArrayList#contains#@java.lang.Object@int@float";   
         MethodInfo mi = new MethodInfo(method);
         
-        Assert.assertArrayEquals(new String[]{"java.lang.Object","int","float"}, mi.getParams().toArray());
+        Assert.assertArrayEquals(new String[]{"java.lang.Object","int","float"}, mi.getParams().toArray());        
     }
 }

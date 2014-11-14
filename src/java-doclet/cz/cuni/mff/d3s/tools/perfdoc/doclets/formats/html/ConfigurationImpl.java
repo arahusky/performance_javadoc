@@ -333,7 +333,8 @@ public class ConfigurationImpl extends Configuration {
                    option.equals("-charset") ||
                    option.equals("-overview") ||
                    option.equals("-xdocrootparent") ||
-                   option.equals("-serveraddress")) {
+                   option.equals("-serveraddress") ||
+                   option.equals("-workloadpath")){
             return 2;
         } else {
             return 0;

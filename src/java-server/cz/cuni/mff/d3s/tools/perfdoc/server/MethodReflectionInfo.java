@@ -36,13 +36,18 @@ public class MethodReflectionInfo extends MethodInfo {
      * MethodInfo.toString()
      * @throws ClassNotFoundException
      * @throws IOException
+     * @throws java.lang.NoSuchMethodException
      */
-    public MethodReflectionInfo(String methodData) throws ClassNotFoundException, IOException {
+    public MethodReflectionInfo(String methodData) throws ClassNotFoundException, IOException, NoSuchMethodException {
         super(methodData);
 
         ClassParser cp = new ClassParser(containingClassQualifiedName);
         this.containingClass = cp.getLoadedClass();
         this.method = cp.findMethod(this);
+        
+        if (this.method == null) {
+            throw new NoSuchMethodException("The requested method: " + this.getMethodName() + " does not exist.");
+        }
     }
 
     public Method getMethod() {

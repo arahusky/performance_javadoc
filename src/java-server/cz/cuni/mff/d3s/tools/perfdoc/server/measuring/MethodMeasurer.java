@@ -136,14 +136,20 @@ public class MethodMeasurer {
     private JSONObject processBenchmarkResults(List<BenchmarkResult> list, double[] valuesInWhichWasMeasured, int howManyTimesWasMeasured) {
         JSONObject jsonResults = new JSONObject();
 
+        List<Long> computedResults = new ArrayList<>();
+        for (BenchmarkResult br : list) {
+            computedResults.add(br.getStatistics().compute());
+        }
+        String units = MeasuringUtils.convertUnits(computedResults);
+        
         for (int i = 0; i < list.size(); i++) {
             BenchmarkResult benRes = list.get(i);
             long res = benRes.getStatistics().compute();
             resultCache.insertResult(benRes.getBenchmarkSetting(), howManyTimesWasMeasured, res);
-            jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], res});
+            jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedResults.get(i)});
         }
         //jsonResults.accumulate("units", units);
-        jsonResults.accumulate("units", "ns");
+        jsonResults.accumulate("units", units);
 
         return jsonResults;
     }

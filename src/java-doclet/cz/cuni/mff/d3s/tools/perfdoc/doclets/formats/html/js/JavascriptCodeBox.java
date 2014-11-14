@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.DocletArguments;
 import java.io.IOException;
 
 /**
@@ -32,9 +33,6 @@ public class JavascriptCodeBox {
     private static StringBuilder globalCode = new StringBuilder("<script>");
 
     private static StringBuilder localCode = new StringBuilder("<script>");
-
-    //server location, default is localhost with port 8080, may be changed by command line arguments
-    public static String serverAdress = "http://localhost:8080";
 
     /**
      * indicates, whether the global code was already printed out on the page
@@ -68,7 +66,7 @@ public class JavascriptCodeBox {
      * adds all global functions to the global code
      */
     private static void addGlobalCode() throws IOException {
-        globalCode.append(JSAjaxHandler.returnCallServerFunction(serverAdress + "/measure"));
+        globalCode.append(JSAjaxHandler.returnCallServerFunction(DocletArguments.getServerAddress() + "/measure"));
         globalCode.append(JSAjaxHandler.returnSuccessFunction());
         globalCode.append(JSAjaxHandler.returnErrorFunction());
         globalCode.append(JSAjaxHandler.returnIdentifierFunction());
@@ -100,21 +98,5 @@ public class JavascriptCodeBox {
 
     private static String returnParseToURL() throws IOException {
         return JavascriptLoader.getFileContent("parsetourl.js");
-    }
-
-    /**
-     * Checks whether options contain the argument for serverAddress and if it
-     * is true, then saves it
-     *
-     * @param options 
-     */
-    public static void checkServerAddress(String[][] options) {
-        for (String[] s : options) {
-            if (s[0].toLowerCase().equals("-serveraddress")) {
-                if (s.length > 1) {
-                    serverAdress = s[1];
-                }
-            }
-        }
     }
 }

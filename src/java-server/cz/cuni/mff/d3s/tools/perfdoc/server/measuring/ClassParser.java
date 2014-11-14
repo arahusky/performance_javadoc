@@ -91,9 +91,11 @@ public class ClassParser {
                 log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
             }
         } catch (ClassNotFoundException e) {
+            System.out.println(e);
             log.log(Level.SEVERE, "Class was not found", e);
             throw e;
         } catch (IOException ei) {
+            System.out.println(ei);
             log.log(Level.SEVERE, "Unable to read from file containing class directories, or its bad format", ei);
             throw ei;
         }
