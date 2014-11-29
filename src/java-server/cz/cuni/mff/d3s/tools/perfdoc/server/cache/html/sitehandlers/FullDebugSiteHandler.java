@@ -39,8 +39,10 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Got new full=debug-site request. Starting to handle it.");
 
         if (res != null) {
-            Collection<BenchmarkResult> item = res.getResults();
-            addCode(formatOutput(item));
+            Collection<BenchmarkResult> item = res.getMainTableResults();
+            Collection<Object[]> detailedResults = res.getDetailedTableResults();
+            addCode(addMainTable(item));
+            addCode(addDetailedTable(detailedResults));
             String output = getCode();
 
             HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
@@ -53,12 +55,12 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String formatOutput(Collection<BenchmarkResult> output) {
+    private String addMainTable(Collection<BenchmarkResult> output) {
         StringBuilder sb = new StringBuilder("<table border = \"1\">");
         sb.append("<tr>");
-        sb.append("<td><b>methodName</b></td>");
-        sb.append("<td><b>generator</b></td>");
-        sb.append("<td><b>data</b></td>");
+        sb.append("<td><b>method</b></td>");
+        sb.append("<td><b>workload</b></td>");
+        sb.append("<td><b>workloadArgs</b></td>");
         sb.append("<td><b>number Of Measurements</b></td>");
         sb.append("<td><b>time</b></td>");
         sb.append("</tr>");
@@ -80,6 +82,27 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
 
             long time = item.getStatistics().compute();
             sb.append("<td>").append(time).append("</td>");
+
+            sb.append("</tr>");
+        }
+
+        sb.append("</table><br />");
+        return sb.toString();
+    }
+    
+    private String addDetailedTable(Collection<Object[]> list) {
+        StringBuilder sb = new StringBuilder("<table border = \"1\">");
+        sb.append("<tr>");
+        sb.append("<td><b>id</b></td>");
+        sb.append("<td><b>time</b></td>");
+        sb.append("</tr>");
+
+        for (Object[] item : list) {
+            sb.append("<tr>");
+            
+            sb.append("<td>").append(item[0]).append("</td>");
+
+            sb.append("<td>").append(item[1]).append("</td>");
 
             sb.append("</tr>");
         }

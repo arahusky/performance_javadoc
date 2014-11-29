@@ -81,6 +81,13 @@ public final class Statistics {
     }
     
     /**
+     * Returns all values from the Statistics.
+     * @return 
+     */
+    public Long[] getValues() { 
+        return measurementResults.toArray(new Long[measurementResults.size()]);
+    }
+    /**
      * *
      * @return String representation of Statistic results in format: {result1,
      * ..., resultN}

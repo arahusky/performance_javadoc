@@ -20,32 +20,34 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Interface, that extends ResultCache with methods for site handlers
- * 
+ *
  * @author Jakub Naplava
  */
 public interface ResultCacheForWeb extends ResultCache {
 
     /**
-     * Returns all data in table, where each datum is one item in the list and
-     * each column one datum in map)
+     * Returns faked BenchmarkResults (with the Statistics containing only
+     * computed results) obtained from the main table. .
      *
      * @return
      */
-    Collection<BenchmarkResult> getResults();
+    Collection<BenchmarkResult> getMainTableResults();
+
+    Collection<Object[]> getDetailedTableResults();
 
     /**
-     * Returns all data in table for testedMethod and generator
+     * Returns faked BenchmarkResults (with the Statistics containing only
+     * computed results) for given testedMethod and generator
      *
      * @param testedMethod
      * @param generator
      * @return BenchmarkResult if found, otherwise null
      */
     Collection<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
-     
+
     /**
      * Returns all methods, that have already been tested and have some result
      * in cache

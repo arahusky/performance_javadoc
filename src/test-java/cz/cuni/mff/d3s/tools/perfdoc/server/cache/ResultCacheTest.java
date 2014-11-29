@@ -26,7 +26,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups.*;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkMockups.*;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
+import java.sql.Statement;
 
 /**
  *
@@ -35,16 +37,17 @@ import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups
 public class ResultCacheTest {
 
     private static ResultDatabaseCache res;
+    private static final String TEST_URL = "jdbc:derby:test_database/cacheDB;create=true";
    
     @BeforeClass
     public static void testStartAndCreateDB() throws SQLException, ClassNotFoundException {
-        res = new ResultDatabaseCache(true);
-        res.startTestDatabase();
+        res = new ResultDatabaseCache(TEST_URL);
+        res.start();
     }
 
     @Before
     public void makeNewConnection() throws SQLException {
-        res = new ResultDatabaseCache(true);
+        res = new ResultDatabaseCache(TEST_URL);
     }
 
     @After
@@ -59,187 +62,197 @@ public class ResultCacheTest {
         res.close();
     }
 
-    private void checkResultSetFor1(ResultSet rs, int numberOfMeasurements, long time) throws SQLException {
-        Assert.assertEquals(method1.toString(), rs.getString("methodName"));
-        Assert.assertEquals(workload1.toString(), rs.getString("generator"));
-        Assert.assertEquals("[arg1]", rs.getString("data"));
-        Assert.assertEquals(numberOfMeasurements, rs.getInt("numberOfMeasurements"));
-        Assert.assertEquals(time, rs.getInt("time"));
+    private void checkResultSetFor1(ResultSet rs) throws SQLException {
+        Assert.assertEquals(method1.toString(), rs.getString("method"));
+        Assert.assertEquals(workload1.toString(), rs.getString("workload"));
+        Assert.assertEquals("[arg1]", rs.getString("workload_arguments"));
+        Assert.assertEquals(statistics1.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
+        Assert.assertEquals(statistics1.compute(), rs.getLong("time"));
     }
 
-    private void checkResultSetFor2(ResultSet rs, int numberOfMeasurements, long time) throws SQLException {
-        Assert.assertEquals(method2.toString(), rs.getString("methodName"));
-        Assert.assertEquals(workload2.toString(), rs.getString("generator"));
-        Assert.assertEquals("[1,2.0]", rs.getString("data"));
-        Assert.assertEquals(numberOfMeasurements, rs.getInt("numberOfMeasurements"));
-        Assert.assertEquals(time, rs.getInt("time"));
+    private void checkResultSetFor2(ResultSet rs) throws SQLException {
+        Assert.assertEquals(method2.toString(), rs.getString("method"));
+        Assert.assertEquals(workload2.toString(), rs.getString("workload"));
+        Assert.assertEquals("[1,2.0]", rs.getString("workload_arguments"));
+        Assert.assertEquals(statistics2.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
+        Assert.assertEquals(statistics2.compute(), rs.getLong("time"));
     }
 
-    private void checkResultSetFor3(ResultSet rs, int numberOfMeasurements, long time) throws SQLException {
-        Assert.assertEquals(method3.toString(), rs.getString("methodName"));
-        Assert.assertEquals(workload3.toString(), rs.getString("generator"));
-        Assert.assertEquals("[2.0]", rs.getString("data"));
-        Assert.assertEquals(numberOfMeasurements, rs.getInt("numberOfMeasurements"));
-        Assert.assertEquals(time, rs.getInt("time"));
+    private void checkResultSetFor3(ResultSet rs) throws SQLException {
+        Assert.assertEquals(method3.toString(), rs.getString("method"));
+        Assert.assertEquals(workload3.toString(), rs.getString("workload"));
+        Assert.assertEquals("[2.0]", rs.getString("workload_arguments"));
+        Assert.assertEquals(statistics3.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
+        Assert.assertEquals(statistics3.compute(), rs.getLong("time"));
     }
 
     @Test
     public void testNumberOfTables() throws SQLException {
         ArrayList<String> set = res.getDBTables();
 
-        //created database contains just one table
-        Assert.assertEquals(1, set.size());
+        //created database contains just two tables
+        Assert.assertEquals(2, set.size());
 
         //which name is results
-        Assert.assertEquals("results", set.get(0));
+        Assert.assertTrue(set.contains("measurement_information"));
+        Assert.assertTrue(set.contains("measurement_detailed"));
     }
 
     @Test
     public void testSimpleEmptyTableTest() throws SQLException {
-        ResultSet rs = res.getTable();
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void testSimpleInsertRow() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        ResultSet rs = res.getTable();
+        res.insertResult(benResult1);
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor1(rs, 10, 1000);
+        checkResultSetFor1(rs);
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void testMultipleInsertDifferentRecords() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet2, 0, 20);
-        res.insertResult(benSet3, 10, 1000);
-        ResultSet rs = res.getTable();
+        res.insertResult(benResult1);
+        res.insertResult(benResult2);
+        res.insertResult(benResult3);
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor1(rs, 10, 1000);
+        checkResultSetFor1(rs);
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor2(rs, 0, 20);
+        checkResultSetFor2(rs);
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor3(rs, 10, 1000);
+        checkResultSetFor3(rs);
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void insertRowWithMoreMeasurementTimesShallUpdateRecord() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet1, 100, 20);
-        ResultSet rs = res.getTable();
+         //statistics3 contains more measurements, than statistics1/statistics2        
+        res.insertResult(new BenchmarkResultImpl(statistics1, benSet3)); 
+        res.insertResult(new BenchmarkResultImpl(statistics2, benSet3));
+        res.insertResult(benResult3);
+        ResultSet rs = getContentsBasicTable();
 
-        Assert.assertTrue(rs.next());
-
-        checkResultSetFor1(rs, 100, 20);
+        Assert.assertTrue(rs.next());        
+        checkResultSetFor3(rs);
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void insertRowWithSameMeasurementTimesShallDoNothing() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet1, 10, 200);
-        ResultSet rs = res.getTable();
+        //statistics2 and statistics4 contain same amount of measurements
+        res.insertResult(benResult2);
+        res.insertResult(new BenchmarkResultImpl(statistics4, benSet2));
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor1(rs, 10, 1000);
+        checkResultSetFor2(rs);
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void insertRowWithWorseMeasurementTimesShallDoNothing() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet1, 9, 200);
-        ResultSet rs = res.getTable();
+        //statistics3 contains more results than statistics1
+        res.insertResult(benResult3);
+        res.insertResult(new BenchmarkResultImpl(statistics1, benSet3));
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
 
-        checkResultSetFor1(rs, 10, 1000);
+        checkResultSetFor3(rs);
 
         Assert.assertFalse(rs.next());
     }
 
     @Test
     public void testMoreConnections() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benResult3);
 
-        ResultDatabaseCache newRes = new ResultDatabaseCache(true);
+        ResultDatabaseCache newRes = new ResultDatabaseCache(TEST_URL);
 
-        newRes.insertResult(benSet1, 9, 200);
-        newRes.insertResult(benSet2, 9, 200);
+        //statistics3 contains more results (thus more accurate), therefore next insert will not insert anything at all
+        newRes.insertResult(new BenchmarkResultImpl(statistics1, benSet3));
+        newRes.insertResult(benResult2);
 
-        ResultSet rs = res.getTable();
-
-        Assert.assertTrue(rs.next());
-
-        checkResultSetFor1(rs, 10, 1000);
+        ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
+        checkResultSetFor3(rs);
 
-        checkResultSetFor2(rs, 9, 200);
+        Assert.assertTrue(rs.next());
+        checkResultSetFor2(rs);
 
         Assert.assertFalse(rs.next());
-
         newRes.closeConnection();
     }
 
     @Test
     public void testGetResultSimple() {
-        res.insertResult(benSet1, 10, 1000);
+        res.insertResult(benResult1);
 
-        BenchmarkResult br1 = res.getResult(benSet1, 9);
-        Assert.assertEquals(1000, br1.getStatistics().compute());
-
-        br1 = res.getResult(benSet1, 10);
-        Assert.assertEquals(1000, br1.getStatistics().compute());
-
-        br1 = res.getResult(benSet1, 11);
-        Assert.assertEquals(-1, br1.getStatistics().compute());
+        BenchmarkResult br1 = res.getResult(benSet1);
+        Assert.assertEquals(benResult1.getStatistics(), br1.getStatistics());
 
     }
 
     @Test
     public void testGetResultComplex() {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet2, 9, 200);
-        res.insertResult(benSet3, 19, 2500);
+        res.insertResult(benResult1);
+        res.insertResult(benResult2);
+        res.insertResult(benResult3);
 
-        BenchmarkResult br = res.getResult(benSet4, 9);
-        Assert.assertEquals(-1, br.getStatistics().compute());
+        BenchmarkResult br = res.getResult(benSet4);
+        Assert.assertNull(br);
 
-        br = res.getResult(benSet1, 10);
-        Assert.assertEquals(1000, br.getStatistics().compute());
+        br = res.getResult(benSet1);
+        Assert.assertEquals(benResult1.getStatistics(), br.getStatistics());
 
-        br = res.getResult(benSet2, 9);
-        Assert.assertEquals(200, br.getStatistics().compute());
+        br = res.getResult(benSet2);
+        Assert.assertEquals(benResult2.getStatistics(), br.getStatistics());
 
-        br = res.getResult(benSet3, 15);
-        Assert.assertEquals(2500, br.getStatistics().compute());
+        br = res.getResult(benSet3);
+        Assert.assertEquals(benResult3.getStatistics(), br.getStatistics());
     }
 
     @Test
     public void testEmptyTable() throws SQLException {
-        res.insertResult(benSet1, 10, 1000);
-        res.insertResult(benSet2, 9, 200);
-
+        res.insertResult(benResult1);
+        res.insertResult(benResult2);
         res.empty();
-        ResultSet rs = res.getTable();
-
+        
+        Statement stmt = res.conn.createStatement();
+        
+        String query = "SELECT * FROM measurement_information";        
+        ResultSet rs = stmt.executeQuery(query);
         Assert.assertFalse(rs.next());
+        
+        query = "SELECT * FROM measurement_detailed";        
+        rs = stmt.executeQuery(query);
+        Assert.assertFalse(rs.next());
+    }
+    
+    private ResultSet getContentsBasicTable() throws SQLException {
+        Statement stmt = res.conn.createStatement();
+        String query = "SELECT * FROM measurement_information";
+
+        ResultSet result = stmt.executeQuery(query);
+        return result;
     }
 }

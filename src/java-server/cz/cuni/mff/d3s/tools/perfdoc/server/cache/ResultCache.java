@@ -30,21 +30,18 @@ public interface ResultCache {
      * Returns the BenchmarkResult corresponding to the given BenchmarkSetting.
      *
      * @param setting
-     * @param numberOfMeasurements
      * @return the BenchmarkResult with Statistics obtained from the cache. If
-     * no corresponding Statistics is found, an empty Statistics is returned.
+     * no record with such setting is found, null is returned.
      */
-    BenchmarkResult getResult(BenchmarkSetting setting, int numberOfMeasurements);
+    BenchmarkResult getResult(BenchmarkSetting setting);
 
     /**
-     * Inserts the data in cache
+     * Inserts the measured result in cache.
      *
-     * @param setting
-     * @param numberOfMeasurements
-     * @param time
+     * @param benResult
      * @return true if data were inserted successfully, otherwise false
      */
-    boolean insertResult(BenchmarkSetting setting, int numberOfMeasurements, long time);
+    boolean insertResult(BenchmarkResult benResult);
 
     /**
      * Closes the current connection to database

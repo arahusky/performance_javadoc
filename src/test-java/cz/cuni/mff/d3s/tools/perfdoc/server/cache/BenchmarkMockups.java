@@ -18,16 +18,19 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArguments;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
- *  Provider of 4 simple BenchmarkSettings with classes, they were made from.
+ *  Provider of simple Benchmark-mockups. 
  * 
  * @author Jakub Naplava
  */
-public class BenchmarkSettingMockups {
+public class BenchmarkMockups {
     public static final MethodInfo method1 = new MethodInfo("package1#class1#method1#@param1#0");
     public static final MethodInfo method2 = new MethodInfo("package1#class1#method2#@param1@param2#0");
     public static final MethodInfo method3 = new MethodInfo("package2#class1#method1##0");
@@ -53,4 +56,14 @@ public class BenchmarkSettingMockups {
     public static final BenchmarkSettingImpl benSet2 = new BenchmarkSettingImpl(method2, workload2, methodArguments2, 2);
     public static final BenchmarkSettingImpl benSet3 = new BenchmarkSettingImpl(method3, workload3, methodArguments3, 3);
     public static final BenchmarkSettingImpl benSet4 = new BenchmarkSettingImpl(method4, workload4, methodArguments4, 4);
+    
+    public static final Statistics statistics1 = new Statistics("{1}"); 
+    public static final Statistics statistics2 = new Statistics("{10,12,10,8,55,1}"); 
+    public static final Statistics statistics3 = new Statistics("{1,2,3,4,5,6,7,8,9,10}"); 
+    public static final Statistics statistics4 = new Statistics("{0,10,12,13,10,15}"); 
+    
+    public static final BenchmarkResult benResult1 = new BenchmarkResultImpl(statistics1, benSet1);
+    public static final BenchmarkResult benResult2 = new BenchmarkResultImpl(statistics2, benSet2);
+    public static final BenchmarkResult benResult3 = new BenchmarkResultImpl(statistics3, benSet3);
+    public static final BenchmarkResult benResult4 = new BenchmarkResultImpl(statistics4, benSet4);
 }

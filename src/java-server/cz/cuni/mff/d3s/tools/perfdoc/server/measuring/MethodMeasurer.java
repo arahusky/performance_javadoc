@@ -50,7 +50,7 @@ public class MethodMeasurer {
     public MethodMeasurer(MeasureRequest measureRequest, LockBase lockBase) throws SQLException {
         this.lockBase = lockBase;
         this.measureRequest = measureRequest;
-        resultCache = new ResultDatabaseCache();
+        resultCache = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
     }
 
     /**
@@ -90,7 +90,7 @@ public class MethodMeasurer {
             BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
 
             //checking for results in cache
-            BenchmarkResult res = resultCache.getResult(benSetting, howManyTimesToMeasure);
+            BenchmarkResult res = resultCache.getResult(benSetting);
             if (res != null && !res.getStatistics().isEmpty()) {
                 result.add(res);
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
@@ -144,8 +144,7 @@ public class MethodMeasurer {
         
         for (int i = 0; i < list.size(); i++) {
             BenchmarkResult benRes = list.get(i);
-            long res = benRes.getStatistics().compute();
-            resultCache.insertResult(benRes.getBenchmarkSetting(), howManyTimesWasMeasured, res);
+            resultCache.insertResult(benRes);
             jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedResults.get(i)});
         }
         //jsonResults.accumulate("units", units);

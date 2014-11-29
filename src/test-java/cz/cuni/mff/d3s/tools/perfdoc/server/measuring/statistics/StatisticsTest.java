@@ -53,6 +53,20 @@ public class StatisticsTest {
     }
     
     @Test
+    public void testGetValues() throws NoSuchMethodException
+    {
+        Statistics s = new Statistics();  
+        
+        Assert.assertArrayEquals(new Long[0], s.getValues());
+        
+        s.addResult(10);
+        s.addResult(12);
+        s.addResult(14);
+        
+        Assert.assertArrayEquals(new Long[]{10L,12L,14L}, s.getValues());
+    }
+    
+    @Test
     public void testNewStatisticsFromToString() {
         Statistics s = new Statistics();     
         s.addResult(10);

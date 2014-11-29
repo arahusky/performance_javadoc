@@ -20,7 +20,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import org.junit.Assert;
 import org.junit.Test;
-import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkSettingMockups.*;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkMockups.*;
 import static org.hamcrest.CoreMatchers.*;
 
 /**

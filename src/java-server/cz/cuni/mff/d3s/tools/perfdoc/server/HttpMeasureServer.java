@@ -53,7 +53,7 @@ class HttpMeasureServer {
         server.setExecutor(Executors.newCachedThreadPool());
 
         try {
-            ResultAdminCache res = new ResultDatabaseCache();
+            ResultAdminCache res = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
             res.start();
 
             if (emptyTable(args)) {

@@ -87,7 +87,7 @@ public class CacheRequestHandler implements HttpHandler {
         }
 
         try {
-            ResultCacheForWeb res = new ResultDatabaseCacheForWeb();
+            ResultCacheForWeb res = new ResultDatabaseCacheForWeb(ResultDatabaseCacheForWeb.JDBC_URL);
             handler.handle(exchange, res);
         } catch (SQLException e) {
             String errorMessage = "Unable to connect to database.";
