@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
+
 /**
  * Site handler that shows all measured methods for the given class
  *
@@ -63,7 +65,7 @@ public class ClassSiteHandler extends AbstractSiteHandler {
     private String returnHeading(String className) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
+        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
         sb.append("<h1>Class <i>").append(className).append("</i></h1>");
         sb.append("<h2>Methods</h2>");
 

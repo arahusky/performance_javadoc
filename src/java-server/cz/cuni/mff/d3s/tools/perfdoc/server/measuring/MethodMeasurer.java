@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.sql.SQLException;
@@ -79,7 +80,7 @@ public class MethodMeasurer {
 
         //how many times to measure the method in one cycle
         int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
-
+        
         //passing the amount of wanted results to generator
         serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
@@ -91,11 +92,13 @@ public class MethodMeasurer {
 
             //checking for results in cache
             BenchmarkResult res = resultCache.getResult(benSetting);
-            if (res != null && !res.getStatistics().isEmpty()) {
+            if (res != null && !res.getStatistics().isEmpty() 
+                    && res.getStatistics().getNumberOfMeasurements() >= howManyTimesToMeasure) {
                 result.add(res);
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
                 continue;
             }
+            
             BenchmarkRunner runner = null;
             switch (priority) {
                 case 1:
@@ -114,7 +117,7 @@ public class MethodMeasurer {
 
         log.log(Level.CONFIG, "Measurement succesfully done");
 
-        JSONObject jsonResults = processBenchmarkResults(result, valuesToMeasure, howManyTimesToMeasure);
+        JSONObject jsonResults = processBenchmarkResults(result, valuesToMeasure);
 
         if (resultCache != null) {
             //we do not need the connection to database anymore
@@ -133,7 +136,7 @@ public class MethodMeasurer {
      * @param howManyTimesWasMeasured
      * @return
      */
-    private JSONObject processBenchmarkResults(List<BenchmarkResult> list, double[] valuesInWhichWasMeasured, int howManyTimesWasMeasured) {
+    private JSONObject processBenchmarkResults(List<BenchmarkResult> list, double[] valuesInWhichWasMeasured) {
         JSONObject jsonResults = new JSONObject();
 
         List<Long> computedResults = new ArrayList<>();

@@ -19,11 +19,12 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import java.util.Collection;
+
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 
 /**
  * Site handler that shows all generators, that have any measured result for the
@@ -80,7 +81,7 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         String methodName = method.getMethodName();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
+        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
         sb.append("<p><a href = \"class?" + className + "\"><-- Back to class " + className + "</a></p>");
         sb.append("<h1>Method <i>" + methodName + "</i> in class <i>" + className + "</i></h1>");
         sb.append("<h2>with parameters</h2>");

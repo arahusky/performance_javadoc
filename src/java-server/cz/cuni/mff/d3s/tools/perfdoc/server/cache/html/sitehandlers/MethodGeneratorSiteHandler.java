@@ -24,11 +24,12 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import java.util.Collection;
+
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 
 /**
  * Site handler that shows all results for given tested method and its generator
@@ -91,7 +92,7 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
     private String returnHeading(String testedMethodNet, MethodInfo testedMethod, MethodInfo generator) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<p><a href = \"http://localhost:8080/cache\"><-- Back to classes overview </a></p>");
+        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
         sb.append("<p><a href = \"class?" + testedMethod.getQualifiedClassName() + "\"><-- Back to class " + testedMethod.getQualifiedClassName() + "</a></p>");
         sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethod.getMethodName() + "</a></p>");
         sb.append("<h1>Method <i>" + testedMethod.getMethodName() + "</i> with generator <i>" + generator.getMethodName() + "</i></h1>");

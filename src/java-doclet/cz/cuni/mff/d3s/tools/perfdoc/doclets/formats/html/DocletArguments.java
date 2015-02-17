@@ -26,7 +26,10 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
  */
 public class DocletArguments {
 
+    //location, where the server will be contacted
     private static String serverAddress = "http://localhost:8080";
+    
+    //classpath of all workloads (or connected classes)
     private static String[] workloadPath;
 
     public static void setArguments(String[][] options) {

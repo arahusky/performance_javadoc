@@ -105,8 +105,8 @@ public class PerformanceBodyWriter {
         } catch (IOException ex) {
             configuration.root.printWarning(ex.getMessage());
         } catch (ClassNotFoundException ex) {
-            String parameter = ex.getMessage();
-            configuration.root.printWarning("Workload/Enum class could not be found");
+            configuration.root.printWarning("Workload/Enum class could not be found. . Therefore no performance info will be generated.");
+            return null;
         }
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);

@@ -21,7 +21,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

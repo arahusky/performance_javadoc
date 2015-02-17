@@ -128,7 +128,10 @@ public class MeasureRequest {
                     }
                 } else if (!parameter.equals("java.lang.String") && !parameter.equals("String")) {
                     //enum
-                    normalizedValues[i] = Enum.valueOf((Class<? extends Enum>) new ClassParser(parameter).getLoadedClass(), (String) item);
+                    //enum can be of any type, therefore Enum<?>, however this format is not accepted by valueof
+                    @SuppressWarnings({"unchecked", "rawtypes"})
+                    Object pom = Enum.valueOf((Class<? extends Enum>) new ClassParser(parameter).getLoadedClass(), (String) item);
+                    normalizedValues[i] = pom;
                 }
             }
         }

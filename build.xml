@@ -163,6 +163,8 @@
             <arg value="${demo.src.dir}" />
 			<arg value="-workloadpath" />
             <arg value="${demo.build.dir};${lib.dir}" />
+            <arg value="-serveraddress" />
+            <arg value="http://localhost:4040" />
 		</javadoc>
 	</target>
 
@@ -173,6 +175,8 @@
  				<pathelement path="${derby.jar}"/>
  				<pathelement path="${json.parser.jar}"/>
  			</classpath>
+ 			<arg value="-port" />
+            <arg value="4040" />
  		</java>  
  	</target>
 

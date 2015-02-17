@@ -74,7 +74,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Object[] objs;
 
             /*The arguments for tested method should be prepared in WorkloadImpl.
-            We get one by one and measure the tested method with them.*/
+            We get one by one and measure the measured method with them.*/
             while ((objs = workload.getCall()) != null) {
                 //second item are the arguments for the tested method
                 Object[] args = (Object[]) objs[1];

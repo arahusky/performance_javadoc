@@ -28,16 +28,30 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class HttpMeasureServer {
+public class HttpMeasureServer {
 
     private static final Logger log = Logger.getLogger(HttpMeasureServer.class.getName());
 
+    //port, on which the server runs (may be changed by command-line arguments)
+    private static int port = 8080;
+
+    //flag whether to empty tables (may be changed by command-line arguments)
+    private static boolean emptyTable = false;
+
     /**
+     * The main method, which starts the measuring server.
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
+
+        //process command-line arguments and if any error occured, return
+        if (!processArgs(args)) {
+            return;
+        }
+
         //the port on which the server will run
-        InetSocketAddress addr = new InetSocketAddress(8080);
+        InetSocketAddress addr = new InetSocketAddress(port);
 
         //creates server with backlog (=the maximum queue length for incoming connection indications) set to 0 (system default value)
         HttpServer server = HttpServer.create(addr, 0);
@@ -56,7 +70,8 @@ class HttpMeasureServer {
             ResultAdminCache res = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
             res.start();
 
-            if (emptyTable(args)) {
+            //empty tables if requested
+            if (emptyTable) {
                 res.empty();
             }
         } catch (ClassNotFoundException ex) {
@@ -68,16 +83,48 @@ class HttpMeasureServer {
         }
 
         server.start();
-        log.log(Level.INFO, "Server started and is listening on port 8080");
+        log.log(Level.INFO, "Server started and is listening on port {0}", port);
     }
 
-    private static boolean emptyTable(String[] args) {
-        for (String s : args) {
-            if (s.equals("-empty")) {
-                return true;
+    /**
+     * Processes command-line arguments. If any error occurred, then false is
+     * returned. Otherwise true is returned
+     *
+     * @param args the command line arguments
+     */
+    private static boolean processArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
+                case "-empty":
+                    emptyTable = true;
+                    break;
+                case "-port":
+                    if (i >= args.length - 1) {
+                        System.out.println("Expected port number, but end of arguments found");
+                        return false;
+                    }
+                    try {
+                        port = Integer.parseInt(args[++i]);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Given port number is not a number.");
+                        return false;
+                    }
+
+                    break;
+                default:
+                    System.out.println("Unexpected argument: " + args[i]);
+                    return false;
             }
         }
-        
-        return false;
+
+        return true;
+    }
+    
+    /**
+     * Returns port number of port, on which the server runs.
+     * @return 
+     */
+    public static int getPort() {
+        return port;
     }
 }
