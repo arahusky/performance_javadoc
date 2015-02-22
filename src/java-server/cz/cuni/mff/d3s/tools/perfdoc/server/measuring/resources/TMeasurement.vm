@@ -1,0 +1,67 @@
+#if ($package)
+package $package;
+#end
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Vector;
+import java.util.jar.Manifest;
+import java.util.List;
+import java.util.LinkedList;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
+
+public class TMeasurement {
+
+    private static final int PROPERTY_WARMUP_COUNT = $propertyWarmupCount;
+    private static final int PROPERTY_CALLS_COUNT = $propertyCallsCount;
+    private static final int PROPERTY_PRIORITY = $propertyPriority;
+    
+    public static void main(String[] argv) 
+            throws Throwable {
+        new TMeasurement(argv);
+    } 
+
+    public TMeasurement(String[] argv) 
+            throws Throwable {
+        
+        WorkloadImpl workloadImpl = new WorkloadImpl();
+        ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
+
+        //passing the priority to generator
+        serviceImpl.setPriority(PROPERTY_PRIORITY);
+
+         //passing the amount of wanted results to generator
+        serviceImpl.setNumberCalls(PROPERTY_CALLS_COUNT);
+
+        TGenerator tGen = new TGenerator();
+        tGen.call(workloadImpl, serviceImpl);
+
+        Object[] objs;
+
+        /*The arguments for tested method should be prepared in WorkloadImpl.
+        We get one by one and measure the measured method with them.*/
+        while ((objs = workloadImpl.getCall()) != null) {
+             //second item are the arguments for the tested method
+             Object[] args = (Object[]) objs[1];
+             Object objectOnWhichToInvoke = objs[0];
+
+             TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+
+             long before = System.nanoTime();
+             tMet.call(args);
+             long after = System.nanoTime();
+
+             System.out.println(after - before);
+        }
+    }
+}

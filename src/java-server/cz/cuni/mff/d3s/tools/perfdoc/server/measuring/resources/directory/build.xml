@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." name="JavaPerfDoc" default="main">
+
+
+<target name="run" description="Test run">
+ 		<java fork="true" classname="TMeasurement">
+ 			<classpath>
+ 				<pathelement path="C:\Users\arahusky\Desktop\kino\src\java-server\cz\cuni\mff\d3s\tools\perfdoc\server\measuring\resources\directory"/>
+ 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-demo"/>
+ 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-server"/>
+ 			</classpath>
+ 		</java>  
+ </target>
+
+ </project>

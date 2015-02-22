@@ -30,7 +30,9 @@
 	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
 	<property name="json.parser.jar" location="${lib.dir}/json-20140107.jar"/>
 	<property name="derby.jar" location="${lib.dir}/derby.jar"/>
+	<property name="math.jar" location="${lib.dir}/commons-math3-3.4.1.jar"/>
 	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
+	<property name="velocity.jar" location="${lib.dir}/velocity-1.7-dep.jar"/>
 
 	<!-- external libraries used for unit-testing -->
 	<property name="junit.jar" location="lib/junit-4.11.jar"/>
@@ -90,6 +92,8 @@
 			<compilerarg value="-Xlint:all"/>
 			<classpath>
 				<pathelement path="${json.parser.jar}"/>
+				<pathelement path="${math.jar}"/>
+				<pathelement path="${velocity.jar}"/>
 			</classpath>
 		</javac>
 	</target>
@@ -174,6 +178,8 @@
  				<pathelement path="${server.build.dir}"/>
  				<pathelement path="${derby.jar}"/>
  				<pathelement path="${json.parser.jar}"/>
+ 				<pathelement path="${math.jar}"/>
+ 				<pathelement path="${velocity.jar}"/>
  			</classpath>
  			<arg value="-port" />
             <arg value="4040" />
@@ -192,7 +198,8 @@
 				<pathelement path="${derby.jar}"/>
 				<pathelement path="${server.build.dir}"/>
 				<pathelement path="${doclet.build.dir}"/>
-				<pathelement path="${test.build.dir}"/>								
+				<pathelement path="${test.build.dir}"/>		
+				<pathelement path="${math.jar}"/>						
 			</classpath>
 
 			<formatter type="plain"/>
@@ -211,9 +218,12 @@
   			<report format="frames" todir="${testhtml.output.dir}"/>
 	   </junitreport>
 
-       <delete dir="testDB" />
+       <delete dir="test_database" />
        <echo message="Test results can be found in the directory 'test'..." />
  	</target>
+	
+	<target name = "full" depends="main,run-demo,run-server" description="Compiles everything, runs demo, runs server">
+	</target>
 
 	<target name="clean" description="Remove all the generated files.">
 		<delete dir="${build.dir}" />

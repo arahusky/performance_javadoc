@@ -84,13 +84,14 @@ public class MethodMeasurer {
         //passing the amount of wanted results to generator
         serviceImpl.setNumberCalls(howManyTimesToMeasure);
 
+        //for every point, that should be measured, we perform a measurement
         for (int i = 0; i < valuesToMeasure.length; i++) {
 
             //the arguments for the generator 
             Object[] args = MeasuringUtils.prepareArgsToCall(measureRequest, workloadImpl, serviceImpl, valuesToMeasure[i]);
             BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
 
-            //checking for results in cache
+            //if cache contains results for given settings, we do not have to perform measurement
             BenchmarkResult res = resultCache.getResult(benSetting);
             if (res != null && !res.getStatistics().isEmpty() 
                     && res.getStatistics().getNumberOfMeasurements() >= howManyTimesToMeasure) {
@@ -113,6 +114,8 @@ public class MethodMeasurer {
             lockBase.waitUntilFree(measureRequest.getUserID());
             result.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
             lockBase.freeLock(measureRequest.getUserID());
+            
+            new DirectRunner().measure(benSetting);
         }
 
         log.log(Level.CONFIG, "Measurement succesfully done");
@@ -133,24 +136,24 @@ public class MethodMeasurer {
      *
      * @param list measured BenchmarkResults
      * @param valuesInWhichWasMeasured
-     * @param howManyTimesWasMeasured
      * @return
      */
     private JSONObject processBenchmarkResults(List<BenchmarkResult> list, double[] valuesInWhichWasMeasured) {
         JSONObject jsonResults = new JSONObject();
 
-        List<Long> computedResults = new ArrayList<>();
+        List<Long> computedMeans = new ArrayList<>();
+        List<Long> computedMedians = new ArrayList<>();
         for (BenchmarkResult br : list) {
-            computedResults.add(br.getStatistics().compute());
+            computedMeans.add(br.getStatistics().computeMean());
+            computedMedians.add(br.getStatistics().computeMedian());
         }
-        String units = MeasuringUtils.convertUnits(computedResults);
+        String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
         
         for (int i = 0; i < list.size(); i++) {
             BenchmarkResult benRes = list.get(i);
             resultCache.insertResult(benRes);
-            jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedResults.get(i)});
+            jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
         }
-        //jsonResults.accumulate("units", units);
         jsonResults.accumulate("units", units);
 
         return jsonResults;

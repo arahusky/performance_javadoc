@@ -220,7 +220,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
         String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
         int numberOfMeasurements = benResult.getStatistics().getNumberOfMeasurements();
-        long time = benResult.getStatistics().compute();
+        long time = benResult.getStatistics().computeMean();
 
         Statement stmt = conn.createStatement();
 
@@ -242,7 +242,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
         String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
         int numberOfMeasurements = benResult.getStatistics().getNumberOfMeasurements();
-        long time = benResult.getStatistics().compute();
+        long time = benResult.getStatistics().computeMean();
 
         Statement stmt = conn.createStatement();
         

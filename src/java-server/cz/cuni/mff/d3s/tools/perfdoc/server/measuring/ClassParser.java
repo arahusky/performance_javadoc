@@ -17,10 +17,11 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionConcurrentMapCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionConcurrentMapCache;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -28,17 +29,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class to load and store requested .class files 
+ * Class to load and store requested .class files
  *
  * @author Jakub Naplava
  */
 public class ClassParser {
 
     private static final Logger log = Logger.getLogger(ClassParser.class.getName());
+
+    private static final List<String> classPaths;
+
+    static {
+        classPaths = prepareClassPaths();
+    }
 
     //the cache where the tested classes and generators are stored in order to better performance
     private ReflectionCache refCache;
@@ -102,26 +110,56 @@ public class ClassParser {
     }
 
     /**
-     * Finds all the classpaths (that will be used while loading classes), that
-     * are saved in configuration file
+     * Returns array containing URL of all workload paths.
      *
      * @return
-     * @throws IOException when there is any problem when working with
-     * Class_classPath.txt
+     * @throws IOException
      */
     private URL[] findClassClassPaths() throws IOException {
-        ArrayList<URL> urls = new ArrayList<>();
+        List<URL> urls = new ArrayList<>();
+
+        for (String path : prepareClassPaths()) {
+            File file = new File(path);
+            URL url = file.toURI().toURL();
+            urls.add(url);
+        }
+
+        return urls.toArray(new URL[urls.size()]);
+    }
+
+    /**
+     * Gets classPath of all workloads, that are used.
+     *
+     * Specifically reads all lines from Class_classPath.txt, where the paths
+     * are stored.
+     *
+     * @return
+     */
+    private static List<String> prepareClassPaths() {
+
+        List<String> classPaths = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader("config/Class_classPath.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                File file = new File(line);
-                URL url = file.toURI().toURL();
-                urls.add(url);
+                classPaths.add(line);
             }
+        } catch (FileNotFoundException ex) {
+            log.log(Level.SEVERE, "File containing workload-classPaths was not found.", ex);
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "There was a problem while working with file containing workload-classPaths.", e);
         }
 
-        return urls.toArray(new URL[urls.size()]);
+        if (classPaths.isEmpty()) {
+            log.log(Level.WARNING, "File containing workload-classPaths is empty, the server will probably have troubles finding the right workloads.");
+        }
+
+        return classPaths;
+    }
+
+    public static List<String> getClassPaths() {
+        return classPaths;
+
     }
 
     /**
@@ -167,12 +205,13 @@ public class ClassParser {
 
     /**
      * Return class loaded by this ClassParser
-     * @return 
+     *
+     * @return
      */
     public Class<?> getLoadedClass() {
         return clazz;
     }
-    
+
     private Method searchMethodInCache(MethodInfo methodInfo) {
         return refCache.getMethod(methodInfo.toString());
     }

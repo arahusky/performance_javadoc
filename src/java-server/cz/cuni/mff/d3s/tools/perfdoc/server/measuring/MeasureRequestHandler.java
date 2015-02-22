@@ -72,6 +72,7 @@ public class MeasureRequestHandler implements HttpHandler {
             MethodMeasurer m = new MethodMeasurer(new MeasureRequest(requestBody), lockBase);
             
             JSONObject obj = m.measure();
+            System.out.println(obj.toString());
             try {
                 exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
                 responseBody.write(obj.toString().getBytes());

@@ -39,7 +39,6 @@ public class MethodReflectionRunner extends MethodRunner {
         Object workloadCandidate = setting.getWorkloadArguments().getValues()[0];
 
         if (!(workloadCandidate instanceof WorkloadImpl)) {
-            //TODO throw some exception
             return null;
         }
         

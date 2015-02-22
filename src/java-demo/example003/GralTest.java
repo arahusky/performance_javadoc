@@ -35,7 +35,7 @@ public class GralTest {
      * @param howManyPoint how many points will be in the graph
      */
     @Workload("example003.GralTestGenerator#prepareDataPlotScatter")
-    public void plotScatterPlot(JFrame frame, int howManyPoint) {
+    public static void plotScatterPlot(JFrame frame, int howManyPoint) {
         ScatterPlot splot = new ScatterPlot(howManyPoint);
         frame.getContentPane().add(splot);
     }
@@ -48,7 +48,7 @@ public class GralTest {
      * @param zoom 
      */
     @Workload("example003.GralTestGenerator#prepareDataPlotRaster")
-    public void plotSimpleRasterPlot(JFrame frame, int size, double zoom) {
+    public static void plotSimpleRasterPlot(JFrame frame, int size, double zoom) {
         SimpleRasterPlot raster = new SimpleRasterPlot(size, zoom);
         frame.getContentPane().add(raster);
     }

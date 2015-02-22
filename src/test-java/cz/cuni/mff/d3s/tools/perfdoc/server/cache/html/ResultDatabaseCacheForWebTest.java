@@ -77,15 +77,15 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
         
-        Assert.assertEquals(benResult1.getStatistics().compute(), list.get(0).getStatistics().compute());
+        Assert.assertEquals(benResult1.getStatistics().computeMean(), list.get(0).getStatistics().computeMean());
         Assert.assertEquals(benResult1.getBenchmarkSetting().getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(benResult1.getBenchmarkSetting().getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
 
-        Assert.assertEquals(benResult2.getStatistics().compute(), list.get(1).getStatistics().compute());
+        Assert.assertEquals(benResult2.getStatistics().computeMean(), list.get(1).getStatistics().computeMean());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getTestedMethod(), list.get(1).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getWorkload(), list.get(1).getBenchmarkSetting().getWorkload());
 
-        Assert.assertEquals(benResult3.getStatistics().compute(), list.get(2).getStatistics().compute());
+        Assert.assertEquals(benResult3.getStatistics().computeMean(), list.get(2).getStatistics().computeMean());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getTestedMethod(), list.get(2).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getWorkload(), list.get(2).getBenchmarkSetting().getWorkload());
     }
@@ -162,15 +162,15 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertEquals(benSet1.getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(benSet1.getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
         
-        Assert.assertEquals(statistics1.compute(), list.get(1).getStatistics().compute());
+        Assert.assertEquals(statistics1.computeMean(), list.get(1).getStatistics().computeMean());
         Assert.assertEquals(method1, list.get(1).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(workload1, list.get(1).getBenchmarkSetting().getWorkload());
         
-        Assert.assertEquals(statistics2.compute(), list.get(2).getStatistics().compute());
+        Assert.assertEquals(statistics2.computeMean(), list.get(2).getStatistics().computeMean());
         Assert.assertEquals(method1, list.get(2).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(workload1, list.get(2).getBenchmarkSetting().getWorkload());
         
-        Assert.assertEquals(statistics3.compute(), list.get(3).getStatistics().compute());
+        Assert.assertEquals(statistics3.computeMean(), list.get(3).getStatistics().computeMean());
         Assert.assertEquals(method1, list.get(3).getBenchmarkSetting().getTestedMethod());
         Assert.assertEquals(workload1, list.get(3).getBenchmarkSetting().getWorkload());
     }

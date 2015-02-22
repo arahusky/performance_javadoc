@@ -24,33 +24,34 @@
                 ylabel: 'Elapsed time (' + JSON.parse(respondData).units + ')',
                 xlabel: graphInfo.xAxisLabel,
                 strokeWidth: 0.5,
-                colors: ['#FF82AB'],
+                //colors: ['#FF82AB'],
                 strokePattern: Dygraph.DASHED_LINE,
                 drawPoints : true, 
                 pointSize : 2,
+                labels: [graphInfo.xAxisLabel,"Mean","Median"],
             }
             );
-        
         callServer(newData, graphInfo, ++priority); 
     } else if (priority < 4) {
         var graph = graphInfo.graph;
-        //setting data to be plotted 
-        graph.updateOptions( { 'file': JSON.parse(respondData).data } );
+        //setting data to be plotted         
+        graph.updateOptions( { 'file': JSON.parse(respondData).data} );
 
         if (priority == 2) {
-            graph.updateOptions( { 'colors': ['#B0171F'] });
+            //graph.updateOptions( { 'colors': ['#B0171F'] });
             graph.updateOptions( { 'strokeWidth': 0.75 });
         } else {
-            graph.updateOptions( { 'colors': ['#9400D3'] }); 
+            //graph.updateOptions( { 'colors': ['#9400D3'] }); 
             graph.updateOptions( { 'strokeWidth': 1.0 }); 
         }
 
         callServer(newData, graphInfo, ++priority);
     } else {
       var graph = graphInfo.graph;
+      console.dir(respondData);
       //priority is now 4
       graph.updateOptions( { 'file': JSON.parse(respondData).data } );
-      graph.updateOptions( { 'colors': ['#0000FF'] });
+      //graph.updateOptions( { 'colors': ['#0000FF'] });
       graph.updateOptions( { 'strokeWidth': 1.25 });
       graph.updateOptions( { 'strokePattern': null })
   }

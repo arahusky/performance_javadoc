@@ -79,7 +79,7 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
             int numberOfMeasurements = item.getBenchmarkSetting().getPriority();
             sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
-            long time = item.getStatistics().compute();
+            long time = item.getStatistics().computeMean();
             sb.append("<td>").append(time).append("</td>");
 
             sb.append("</tr>");

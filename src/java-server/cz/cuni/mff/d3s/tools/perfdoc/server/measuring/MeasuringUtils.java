@@ -229,7 +229,7 @@ public class MeasuringUtils {
      * @param results
      * @return 
      */
-    public static String convertUnits(List<Long> results) {
+    public static String convertUnits(List<Long> first, List<Long>second) {
         //supported units (may be added more)
         String[] units = new String[]{"s", "ms", "µs", "ns"};
         //pointer to units array showing actual unit
@@ -238,7 +238,13 @@ public class MeasuringUtils {
         long min = Long.MAX_VALUE;
 
         //computing minValue
-        for (long d : results) {
+        for (long d : first) {
+            if (d < min) {
+                min = d;
+            }
+        }
+        
+        for (long d : second) {
             if (d < min) {
                 min = d;
             }
@@ -255,10 +261,13 @@ public class MeasuringUtils {
         for (int i = index; i < units.length - 1; i++) {
             divideBy *= 1000;
         }
-
-        for (int i = 0; i < results.size(); i++) {
-            long newValue = results.get(i) / divideBy;
-            results.set(i, newValue);
+        
+        //first.size() == second.size()
+        for (int i = 0; i < first.size(); i++) {
+            long newValueFirst = first.get(i) / divideBy;
+            first.set(i, newValueFirst);
+            long newValueSecond = second.get(i) / divideBy;
+            second.set(i, newValueSecond);            
         }
 
         return units[index];

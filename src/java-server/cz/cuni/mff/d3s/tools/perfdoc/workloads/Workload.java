@@ -14,13 +14,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
 /**
+ * Interface to prepare measured method arguments and its class instance.
  *
  * @author Jakub Naplava
  */
 public interface Workload {
+
+    /**
+     * Creates new tuple containing the object, on which the measurement will be
+     * called, and the arguments, for the measured method.
+     *
+     * @param obj Instance of object, on which the measurement will be
+     * performed.
+     * @param args Arguments for the measured method.
+     */
     public void addCall(Object obj, Object... args);
 }

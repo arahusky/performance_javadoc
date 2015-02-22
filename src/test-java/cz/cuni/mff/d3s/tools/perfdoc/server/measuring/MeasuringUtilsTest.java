@@ -17,6 +17,7 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Assert;
@@ -76,20 +77,20 @@ public class MeasuringUtilsTest {
     
     @Test
     public void testConvertUnitsNoConversion() {
-        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L,10000L,20000L})));
+        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L,10000L,20000L}),Arrays.asList(new Long[]{1000L,10000L,20000L})));
     }
     
     @Test
     public void testConvertUnitsOneConversion() {
         List<Long> list = Arrays.asList(new Long[]{10000L,20000L,30000L});                
-        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list));
-        Assert.assertArrayEquals(list.toArray(), new Object[]{10L,20L,30L});
+        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list, new ArrayList<Long> (list)));
+        Assert.assertArrayEquals(new Object[]{10L,20L,30L}, list.toArray());
     }
     
     @Test
     public void testConvertUnitsMultipleConversions() {
         List<Long> list = Arrays.asList(new Long[]{10000121L,20000922L,30009893L});                
-        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list));
-        Assert.assertArrayEquals(list.toArray(), new Object[]{10L,20L,30L});
+        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<Long> (list)));
+        Assert.assertArrayEquals(new Object[]{10L,20L,30L}, list.toArray());
     }
 }

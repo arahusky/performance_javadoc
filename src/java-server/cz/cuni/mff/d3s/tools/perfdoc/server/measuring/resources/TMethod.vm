@@ -1,0 +1,31 @@
+public class TMethod {
+
+    #if ($mFunctionIsStatic)
+        //just to be sure, that class is loaded into JVM
+        private Class<?> fClass = $mClass .class;
+    #else
+        private $mClass fInstance;
+
+        public TMethod($mClass instance) {
+            this.fInstance = instance;
+        }
+    #end
+
+    public void call(Object[] arguments) throws Throwable{
+        #if ($mFunctionIsStatic)
+        $mClass
+        #else
+        this.fInstance
+        #end
+
+        . $mFunction.getName() (
+
+        #foreach ($param in $mFunction.getParameterTypes())
+                #if ($foreach.index > 0)
+                            ,
+                #end
+                ($param.getCanonicalName()) arguments[$foreach.index]
+            #end
+        );
+    }
+}

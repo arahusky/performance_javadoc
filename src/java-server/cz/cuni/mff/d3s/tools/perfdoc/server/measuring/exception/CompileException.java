@@ -15,15 +15,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception;
 
 /**
- * Interface describing additional information about requested things.
+ * Exception to signalize failure during source-code compilation.
  * 
  * @author Jakub Naplava
  */
-public interface ServiceWorkload {
-    int getNumberCalls();
+public class CompileException extends Exception {
     
-    int getPriority();
+    private static final long serialVersionUID = 1L;
+    
+    /**
+     * Creates a new instance of <code>NoWorkloadException</code> without detail
+     * message.
+     */
+    public CompileException() {
+    }
+
+    /**
+     * Constructs an instance of <code>NoWorkloadException</code> with the
+     * specified detail message.
+     *
+     * @param msg the detail message.
+     */
+    public CompileException(String msg) {
+        super(msg);
+    }
 }

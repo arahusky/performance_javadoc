@@ -35,7 +35,7 @@ public class StatisticsTest {
         s.addResult(14);
         s.addResult(16);
         
-        Assert.assertEquals(13, s.compute());
+        Assert.assertEquals(13, s.computeMean());
     }
     
     @Test

@@ -16,23 +16,33 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Interface for performance-measurers.
  *
  * @author Jakub Naplava
  */
-public interface BenchmarkRunner {
+public class DirectRunner implements BenchmarkRunner {
 
-    /**
-     * Runs the measurement with given BenchmarkSetting. Mutual exclusion is the
-     * responsibility of the caller.
-     *
-     * @param setting
-     *
-     * @return Statistics containing measured results. If any error occurred,
-     * null is returned.
-     */
-    Statistics measure(BenchmarkSetting setting);
+    private static final Logger log = Logger.getLogger(DirectRunner.class.getName());
+
+    @Override
+    public Statistics measure(BenchmarkSetting setting) {
+        try {
+            Statistics s = new Statistics();
+            
+            CodeGenerator codeGen = new CodeGenerator(setting);
+            codeGen.generate();
+            
+            //loadResultsFromFiles
+
+            return s;
+        } catch (CompileException | IOException e) {
+            return null;
+        }
+    }
 }

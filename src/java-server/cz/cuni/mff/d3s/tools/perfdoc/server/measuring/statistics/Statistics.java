@@ -17,9 +17,11 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  *
@@ -29,7 +31,7 @@ public final class Statistics {
 
     private static final Logger log = Logger.getLogger(Statistics.class.getName());
 
-    private final ArrayList<Long> measurementResults = new ArrayList<>();
+    private final List<Long> measurementResults = new ArrayList<>();
 
     public Statistics() {
         log.log(Level.CONFIG, "New instance of Statistics created.");
@@ -43,7 +45,7 @@ public final class Statistics {
      * @param values
      */
     public Statistics(String values) {
-        String[] items = values.substring(1, values.length()-1).split(",");
+        String[] items = values.substring(1, values.length() - 1).split(",");
         for (String item : items) {
             try {
                 long value = Long.parseLong(item);
@@ -58,35 +60,48 @@ public final class Statistics {
         measurementResults.add(result);
     }
 
-    public long compute() {
+    public long computeMean() {
         if (measurementResults.isEmpty()) {
             return -1;
         }
-        
-        long totalTime = 0;
 
-        for (long res : measurementResults) {
-            totalTime += res;
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+        for (Long l : measurementResults) {
+            stats.addValue(l);
+        }
+        
+        return (long) stats.getPercentile(50);
+    }
+    
+    public long computeMedian() {
+        if (measurementResults.isEmpty()) {
+            return -1;
         }
 
-        return totalTime / measurementResults.size();
+        DescriptiveStatistics stats = new DescriptiveStatistics();
+        for (Long l : measurementResults) {
+            stats.addValue(l);
+        }
+        return (long) stats.getMean();
     }
 
     public int getNumberOfMeasurements() {
         return measurementResults.size();
     }
-    
+
     public boolean isEmpty() {
         return measurementResults.isEmpty();
     }
-    
+
     /**
      * Returns all values from the Statistics.
-     * @return 
+     *
+     * @return
      */
-    public Long[] getValues() { 
+    public Long[] getValues() {
         return measurementResults.toArray(new Long[measurementResults.size()]);
     }
+
     /**
      * *
      * @return String representation of Statistic results in format: {result1,
@@ -116,7 +131,7 @@ public final class Statistics {
         hash = 53 * hash + Objects.hashCode(this.measurementResults);
         return hash;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {

@@ -21,8 +21,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
-import example001.MyArrayList;
-import java.util.Random;
 import javax.swing.JFrame;
 
 /**

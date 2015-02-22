@@ -67,7 +67,7 @@ public class ResultCacheTest {
         Assert.assertEquals(workload1.toString(), rs.getString("workload"));
         Assert.assertEquals("[arg1]", rs.getString("workload_arguments"));
         Assert.assertEquals(statistics1.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics1.compute(), rs.getLong("time"));
+        Assert.assertEquals(statistics1.computeMean(), rs.getLong("time"));
     }
 
     private void checkResultSetFor2(ResultSet rs) throws SQLException {
@@ -75,7 +75,7 @@ public class ResultCacheTest {
         Assert.assertEquals(workload2.toString(), rs.getString("workload"));
         Assert.assertEquals("[1,2.0]", rs.getString("workload_arguments"));
         Assert.assertEquals(statistics2.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics2.compute(), rs.getLong("time"));
+        Assert.assertEquals(statistics2.computeMean(), rs.getLong("time"));
     }
 
     private void checkResultSetFor3(ResultSet rs) throws SQLException {
@@ -83,7 +83,7 @@ public class ResultCacheTest {
         Assert.assertEquals(workload3.toString(), rs.getString("workload"));
         Assert.assertEquals("[2.0]", rs.getString("workload_arguments"));
         Assert.assertEquals(statistics3.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics3.compute(), rs.getLong("time"));
+        Assert.assertEquals(statistics3.computeMean(), rs.getLong("time"));
     }
 
     @Test

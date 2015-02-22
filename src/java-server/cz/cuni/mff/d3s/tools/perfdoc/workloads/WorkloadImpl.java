@@ -25,7 +25,7 @@ import java.util.ArrayList;
  */
 public class WorkloadImpl implements Workload{
 
-    private ArrayList<Object[]> list = new ArrayList<>();
+    private final ArrayList<Object[]> list = new ArrayList<>();
     
     @Override
     public void addCall(Object obj, Object... args) {
@@ -38,6 +38,5 @@ public class WorkloadImpl implements Workload{
             return null;
         
         return list.remove(list.size() - 1);
-    }
-    
+    }    
 }

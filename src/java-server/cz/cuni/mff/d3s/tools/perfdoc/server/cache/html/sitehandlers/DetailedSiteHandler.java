@@ -182,7 +182,7 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         int numberOfMeasurements = resultItem.getBenchmarkSetting().getPriority();
         sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
-        long time = resultItem.getStatistics().compute();
+        long time = resultItem.getStatistics().computeMean();
         sb.append("<td>").append(time).append("</td>");
 
         sb.append("</tr>");

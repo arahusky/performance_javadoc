@@ -1,0 +1,32 @@
+public class TGenerator {
+
+    #if ($gFunctionIsStatic)
+        //just to be sure, that class is loaded into JVM
+        private Class<?> fClass = $gClass .class;
+    #else
+        private $gClass fInstance;
+
+        public TGenerator() {
+            //generator must have parameter-less constructor
+            this.fInstance = new $gClass();
+        }
+    #end
+
+    public void call(cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload workload, cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload svWorkload) throws Throwable{
+        #if ($gFunctionIsStatic)
+        $gClass
+        #else
+        this.fInstance
+        #end
+
+        . $gFunction.getName() (workload, svWorkload 
+
+        #foreach ($param in $gFunction.getParameterTypes())
+                #if ($foreach.index > 1)
+                    ,
+                    ($param.getCanonicalName()) $gArgument[$foreach.index]
+                #end
+            #end
+        );
+    }
+}
