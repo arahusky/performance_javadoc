@@ -16,10 +16,11 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.DirectRunner;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.MethodReflectionRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.sql.SQLException;
@@ -105,17 +106,17 @@ public class MethodMeasurer {
                 case 1:
                 case 2:
                 case 3:
-                case 4:
                     runner = new MethodReflectionRunner();
+                    break;
+                case 4:
+                    runner = new DirectRunner();
                     break;
             }
 
             //wait until we can measure (there is no lock for our hash)
             lockBase.waitUntilFree(measureRequest.getUserID());
             result.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
-            lockBase.freeLock(measureRequest.getUserID());
-            
-            new DirectRunner().measure(benSetting);
+            lockBase.freeLock(measureRequest.getUserID());            
         }
 
         log.log(Level.CONFIG, "Measurement succesfully done");

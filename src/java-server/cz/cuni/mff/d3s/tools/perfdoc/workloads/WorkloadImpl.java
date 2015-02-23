@@ -18,6 +18,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -25,7 +26,7 @@ import java.util.ArrayList;
  */
 public class WorkloadImpl implements Workload{
 
-    private final ArrayList<Object[]> list = new ArrayList<>();
+    private final List<Object[]> list = new ArrayList<>();
     
     @Override
     public void addCall(Object obj, Object... args) {
@@ -39,4 +40,8 @@ public class WorkloadImpl implements Workload{
         
         return list.remove(list.size() - 1);
     }    
+    
+    public List<Object[]> getCalls() {
+        return list;
+    }
 }

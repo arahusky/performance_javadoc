@@ -14,10 +14,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.lang.reflect.InvocationTargetException;

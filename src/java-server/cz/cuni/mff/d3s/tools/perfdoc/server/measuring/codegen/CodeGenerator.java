@@ -14,9 +14,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.ClassParser;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArguments;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import java.io.File;
 import java.io.FileWriter;
@@ -26,6 +30,8 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
@@ -47,10 +53,10 @@ public class CodeGenerator {
     private static final String templateDir = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/";
 
     //directory, where directories containing java source files, arised by transforming templates, are stored
-    private static final String javaSourceDir = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/";
+    private static final String javaDestinationDir = "out/measuring/code_generation/";
 
     //directory, where directories, containing compiled source files are stored
-    private static final String compiledClassDir = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/";
+    private static final String compiledClassDestinationDir = "out/measuring/code_generation/";
 
     //root directory for workloads (Workload, WorkloadImpl, ServiceWorkload, ServiceWorkloadImpl)
     private static final String workloadsRootDir = "out/classes/java-server";
@@ -66,6 +72,9 @@ public class CodeGenerator {
 
     private final BenchmarkSetting setting;
 
+    //name of directory, where the current (current BenchmarkSetting) generated code will be placed
+    private final String directoryName;
+
     static {
         //initiating Velocity engine
         try {
@@ -77,14 +86,19 @@ public class CodeGenerator {
 
     public CodeGenerator(BenchmarkSetting setting) {
         this.setting = setting;
+        this.directoryName = getDirectoryName();
     }
 
     /**
      * Generates source code and compiles it.
      *
      * @throws CompileException when any error occurred during
+     * @throws java.io.IOException
      */
     public void generate() throws CompileException, IOException {
+
+        createOrReplaceDirectory();
+
         makeAndCompileGeneratorCode(setting);
         makeAndCompileMethodCode(setting);
         makeAndCompileMeasurementCode(setting);
@@ -98,10 +112,10 @@ public class CodeGenerator {
      * @param templateName the name of template to be transformed
      * @param directoryName the directory, where the file will be saved
      */
-    private void writeCode(VelocityContext vc, String templateName, String directoryName) throws IOException {
+    private void writeCode(VelocityContext vc, String templateName) throws IOException {
 
         //location, where the result (transformed template) will be stored
-        String saveToLocation = javaSourceDir + directoryName + "/" + templateName + ".java";
+        String saveToLocation = javaDestinationDir + directoryName + "/" + templateName + ".java";
         File saveToFile = new File(saveToLocation);
         try {
             saveToFile.createNewFile();
@@ -133,10 +147,10 @@ public class CodeGenerator {
         context.put("mFunctionIsStatic", Modifier.isStatic(testedMethod.getModifiers()));
         context.put("mClass", mrInfo.getContainingClass().getName());
 
-        writeCode(context, templateMethodName, "directory");
+        writeCode(context, templateMethodName);
 
-        String javaSourceName = javaSourceDir + "directory" + "/" + templateMethodName + ".java";
-        String javaClassDirectory = compiledClassDir + "directory";
+        String javaSourceName = javaDestinationDir + directoryName + "/" + templateMethodName + ".java";
+        String javaClassDirectory = compiledClassDestinationDir + directoryName;
 
         List<String> classPaths = getCompilationClassPaths();
         classPaths.add(javaClassDirectory);
@@ -158,10 +172,10 @@ public class CodeGenerator {
         //TODO if enum - need to prefix with full name + dot
         context.put("gArgument", setting.getWorkloadArguments().getValues());
 
-        writeCode(context, templateGeneratorName, "directory");
+        writeCode(context, templateGeneratorName);
 
-        String javaSourceName = javaSourceDir + "directory" + "/" + templateGeneratorName + ".java";
-        String javaClassDirectory = compiledClassDir + "directory";
+        String javaSourceName = javaDestinationDir + directoryName + "/" + templateGeneratorName + ".java";
+        String javaClassDirectory = compiledClassDestinationDir + directoryName;
 
         List<String> classPaths = getCompilationClassPaths();
         classPaths.add(javaClassDirectory);
@@ -177,16 +191,23 @@ public class CodeGenerator {
         VelocityContext context = new VelocityContext();
 
         //TODO
-        context.put("propertyWarmupCount", 10);
-        context.put("propertyCallsCount", 40);
-        context.put("propertyPriority", 1);
+        context.put("priority", 1);
+        context.put("warmupTime", 1);
+        context.put("warmupCycles", 2);
+        context.put("measurementCycles", 50);
+        context.put("measurementTime", 2);
+        
+        String pathToMainDir = System.getProperty("user.dir");
+        String pathToDir = pathToMainDir + File.separator 
+                + getDirectory().replaceAll("/", Matcher.quoteReplacement(File.separator)) + File.separator;
+        context.put("directoryWhereToSaveResults", StringEscapeUtils.escapeJava(pathToDir));
 
         context.put("mClass", mrInfo.getContainingClass().getName());
 
-        writeCode(context, templateMeasurementName, "directory");
+        writeCode(context, templateMeasurementName);
 
-        String javaClassDirectory = compiledClassDir + "directory";
-        String javaSourceName = javaSourceDir + "directory" + "/" + templateMeasurementName + ".java";
+        String javaClassDirectory = compiledClassDestinationDir + directoryName;
+        String javaSourceName = javaDestinationDir + directoryName + "/" + templateMeasurementName + ".java";
 
         List<String> classPaths = getCompilationClassPaths();
         classPaths.add(javaClassDirectory);
@@ -208,11 +229,41 @@ public class CodeGenerator {
     }
 
     /**
-     * Returns directory containing generated code.
+     * Returns name of the directory, where the current generated code will be
+     * placed.
      *
      * @return
      */
-    public static String getDirectory() {
-        return "";
+    private String getDirectoryName() {
+        /*Every measurement is uniquely defined by the measured method, workload 
+         and the arguments for the workload.*/
+        MethodInfo method = setting.getTestedMethod();
+        MethodInfo workload = setting.getWorkload();
+        MethodArguments mArgs = setting.getWorkloadArguments();
+
+        return ("measurement_method" + method.hashCode()+ "workload" + workload.hashCode()+ "args" + mArgs.hashCode());
+    }
+
+    /**
+     * Creates new directory, where the generated files will be placed
+     */
+    private void createOrReplaceDirectory() {
+        File file = new File(javaDestinationDir + directoryName);
+
+        if (!file.exists()) {
+            file.mkdir();
+        } else {
+            //TODO anyone other is performing measurement, we should wait (Monitor)
+        }
+    }
+
+    /**
+     * Returns path to the folder (relatively to the main folder) containing
+     * generated code.
+     *
+     * @return
+     */
+    public String getDirectory() {
+        return compiledClassDestinationDir + directoryName;
     }
 }

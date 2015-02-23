@@ -11,6 +11,19 @@ public class TMethod {
         }
     #end
 
+    public void newInstance() throws Throwable {
+        #if ($mFunctionIsStatic)
+        //make sure that class is loaded to JVM
+        this.fClass = $mClass .class;
+        #else
+        this.fInstance = new $mClass(
+        #if ($mConstructorString)
+            "$mConstructorString"
+        #end
+            );
+        #end
+    }
+
     public void call(Object[] arguments) throws Throwable{
         #if ($mFunctionIsStatic)
         $mClass

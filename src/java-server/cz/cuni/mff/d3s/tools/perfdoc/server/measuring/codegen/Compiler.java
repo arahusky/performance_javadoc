@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import java.io.File;
@@ -37,6 +37,8 @@ import javax.tools.ToolProvider;
  * Class, that provides simple API for compiling java source code with
  * additional class paths dependencies.
  *
+ * Inspired by SPL Tool (http://sourceforge.net/p/spl-tools/code/ci/master/tree/src/java/cz/cuni/mff/spl)
+ * 
  * @author Jakub Naplava
  */
 public class Compiler {
@@ -94,6 +96,11 @@ public class Compiler {
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, defaultLocale, defaultCharset);
         Iterable<String> options = getOptions(classPaths);
+        
+        /*TODO check nejak moc tam toho je
+        for (String s : options) {
+            System.out.println(s);
+        }*/
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(Arrays.asList(sourcePath));
         Writer defaultToStdErr = null;
         Iterable<String> noAnnotationClasses = null;

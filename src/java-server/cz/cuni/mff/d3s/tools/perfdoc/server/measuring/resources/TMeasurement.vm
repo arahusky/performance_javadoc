@@ -1,31 +1,27 @@
-#if ($package)
-package $package;
-#end
-
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Vector;
-import java.util.jar.Manifest;
 import java.util.List;
-import java.util.LinkedList;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
+import java.io.PrintWriter;
 
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 
 public class TMeasurement {
 
-    private static final int PROPERTY_WARMUP_COUNT = $propertyWarmupCount;
-    private static final int PROPERTY_CALLS_COUNT = $propertyCallsCount;
-    private static final int PROPERTY_PRIORITY = $propertyPriority;
-    
+    //full-path to directory, where results will be saved (must end with File.separator)
+    private static String directoryWhereToSaveResults = "$directoryWhereToSaveResults";   
+        
+    private static int PRIORITY = $priority;
+
+    //note that the WARMUP_TIME and MEASUREMENT_TIME are in seconds
+    private static int WARMUP_CYCLES = $warmupCycles;
+    private static int WARMUP_TIME = $warmupTime;
+    private static int MEASUREMENT_CYCLES = $measurementCycles;
+    private static int MEASUREMENT_TIME = $measurementTime;
+
     public static void main(String[] argv) 
             throws Throwable {
         new TMeasurement(argv);
@@ -38,30 +34,82 @@ public class TMeasurement {
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
 
         //passing the priority to generator
-        serviceImpl.setPriority(PROPERTY_PRIORITY);
+        serviceImpl.setPriority(PRIORITY);
 
-         //passing the amount of wanted results to generator
-        serviceImpl.setNumberCalls(PROPERTY_CALLS_COUNT);
+        //passing the amount of wanted results to generator
+        serviceImpl.setNumberCalls(MEASUREMENT_CYCLES);
 
         TGenerator tGen = new TGenerator();
         tGen.call(workloadImpl, serviceImpl);
+       
+        //warmup
+        long warmupCyclesSpent = 0;
+        long warmupTimeSpent = 0;
+        long warmupStartTime = System.currentTimeMillis() / 1000;
 
-        Object[] objs;
+        while(true) {
+            warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
+            if ((warmupTimeSpent > WARMUP_TIME) || (warmupCyclesSpent > WARMUP_CYCLES)) {
+                break;
+            }
 
-        /*The arguments for tested method should be prepared in WorkloadImpl.
-        We get one by one and measure the measured method with them.*/
-        while ((objs = workloadImpl.getCall()) != null) {
-             //second item are the arguments for the tested method
-             Object[] args = (Object[]) objs[1];
-             Object objectOnWhichToInvoke = objs[0];
+            for (Object[] objs : workloadImpl.getCalls()) {
+                Object[] args = (Object[]) objs[1];
+                Object objectOnWhichToInvoke = objs[0];
 
-             TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+                TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+                tMet.call(args);
+            }
 
-             long before = System.nanoTime();
-             tMet.call(args);
-             long after = System.nanoTime();
+            //refresh object instances
+            workloadImpl = new WorkloadImpl();
+            tGen.call(workloadImpl, serviceImpl);
+            warmupCyclesSpent++;
+        }
 
-             System.out.println(after - before);
+        //measurement
+        List<Long> times = new ArrayList<>();
+
+        long measurementCyclesSpent = 0;
+        long measurementTimeSpent = 0;
+        long measurementStartTime = System.currentTimeMillis() / 1000;
+        while (true) {
+            measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
+            if ((measurementTimeSpent > MEASUREMENT_TIME) || (measurementCyclesSpent > MEASUREMENT_CYCLES)) {
+                break;
+            }
+
+            for (Object[] objs : workloadImpl.getCalls()) {
+                Object[] args = (Object[]) objs[1];
+                Object objectOnWhichToInvoke = objs[0];
+
+                TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+
+                //Thread.yield();
+
+                long startTime = System.nanoTime();
+                tMet.call(args);
+                long endTime = System.nanoTime();
+                
+                //skip if it's the first sample, which is ussualy bad (except for the case, when MEASUREMENT_CYCLES == 1)
+                if (!(MEASUREMENT_CYCLES > 1) || (measurementCyclesSpent > 0)) {
+                    times.add(endTime - startTime);
+                }
+            }
+
+            //refresh object instances
+            workloadImpl = new WorkloadImpl();
+            tGen.call(workloadImpl, serviceImpl);
+
+            measurementCyclesSpent++;
+        }
+
+        File file = new File(directoryWhereToSaveResults + "results.txt");
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            for (Long l : times) {
+                writer.println(l);
+            }
         }
     }
 }
