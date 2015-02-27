@@ -35,19 +35,19 @@ public class BenchmarkSettingTest {
         Assert.assertThat(benSet3, not(equalTo(benSet4)));
         Assert.assertThat(benSet4, not(equalTo(benSet1)));
         
-        BenchmarkSettingImpl benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments1, 2);
+        BenchmarkSettingImpl benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments1, measurementQuality2);
         Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
-        benSet5 = new BenchmarkSettingImpl(method2,workload1, methodArguments1, 1);
+        benSet5 = new BenchmarkSettingImpl(method2,workload1, methodArguments1, measurementQuality1);
         Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
-        benSet5 = new BenchmarkSettingImpl(method1,workload2, methodArguments1, 1);
+        benSet5 = new BenchmarkSettingImpl(method1,workload2, methodArguments1, measurementQuality1);
         Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
-        benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments2, 1);
+        benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments2, measurementQuality1);
         Assert.assertThat(benSet1, not(equalTo(benSet5)));
         
-        benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments1, 1);
+        benSet5 = new BenchmarkSettingImpl(method1,workload1, methodArguments1, measurementQuality1);
         Assert.assertEquals(benSet1, benSet5);
     }
 }

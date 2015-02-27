@@ -16,9 +16,15 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 
+import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkMockups.*;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -26,9 +32,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static cz.cuni.mff.d3s.tools.perfdoc.server.cache.BenchmarkMockups.*;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
-import java.sql.Statement;
 
 /**
  *
@@ -38,20 +41,21 @@ public class ResultCacheTest {
 
     private static ResultDatabaseCache res;
     private static final String TEST_URL = "jdbc:derby:test_database/cacheDB;create=true";
-   
+
     @BeforeClass
     public static void testStartAndCreateDB() throws SQLException, ClassNotFoundException {
+        res = new ResultDatabaseCache(TEST_URL);
+        //dropAllTables();
+    }
+
+    @Before
+    public void makeNewConnection() throws SQLException, ClassNotFoundException {
         res = new ResultDatabaseCache(TEST_URL);
         res.start();
     }
 
-    @Before
-    public void makeNewConnection() throws SQLException {
-        res = new ResultDatabaseCache(TEST_URL);
-    }
-
     @After
-    public void closeConnection() throws SQLException {
+    public void closeConnection() throws SQLException, ClassNotFoundException {
         res.empty();
         res.closeConnection();
 
@@ -66,36 +70,34 @@ public class ResultCacheTest {
         Assert.assertEquals(method1.toString(), rs.getString("method"));
         Assert.assertEquals(workload1.toString(), rs.getString("workload"));
         Assert.assertEquals("[arg1]", rs.getString("workload_arguments"));
-        Assert.assertEquals(statistics1.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics1.computeMean(), rs.getLong("time"));
+        Assert.assertEquals(statistics1.computeMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor2(ResultSet rs) throws SQLException {
         Assert.assertEquals(method2.toString(), rs.getString("method"));
         Assert.assertEquals(workload2.toString(), rs.getString("workload"));
         Assert.assertEquals("[1,2.0]", rs.getString("workload_arguments"));
-        Assert.assertEquals(statistics2.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics2.computeMean(), rs.getLong("time"));
+        Assert.assertEquals(statistics2.computeMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor3(ResultSet rs) throws SQLException {
         Assert.assertEquals(method3.toString(), rs.getString("method"));
         Assert.assertEquals(workload3.toString(), rs.getString("workload"));
         Assert.assertEquals("[2.0]", rs.getString("workload_arguments"));
-        Assert.assertEquals(statistics3.getNumberOfMeasurements(), rs.getInt("number_of_measurements"));
-        Assert.assertEquals(statistics3.computeMean(), rs.getLong("time"));
+        Assert.assertEquals(statistics3.computeMean(), rs.getLong("average"));
     }
 
     @Test
     public void testNumberOfTables() throws SQLException {
         ArrayList<String> set = res.getDBTables();
 
-        //created database contains just two tables
-        Assert.assertEquals(2, set.size());
+        //created database contains three tables
+        Assert.assertEquals(3, set.size());
 
-        //which name is results
+        //with following names
         Assert.assertTrue(set.contains("measurement_information"));
         Assert.assertTrue(set.contains("measurement_detailed"));
+        Assert.assertTrue(set.contains("measurement_quality"));
     }
 
     @Test
@@ -140,44 +142,114 @@ public class ResultCacheTest {
     }
 
     @Test
-    public void insertRowWithMoreMeasurementTimesShallUpdateRecord() throws SQLException {
-         //statistics3 contains more measurements, than statistics1/statistics2        
-        res.insertResult(new BenchmarkResultImpl(statistics1, benSet3)); 
-        res.insertResult(new BenchmarkResultImpl(statistics2, benSet3));
-        res.insertResult(benResult3);
-        ResultSet rs = getContentsBasicTable();
+    public void insertRowWithBetterMeasurementQualityShallUpdateRecord() throws SQLException {
+        
+        BenchmarkResult brFirst = benResult1;
 
-        Assert.assertTrue(rs.next());        
-        checkResultSetFor3(rs);
+        //creating second BenchmarkResult, that have exactly same methodName, worloadName, workloadArguments and Statistics, but have better measurement quality
+        MeasurementQuality mqSecond = new MeasurementQuality(measurementQuality1.getPriority() + 1,
+                measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupCycles() + 1, 
+                measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurementsCycles() + 1,
+                measurementQuality1.getNumberOfPoints());
+        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method1, workload1, methodArguments1, mqSecond);
+        BenchmarkResult brSecond = new BenchmarkResultImpl(statistics1, bsSecond);
 
-        Assert.assertFalse(rs.next());
-    }
-
-    @Test
-    public void insertRowWithSameMeasurementTimesShallDoNothing() throws SQLException {
-        //statistics2 and statistics4 contain same amount of measurements
-        res.insertResult(benResult2);
-        res.insertResult(new BenchmarkResultImpl(statistics4, benSet2));
+        res.insertResult(brFirst);
+        res.insertResult(brSecond);
         ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
+        int idQuality = rs.getInt("idQuality");
+        String queryToObtainQuality = "SELECT * FROM measurement_quality WHERE idQuality=" + idQuality;
+        Statement stmt = res.conn.createStatement();
+        ResultSet rsQuality = stmt.executeQuery(queryToObtainQuality);
 
-        checkResultSetFor2(rs);
-
-        Assert.assertFalse(rs.next());
+        Assert.assertTrue(rsQuality.next());
+        Assert.assertEquals(mqSecond.getWarmupTime() , rsQuality.getInt("warmup_time"));
+        Assert.assertEquals(mqSecond.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(mqSecond.getMeasurementTime(), rsQuality.getInt("measurement_time"));
+        Assert.assertEquals(mqSecond.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertFalse(rsQuality.next());
     }
-
+    
     @Test
-    public void insertRowWithWorseMeasurementTimesShallDoNothing() throws SQLException {
-        //statistics3 contains more results than statistics1
-        res.insertResult(benResult3);
-        res.insertResult(new BenchmarkResultImpl(statistics1, benSet3));
+    public void insertRowWithEqualMeasurementQualityAsOtherRecord() throws SQLException {
+        
+        BenchmarkResult brFirst = benResult1;
+
+        //create new BenchmarkResult, that has same measurementQuality as previous
+        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method2, workload2, methodArguments2, measurementQuality1);
+        BenchmarkResult brSecond = new BenchmarkResultImpl(statistics2, bsSecond);
+
+        res.insertResult(brFirst);
+        res.insertResult(brSecond);
         ResultSet rs = getContentsBasicTable();
 
         Assert.assertTrue(rs.next());
+        int idQuality = rs.getInt("idQuality");
+        
+        Assert.assertTrue(rs.next());
+        //test whether both records point to the same measurementQuality
+        Assert.assertEquals(idQuality, rs.getInt("idQuality"));
+        
+        //test, whether pointed measurement quality is right (especcially number_uses)
+        String queryToObtainQuality = "SELECT * FROM measurement_quality WHERE idQuality=" + idQuality;
+        Statement stmt = res.conn.createStatement();
+        ResultSet rsQuality = stmt.executeQuery(queryToObtainQuality);
 
-        checkResultSetFor3(rs);
+        Assert.assertTrue(rsQuality.next());
+        Assert.assertEquals(measurementQuality1.getWarmupTime() , rsQuality.getInt("warmup_time"));
+        Assert.assertEquals(measurementQuality1.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(measurementQuality1.getMeasurementTime(), rsQuality.getInt("measurement_time"));
+        Assert.assertEquals(measurementQuality1.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertEquals(2, rsQuality.getInt("number_uses"));
+        Assert.assertFalse(rsQuality.next());
+        
+        Assert.assertFalse(rs.next());        
+    }
 
+    @Test
+    public void insertRowWithWorseMeasurementQualityShallNotUpdateRecord() throws SQLException {
+               
+        //creating BenchmarkResult, that have exactly same methodName, worloadName, workloadArguments and Statistics, but have worse measurement quality
+        MeasurementQuality mqFirst = new MeasurementQuality(measurementQuality1.getPriority() + 1,
+                measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupCycles() + 1, 
+                measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurementsCycles() + 1,
+                measurementQuality1.getNumberOfPoints());
+        BenchmarkSetting bsFirst = new BenchmarkSettingImpl(method1, workload1, methodArguments1, mqFirst);
+        BenchmarkResult brFirst = new BenchmarkResultImpl(statistics1, bsFirst);
+
+        BenchmarkResult brSecond = benResult1;
+        
+        res.insertResult(brFirst);
+        res.insertResult(brSecond);
+        ResultSet rs = getContentsBasicTable();
+
+        Assert.assertTrue(rs.next());
+        int idQuality = rs.getInt("idQuality");
+        String queryToObtainQuality = "SELECT * FROM measurement_quality WHERE idQuality=" + idQuality;
+        Statement stmt = res.conn.createStatement();
+        ResultSet rsQuality = stmt.executeQuery(queryToObtainQuality);
+
+        Assert.assertTrue(rsQuality.next());
+        Assert.assertEquals(mqFirst.getWarmupTime() , rsQuality.getInt("warmup_time"));
+        Assert.assertEquals(mqFirst.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(mqFirst.getMeasurementTime(), rsQuality.getInt("measurement_time"));
+        Assert.assertEquals(mqFirst.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        
+        Assert.assertTrue(rs.next());
+        
+        idQuality = rs.getInt("idQuality");
+        queryToObtainQuality = "SELECT * FROM measurement_quality WHERE idQuality=" + idQuality;
+        
+        rsQuality = stmt.executeQuery(queryToObtainQuality);
+
+        Assert.assertTrue(rsQuality.next());
+        Assert.assertEquals(measurementQuality1.getWarmupTime() , rsQuality.getInt("warmup_time"));
+        Assert.assertEquals(measurementQuality1.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(measurementQuality1.getMeasurementTime(), rsQuality.getInt("measurement_time"));
+        Assert.assertEquals(measurementQuality1.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        
         Assert.assertFalse(rs.next());
     }
 
@@ -187,8 +259,6 @@ public class ResultCacheTest {
 
         ResultDatabaseCache newRes = new ResultDatabaseCache(TEST_URL);
 
-        //statistics3 contains more results (thus more accurate), therefore next insert will not insert anything at all
-        newRes.insertResult(new BenchmarkResultImpl(statistics1, benSet3));
         newRes.insertResult(benResult2);
 
         ResultSet rs = getContentsBasicTable();
@@ -232,27 +302,47 @@ public class ResultCacheTest {
     }
 
     @Test
-    public void testEmptyTable() throws SQLException {
+    public void testEmptyTable() throws SQLException, ClassNotFoundException {
         res.insertResult(benResult1);
         res.insertResult(benResult2);
         res.empty();
-        
+
         Statement stmt = res.conn.createStatement();
-        
-        String query = "SELECT * FROM measurement_information";        
+
+        String query = "SELECT * FROM measurement_information";
         ResultSet rs = stmt.executeQuery(query);
         Assert.assertFalse(rs.next());
-        
-        query = "SELECT * FROM measurement_detailed";        
+
+        query = "SELECT * FROM measurement_detailed";
         rs = stmt.executeQuery(query);
         Assert.assertFalse(rs.next());
     }
-    
+
     private ResultSet getContentsBasicTable() throws SQLException {
         Statement stmt = res.conn.createStatement();
         String query = "SELECT * FROM measurement_information";
 
         ResultSet result = stmt.executeQuery(query);
         return result;
+    }
+
+    /**
+     * Drops all tables in database.
+     *
+     * Useful when modifying structure of tables.
+     *
+     * @throws SQLException
+     */
+    private static void dropAllTables() throws SQLException {
+        String query = "DROP TABLE measurement_detailed";
+        Statement statement = res.conn.createStatement();
+
+        statement.executeUpdate(query);
+
+        query = "DROP TABLE measurement_information";
+        statement.execute(query);
+
+        query = "DROP TABLE measurement_quality";
+        statement.execute(query);
     }
 }

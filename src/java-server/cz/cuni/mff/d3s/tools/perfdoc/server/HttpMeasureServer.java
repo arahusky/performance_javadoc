@@ -68,12 +68,13 @@ public class HttpMeasureServer {
 
         try {
             ResultAdminCache res = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
-            res.start();
-
+           
             //empty tables if requested
             if (emptyTable) {
-                res.empty();
+                res.empty();                
             }
+            
+            res.start();
         } catch (ClassNotFoundException ex) {
             //Could not find the database driver
             return;
@@ -121,7 +122,7 @@ public class HttpMeasureServer {
     }
     
     /**
-     * Returns port number of port, on which the server runs.
+     * Returns number of port, on which the server runs.
      * @return 
      */
     public static int getPort() {

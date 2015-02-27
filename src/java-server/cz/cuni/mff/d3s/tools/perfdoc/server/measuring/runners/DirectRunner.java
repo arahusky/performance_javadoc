@@ -40,17 +40,30 @@ public class DirectRunner implements BenchmarkRunner {
     @Override
     public Statistics measure(BenchmarkSetting setting) {
         try {
+            //generating code for measurement
             CodeGenerator codeGen = new CodeGenerator(setting);
             codeGen.generate();
 
+            //running generated code
             CodeRunner codeRunner = new CodeRunner(codeGen.getDirectory());
             codeRunner.run();
 
+            //collecting generated results
             Statistics s = collectResults(codeGen.getDirectory());
 
-            //TODO if not enough results, need to make measurement one more time
-            deleteDir(codeGen.getDirectory());
+            //if may happen, that there are no use-able results, thus we try to measure one more time
+            if (s.isEmpty()) {
+                codeRunner.run();
+                s = collectResults(codeGen.getDirectory());
 
+                if (s.isEmpty()) {
+                    log.log(Level.SEVERE, "No results were generated");
+                }
+            }
+
+            //CodeGenerator created new folder, which should be (will all its content) deleted
+            codeGen.deleteGeneratedContent();
+            
             return s;
         } catch (CompileException | IOException e) {
             return null;
@@ -81,17 +94,5 @@ public class DirectRunner implements BenchmarkRunner {
         }
 
         return s;
-    }
-
-    private void deleteDir(String directoryName) {
-        File dir = new File(directoryName);
-
-        String[] entries = dir.list();
-        for (String s : entries) {
-            File currentFile = new File(dir.getPath(), s);
-            currentFile.delete();
-        }
-
-        dir.delete();
     }
 }

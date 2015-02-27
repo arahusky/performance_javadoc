@@ -24,7 +24,12 @@ public class TGenerator {
         #foreach ($param in $gFunction.getParameterTypes())
                 #if ($foreach.index > 1)
                     ,
-                    ($param.getCanonicalName()) $gArgument[$foreach.index]
+                    ($param.getCanonicalName()) 
+                        #if ($gParameterType[$foreach.index].isEnum())
+                        $gParameterType[$foreach.index].getName() . $gArgument[$foreach.index]
+                        #else
+                        $gArgument[$foreach.index]
+                        #end
                 #end
             #end
         );

@@ -23,17 +23,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.workloads;
  */
 public class ServiceWorkloadImpl implements ServiceWorkload{
 
-    private int numberResults = 1;
     private int priority = 1;
     
-    @Override
-    public int getNumberCalls() {
-        return numberResults;
-    }
-    
-    public void setNumberCalls(int i) {
-        numberResults = i;
-    }
 
     @Override
     public int getPriority() {

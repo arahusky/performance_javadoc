@@ -61,7 +61,10 @@ public class MethodMeasurer {
      * @return JSONObject that contains measured results.
      */
     public JSONObject measure() {
-        int priority = measureRequest.getPriority();
+        //requested measurement quality
+        MeasurementQuality mQuality = measureRequest.getMeasurementQuality();
+        
+        int priority = mQuality.getPriority();
 
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
@@ -77,13 +80,7 @@ public class MethodMeasurer {
         Object rangeArgument = measureRequest.getValues()[measureRequest.getRangeVal()];
 
         //note that this might end with IllegalArgument | NumberFormat Exception, that is being handled by the caller
-        double[] valuesToMeasure = MeasuringUtils.getValuesToMeasure(rangeArgument, step, MeasurementConfiguration.returnHowManyValuesToMeasure(priority));
-
-        //how many times to measure the method in one cycle
-        int howManyTimesToMeasure = MeasurementConfiguration.returnHowManyTimesToMeasure(priority);
-        
-        //passing the amount of wanted results to generator
-        serviceImpl.setNumberCalls(howManyTimesToMeasure);
+        double[] valuesToMeasure = MeasuringUtils.getValuesToMeasure(rangeArgument, step, mQuality.getNumberOfPoints());
 
         //for every point, that should be measured, we perform a measurement
         for (int i = 0; i < valuesToMeasure.length; i++) {
@@ -94,8 +91,7 @@ public class MethodMeasurer {
 
             //if cache contains results for given settings, we do not have to perform measurement
             BenchmarkResult res = resultCache.getResult(benSetting);
-            if (res != null && !res.getStatistics().isEmpty() 
-                    && res.getStatistics().getNumberOfMeasurements() >= howManyTimesToMeasure) {
+            if (res != null) {
                 result.add(res);
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
                 continue;

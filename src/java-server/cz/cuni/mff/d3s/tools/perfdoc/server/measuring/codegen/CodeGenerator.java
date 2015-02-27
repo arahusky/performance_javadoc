@@ -20,6 +20,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.ClassParser;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArguments;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import java.io.File;
@@ -146,6 +147,7 @@ public class CodeGenerator {
         context.put("mFunction", testedMethod);
         context.put("mFunctionIsStatic", Modifier.isStatic(testedMethod.getModifiers()));
         context.put("mClass", mrInfo.getContainingClass().getName());
+        context.put("mFunctionIsNotVoid", !(testedMethod.getReturnType().equals(Void.TYPE)));
 
         writeCode(context, templateMethodName);
 
@@ -161,17 +163,20 @@ public class CodeGenerator {
     private void makeAndCompileGeneratorCode(BenchmarkSetting setting) throws CompileException, IOException {
 
         MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getWorkload();
-        Method testedMethod = mrInfo.getMethod();
+        Method generator = mrInfo.getMethod();
 
         VelocityContext context = new VelocityContext();
 
-        context.put("gFunction", testedMethod);
-        context.put("gFunctionIsStatic", Modifier.isStatic(testedMethod.getModifiers()));
+        context.put("gFunction", generator);
+        context.put("gFunctionIsStatic", Modifier.isStatic(generator.getModifiers()));
         context.put("gClass", mrInfo.getContainingClass().getName());
 
         //TODO if enum - need to prefix with full name + dot
+        context.put("gParameterType", generator.getParameterTypes());
+        
         context.put("gArgument", setting.getWorkloadArguments().getValues());
-
+        
+        
         writeCode(context, templateGeneratorName);
 
         String javaSourceName = javaDestinationDir + directoryName + "/" + templateGeneratorName + ".java";
@@ -187,15 +192,15 @@ public class CodeGenerator {
 
         MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getTestedMethod();
         Method testedMethod = mrInfo.getMethod();
+        MeasurementQuality measurementQuality = setting.getMeasurementQuality();
 
         VelocityContext context = new VelocityContext();
 
-        //TODO
-        context.put("priority", 1);
-        context.put("warmupTime", 1);
-        context.put("warmupCycles", 2);
-        context.put("measurementCycles", 50);
-        context.put("measurementTime", 2);
+        context.put("priority", measurementQuality.getPriority());
+        context.put("warmupTime", measurementQuality.getWarmupTime());
+        context.put("warmupCycles", measurementQuality.getNumberOfWarmupCycles());
+        context.put("measurementCycles", measurementQuality.getNumberOfMeasurementsCycles());
+        context.put("measurementTime", measurementQuality.getMeasurementTime());
         
         String pathToMainDir = System.getProperty("user.dir");
         String pathToDir = pathToMainDir + File.separator 
@@ -203,6 +208,7 @@ public class CodeGenerator {
         context.put("directoryWhereToSaveResults", StringEscapeUtils.escapeJava(pathToDir));
 
         context.put("mClass", mrInfo.getContainingClass().getName());
+        context.put("mFunctionIsStatic", Modifier.isStatic(testedMethod.getModifiers()));
 
         writeCode(context, templateMeasurementName);
 
@@ -265,5 +271,22 @@ public class CodeGenerator {
      */
     public String getDirectory() {
         return compiledClassDestinationDir + directoryName;
+    }
+    
+    /**
+     * Deletes all content, that was created for CodeGeneration.
+     * 
+     * Namely the folder, where all generated content is placed.
+     */
+    public void deleteGeneratedContent() {
+        File dir = new File(getDirectory());
+
+        String[] entries = dir.list();
+        for (String s : entries) {
+            File currentFile = new File(dir.getPath(), s);
+            currentFile.delete();
+        }
+
+        dir.delete();
     }
 }

@@ -30,5 +30,5 @@ public interface ResultAdminCache extends ResultCache {
    
     void close();
     
-    void empty() throws SQLException;
+    void empty() throws SQLException, ClassNotFoundException;
 }

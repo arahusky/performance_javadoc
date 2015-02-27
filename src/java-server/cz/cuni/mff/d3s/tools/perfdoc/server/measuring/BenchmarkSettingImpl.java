@@ -14,38 +14,37 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import java.util.Objects;
 
 /**
- * 
+ * Basic implementation of BenchmarkSetting interface.
+ *
  * @author Jakub Naplava
  */
-public class BenchmarkSettingImpl implements BenchmarkSetting{
+public class BenchmarkSettingImpl implements BenchmarkSetting {
 
     private final MethodInfo testedMethod;
     private final MethodInfo workload;
     private final MethodArguments arguments;
-    private final int priority;
-    
-    public BenchmarkSettingImpl(MethodInfo testedMethod, MethodInfo workload, MethodArguments arguments, int priority) {
+    private final MeasurementQuality measurementQuality;
+
+    public BenchmarkSettingImpl(MethodInfo testedMethod, MethodInfo workload, MethodArguments arguments, MeasurementQuality measurementQuality) {
         this.testedMethod = testedMethod;
         this.workload = workload;
         this.arguments = arguments;
-        this.priority = priority;
+        this.measurementQuality = measurementQuality;
     }
-    
+
     public BenchmarkSettingImpl(MeasureRequest measureRequest, MethodArguments arguments) {
         this.testedMethod = measureRequest.getTestedMethod();
         this.workload = measureRequest.getWorkload();
-        this.priority = measureRequest.getPriority();
+        this.measurementQuality = measureRequest.getMeasurementQuality();
         this.arguments = arguments;
     }
-    
-    
+
     @Override
     public MethodInfo getTestedMethod() {
         return testedMethod;
@@ -62,17 +61,17 @@ public class BenchmarkSettingImpl implements BenchmarkSetting{
     }
 
     @Override
-    public int getPriority() {
-        return priority;
-    }    
+    public MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
+    }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 61 * hash + Objects.hashCode(this.testedMethod);
-        hash = 61 * hash + Objects.hashCode(this.workload);
-        hash = 61 * hash + Objects.hashCode(this.arguments);
-        hash = 61 * hash + this.priority;
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.testedMethod);
+        hash = 89 * hash + Objects.hashCode(this.workload);
+        hash = 89 * hash + Objects.hashCode(this.arguments);
+        hash = 89 * hash + Objects.hashCode(this.measurementQuality);
         return hash;
     }
 
@@ -85,10 +84,10 @@ public class BenchmarkSettingImpl implements BenchmarkSetting{
             return false;
         }
         BenchmarkSettingImpl bs = (BenchmarkSettingImpl) o;
-        
-        return bs.arguments.equals(this.arguments) &&
-                (bs.priority == this.priority) &&
-                bs.testedMethod.equals(this.testedMethod) &&
-                bs.workload.equals(this.workload);
+
+        return bs.arguments.equals(this.arguments)
+                && bs.measurementQuality.equals(this.measurementQuality)
+                && bs.testedMethod.equals(this.testedMethod)
+                && bs.workload.equals(this.workload);
     }
 }

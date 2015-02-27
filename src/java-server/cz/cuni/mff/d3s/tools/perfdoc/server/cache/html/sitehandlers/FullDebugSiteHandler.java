@@ -74,11 +74,7 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
 
             String data = item.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(false);
             sb.append("<td>").append(data).append("</td>");
-            //TODO when proper statistics table is added, change it to getting from statistics
-            //int numberOfMeasurements = item.getStatistics().getNumberOfMeasurements();
-            int numberOfMeasurements = item.getBenchmarkSetting().getPriority();
-            sb.append("<td>").append(numberOfMeasurements).append("</td>");
-
+           
             long time = item.getStatistics().computeMean();
             sb.append("<td>").append(time).append("</td>");
 

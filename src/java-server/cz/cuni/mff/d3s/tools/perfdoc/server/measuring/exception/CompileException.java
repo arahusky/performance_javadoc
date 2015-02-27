@@ -27,14 +27,14 @@ public class CompileException extends Exception {
     private static final long serialVersionUID = 1L;
     
     /**
-     * Creates a new instance of <code>NoWorkloadException</code> without detail
+     * Creates a new instance of <code>CompileException</code> without detail
      * message.
      */
     public CompileException() {
     }
 
     /**
-     * Constructs an instance of <code>NoWorkloadException</code> with the
+     * Constructs an instance of <code>CompileException</code> with the
      * specified detail message.
      *
      * @param msg the detail message.

@@ -40,7 +40,7 @@ public class MyListGenerator {
             myList.add(n);
         }
 
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 10;
         Random random = new Random();
         for (int i = 0; i < times; i++) {
             workload.addCall(myList, new Object[]{random.nextInt(collection_size)});
@@ -59,7 +59,7 @@ public class MyListGenerator {
         }
 
         Object[] args = new Object[]{collection_size};
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 10;
         for (int i = 0; i < times; i++) {
             workload.addCall(myList, args);
         }
@@ -72,7 +72,7 @@ public class MyListGenerator {
             ServiceWorkload service,
             @ParamNum(description = "Collection size", min = 1, max = 100000, step = 100) int collection_size) {
 
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 5;
         Random random = new Random();
         for (int i = 0; i < times; i++) {
             MyArrayListMoreOps myList = new MyArrayListMoreOps();
@@ -94,7 +94,7 @@ public class MyListGenerator {
             @ParamNum(description = "Number of searches", min = 1, max = 1000, step = 1, axis = false) int searches,
             @ParamNum(description = "Number of iterations", min = 1, max = 500, step = 1) int iterations) {
 
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 3;
         Object[] args = new Object[] {additions, removals, searches, iterations};
         Random random = new Random();
         for (int i = 0; i < times; i++) {

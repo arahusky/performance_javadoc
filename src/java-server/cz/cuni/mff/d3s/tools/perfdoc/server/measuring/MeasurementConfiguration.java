@@ -24,8 +24,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class, that loads measurement configuration (source is
- * config/measurement.properties, if no is found, than default values are used)
+ * This class provides additional measurement information (such as max time for
+ * measurement with priority one) that can be changed by changing configuration
+ * file.
+ *
+ * When configuration file can not be found, or user specifies default values
+ * (-1) , values from default measurement properties are used. Default
+ * measurement properties file contains same keys with prefix 'def'.
  *
  * @author Jakub Naplava
  */
@@ -33,147 +38,184 @@ public class MeasurementConfiguration {
 
     private static final Logger log = Logger.getLogger(MeasurementConfiguration.class.getName());
 
-    static Properties prop = new Properties();
+    //path to the configuration file
+    private static final String configurationFileLocation = "config/measure.properties";
 
-    //whether we already tried to load properties file
-    private static boolean propertiesLoaded = false;
+    //path to the default configuration file
+    private static final String defConfigurationFileLocation = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/default_measure.properties";
 
-    //whether there was an error when trying to load properties and the properties file should not be loaded again
-    private static boolean propertiesError = false;
+    //properties containing user-measurement configuration  
+    private static final Properties measurementProperties = new Properties();
 
-    public static int returnHowManyValuesToMeasure(int priority) {
+    //properties containing default values  
+    private static final Properties defMeasurementProperties = new Properties();
 
-        if (!propertiesLoaded && !propertiesError) {
-            loadProperties();
-        }
+    //public variable telling other classes, how many priorities does server handle
+    public static final int numberOfPriorities = 4;
 
-        switch (priority) {
-            case 1:
-                return returnValues(prop.getProperty("howManyValuesOne"), priority);
-            case 2:
-                return returnValues(prop.getProperty("howManyValuesTwo"), priority);
-            case 3:
-                return returnValues(prop.getProperty("howManyValuesThree"), priority);
-            case 4:
-                return returnValues(prop.getProperty("howManyValuesFour"), priority);
-            default:
-                return -1;
-        }
+    static {
+        loadProperties();
     }
 
-    public static int returnHowManyTimesToMeasure(int priority) {
-
-        if (!propertiesLoaded && !propertiesError) {
-            loadProperties();
-        }
-
-        switch (priority) {
-            case 1:
-                return returnTimes(prop.getProperty("howManyTimesOne"), priority);
-            case 2:
-                return returnTimes(prop.getProperty("howManyTimesTwo"), priority);
-            case 3:
-                return returnTimes(prop.getProperty("howManyTimesThree"), priority);
-            case 4:
-                return returnTimes(prop.getProperty("howManyTimesFour"), priority);
-            default:
-                return -1;
-        }
-    }
-
-    private static int returnValues(String propertyName, int priority) {
-        if (propertyName == null) {
-            return defaultReturnHowManyValuesToMeasure(priority);
-        }
-
-        try {
-            int value = Integer.parseInt(propertyName);
-            return value;
-        } catch (NumberFormatException e) {
-            log.log(Level.INFO, "The properties file is in a bad format.", e);
-            return defaultReturnHowManyValuesToMeasure(priority);
-        }
-    }
-
-    private static int returnTimes(String propertyName, int priority) {
-        if (propertyName == null) {
-            return defaultReturnHowManyTimesToMeasure(priority);
-        }
-
-        try {
-            int value = Integer.parseInt(propertyName);
-            return value;
-        } catch (NumberFormatException e) {
-            log.log(Level.INFO, "The properties file is in a bad format.", e);
-            return defaultReturnHowManyTimesToMeasure(priority);
-        }
-    }
-
+    /**
+     * Loads property files into program
+     */
     private static void loadProperties() {
-        InputStream input = null;
+
+        try (InputStream input = new FileInputStream(configurationFileLocation)) {
+            measurementProperties.load(input);
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Unable to find configuration file for measurement. The default values will be used.", ex);
+        }
+
+        try (InputStream input = new FileInputStream(defConfigurationFileLocation)) {
+            defMeasurementProperties.load(input);
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Unable to find default measurement properties. Program will probably wont work properly.", e);
+        }
+    }
+
+    /**
+     * Returns the number of values, in which the measurement should be
+     * performed.
+     *
+     * @param priority priority for which we want to get number of points
+     * @return
+     */
+    public static int getNumberOfPoints(int priority) {
+        switch (priority) {
+            case 1:
+                return getProperty("priorityOneNumberOfPoints");
+            case 2:
+                return getProperty("priorityTwoNumberOfPoints");
+            case 3:
+                return getProperty("priorityThreeNumberOfPoints");
+            case 4:
+                return getProperty("priorityFourNumberOfPoints");
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Returns number of cycles determining maximal number of cycles used for
+     * warmup measuring of one point.
+     *
+     * @param priority priority for which we want to get number of warmup-cycles
+     * @return
+     */
+    public static int getNumberOfWarmupCycles(int priority) {
+
+        switch (priority) {
+            case 1:
+                return getProperty("priorityOneNumberOfCyclesWarmup");
+            case 2:
+                return getProperty("priorityTwoNumberOfCyclesWarmup");
+            case 3:
+                return getProperty("priorityThreeNumberOfCyclesWarmup");
+            case 4:
+                return getProperty("priorityFourNumberOfCyclesWarmup");
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Returns time, that when exceeded while warmup-measuring one point, should
+     * end warmup-measuring this point and move to another.
+     *
+     * @param priority priority for which we want to get warmup-time
+     * @return
+     */
+    public static int getWarmupTime(int priority) {
+
+        switch (priority) {
+            case 1:
+                return getProperty("priorityOneElapsedTimeWarmup");
+            case 2:
+                return getProperty("priorityTwoElapsedTimeWarmup");
+            case 3:
+                return getProperty("priorityThreeElapsedTimeWarmup");
+            case 4:
+                return getProperty("priorityFourElapsedTimeWarmup");
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Returns number of cycles determining maximal number of cycles used for
+     * measuring of one point.
+     *
+     * @param priority priority for which we want to get number of cycles
+     * @return
+     */
+    public static int getNumberOfMeasurementCycles(int priority) {
+
+        switch (priority) {
+            case 1:
+                return getProperty("priorityOneNumberOfCyclesMeasurement");
+            case 2:
+                return getProperty("priorityTwoNumberOfCyclesMeasurement");
+            case 3:
+                return getProperty("priorityThreeNumberOfCyclesMeasurement");
+            case 4:
+                return getProperty("priorityFourNumberOfCyclesMeasurement");
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Returns time, that when exceeded while measuring one point, should end
+     * measuring this point and move to another.
+     *
+     * @param priority priority for which we want to get time
+     * @return
+     */
+    public static int getMeasurementTime(int priority) {
+
+        switch (priority) {
+            case 1:
+                return getProperty("priorityOneElapsedTimeMeasurement");
+            case 2:
+                return getProperty("priorityTwoElapsedTimeMeasurement");
+            case 3:
+                return getProperty("priorityThreeElapsedTimeMeasurement");
+            case 4:
+                return getProperty("priorityFourElapsedTimeMeasurement");
+            default:
+                return -1;
+        }
+    }
+
+    private static int getProperty(String propertyName) {
+
+        String propertyValue = measurementProperties.getProperty(propertyName);
+        //if such a property does not exist or has a value of -1, we use default property value
+        if (propertyValue == null || propertyValue.equals("-1")) {
+            return getDefaultProperty(propertyName);
+        }
 
         try {
-            input = new FileInputStream("config/measure.properties");
-
-            prop.load(input);
-
-        } catch (IOException ex) {
-            log.log(Level.INFO, "Unable to find configuration file for measurement. The default values will be used.", ex);
-            propertiesError = true;
-        } finally {
-            if (input != null) {
-                try {
-                    input.close();
-                } catch (IOException e) {
-                    log.log(Level.INFO, "Unable to close file with measurement configuration properly.", e);
-                }
-            }
-
-            propertiesLoaded = true;
+            int value = Integer.parseInt(propertyValue);
+            return value;
+        } catch (NumberFormatException e) {
+            log.log(Level.WARNING, "The measurement properties file contains non-integer value. Using default one.", e);
+            return getDefaultProperty(propertyName);
         }
     }
 
-    /**
-     * Method, that will be used in case, that no configuration file will be
-     * found.
-     *
-     * @param priority
-     * @return
-     */
-    public static int defaultReturnHowManyValuesToMeasure(int priority) {
-        switch (priority) {
-            case 1:
-                return 4;
-            case 2:
-                return 6;
-            case 3:
-                return 8;
-            case 4:
-                return 10;
+    private static int getDefaultProperty(String propertyName) {
+        String defPropertyName = "def" + propertyName;
+        String defPropertyValue = defMeasurementProperties.getProperty(defPropertyName);
+
+        try {
+            int value = Integer.parseInt(defPropertyValue);
+            return value;
+        } catch (NumberFormatException e) {
+            log.log(Level.SEVERE, "The default measurement properties file contains non-integer value.", e);
+            return -1;
         }
-
-        return -1; //some value to indicate error
-    }
-
-    /**
-     * Method, that will be used in case, that no configuration file will be
-     * found.
-     *
-     * @param priority
-     * @return
-     */
-    public static int defaultReturnHowManyTimesToMeasure(int priority) {
-        switch (priority) {
-            case 1:
-                return 1;
-            case 2:
-                return 2;
-            case 3:
-                return 3;
-            case 4:
-                return 4;
-        }
-
-        return -1; //some value to indicate error
     }
 }

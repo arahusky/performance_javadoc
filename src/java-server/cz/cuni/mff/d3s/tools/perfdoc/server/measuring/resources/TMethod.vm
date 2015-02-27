@@ -1,4 +1,9 @@
 public class TMethod {
+    
+    #if ($mFunctionIsNotVoid)
+        //we do not want to allow optimizer to optimize out the call of method (against Dead code elimination)
+        public static volatile Object result;
+    #end
 
     #if ($mFunctionIsStatic)
         //just to be sure, that class is loaded into JVM
@@ -11,20 +16,11 @@ public class TMethod {
         }
     #end
 
-    public void newInstance() throws Throwable {
-        #if ($mFunctionIsStatic)
-        //make sure that class is loaded to JVM
-        this.fClass = $mClass .class;
-        #else
-        this.fInstance = new $mClass(
-        #if ($mConstructorString)
-            "$mConstructorString"
-        #end
-            );
-        #end
-    }
-
     public void call(Object[] arguments) throws Throwable{
+        #if ($mFunctionIsNotVoid)
+         result = 
+        #end
+
         #if ($mFunctionIsStatic)
         $mClass
         #else

@@ -36,9 +36,6 @@ public class TMeasurement {
         //passing the priority to generator
         serviceImpl.setPriority(PRIORITY);
 
-        //passing the amount of wanted results to generator
-        serviceImpl.setNumberCalls(MEASUREMENT_CYCLES);
-
         TGenerator tGen = new TGenerator();
         tGen.call(workloadImpl, serviceImpl);
        
@@ -57,8 +54,13 @@ public class TMeasurement {
                 Object[] args = (Object[]) objs[1];
                 Object objectOnWhichToInvoke = objs[0];
 
+                #if ($mFunctionIsStatic)
+                TMethod tMet = new TMethod();
+                tMet.call(args);
+                #else
                 TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
                 tMet.call(args);
+                #end
             }
 
             //refresh object instances
@@ -83,7 +85,11 @@ public class TMeasurement {
                 Object[] args = (Object[]) objs[1];
                 Object objectOnWhichToInvoke = objs[0];
 
+                #if ($mFunctionIsStatic)
+                TMethod tMet = new TMethod();
+                #else
                 TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+                #end
 
                 //Thread.yield();
 

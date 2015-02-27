@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,25 +78,42 @@ public class ResultDatabaseCache implements ResultAdminCache {
 
     /**
      * Checks whether database contains all needed tables and if not than
-     * creates them
+     * creates them.
      *
      * @throws SQLException
      */
     private void checkTablesAndCreate() throws SQLException {
 
+        if (!contains(conn, "measurement_quality")) {
+            String query = "CREATE TABLE measurement_quality ("
+                    + " idQuality INTEGER PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),"
+                    + " warmup_time INTEGER,"
+                    + " warmup_cycles INTEGER,"
+                    + " measurement_time INTEGER,"
+                    + " measurement_cycles INTEGER,"
+                    + " priority INTEGER,"
+                    + " number_uses INTEGER DEFAULT 0,"
+                    + "UNIQUE (warmup_time, warmup_cycles, measurement_time, measurement_cycles)"
+                    + ")";
+            conn.createStatement().execute(query);
+            log.log(Level.INFO, "New table \"measurement_quality\" was created");
+        }
+
+        //derby creates indexes automatically for columns declared as primary key or foreign key, therefore there is no need to create any other
         if (!contains(conn, "measurement_information")) {
             String query = "CREATE TABLE measurement_information ("
                     + " id INTEGER PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),"
                     + " method VARCHAR(500),"
                     + " workload VARCHAR(500),"
                     + " workload_arguments VARCHAR(300),"
-                    + " number_of_measurements INTEGER, "
-                    + " time BIGINT)";
+                    + " average BIGINT,"
+                    + " idQuality INTEGER,"
+                    + " FOREIGN KEY (idQuality) REFERENCES measurement_quality(idQuality)"
+                    + ")";
             conn.createStatement().execute(query);
             log.log(Level.INFO, "New table \"measurement_information\" was created");
         }
 
-        //derby creates indexes automatically for columns declared as primary key or foreign key, therefore there is no need to create any other
         if (!contains(conn, "measurement_detailed")) {
             String query = "CREATE TABLE measurement_detailed ("
                     + " id INTEGER, "
@@ -109,18 +128,27 @@ public class ResultDatabaseCache implements ResultAdminCache {
     /**
      * {@inheritDoc}
      */
-    public void empty() throws SQLException {
+    @Override
+    public void empty() throws SQLException, ClassNotFoundException {
+
+        Class.forName(DRIVER);
 
         if (contains(conn, "measurement_detailed")) {
             String query = "DELETE FROM measurement_detailed";
             conn.createStatement().execute(query);
             log.log(Level.INFO, "The table measurement_detailed was emptied.");
         }
-        
+
         if (contains(conn, "measurement_information")) {
             String query = "DELETE FROM measurement_information";
             conn.createStatement().execute(query);
             log.log(Level.INFO, "The table measurement_information was emptied.");
+        }
+
+        if (contains(conn, "measurement_quality")) {
+            String query = "DELETE FROM measurement_quality";
+            conn.createStatement().execute(query);
+            log.log(Level.INFO, "The table measurement_quality was emptied.");
         }
     }
 
@@ -133,43 +161,65 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String workloadName = setting.getWorkload().toString();
         String workloadArguments = setting.getWorkloadArguments().getValuesDBFormat(true);
 
+        int warmupTime = setting.getMeasurementQuality().getWarmupTime();
+        int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
+        int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
+        int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
+
         try {
             Statement stmt = conn.createStatement();
-            String query = "SELECT D.time"
-                    + " FROM measurement_information M"
-                    + " INNER JOIN measurement_detailed D"
-                    + " ON M.id = D.id"
-                    + " WHERE (M.method = '" + methodName + "'"
-                    + " AND M.workload='" + workloadName + "'"
-                    + " AND M.workload_arguments='" + workloadArguments + "')";
+            //we want to get results, that have same methodName, workloadName and arguments and were measured at least as precisely as we need to
+            String query = "SELECT time"
+                    + " FROM measurement_information"
+                    + " NATURAL JOIN measurement_detailed"
+                    + " NATURAL JOIN measurement_quality"
+                    + " WHERE (method = '" + methodName + "'"
+                    + " AND workload='" + workloadName + "'"
+                    + " AND workload_arguments='" + workloadArguments + "'"
+                    + " AND warmup_time>=" + warmupTime
+                    + " AND warmup_cycles>=" + warmupCycles
+                    + " AND measurement_time>=" + measurementTime
+                    + " AND measurement_cycles>=" + measurementCycles
+                    + ")";
             ResultSet rs = stmt.executeQuery(query);
             if (!rs.next()) {
                 //if there is no row in the table containing the measured method with the data
                 closeResultSet(rs);
                 return null;
             } else {
+                //there may be more results saved in database (thus in rs), but it's enough for us to get any of them
                 Statistics statistics = returnStatisticsFromResultsSet(rs);
                 closeResultSet(rs);
                 return new BenchmarkResultImpl(statistics, setting);
             }
         } catch (SQLException e) {
-            log.log(Level.CONFIG, "Unable to look in the database cache for measured result", e);
+            log.log(Level.WARNING, "Unable to look in the database cache for measured result", e);
             return null;
         }
     }
-    
+
     private Statistics returnStatisticsFromResultsSet(ResultSet rs) throws SQLException {
         Statistics statistics = new Statistics();
         statistics.addResult(rs.getLong("time"));
-        
+
         while (rs.next()) {
             statistics.addResult(rs.getLong("time"));
         }
-        
+
         return statistics;
     }
+
     /**
      * {@inheritDoc}
+     *
+     * Inserting new results contains also deleting of no longer needed cache
+     * results. This means, that when there are results having same methodName,
+     * workloadName and arguments and theirs measurement quality is lower than
+     * ours, than such results can be deleted (replaced by better ones).
+     *
+     * Before calling this method, you should better call getResults first to
+     * ensure, that there are no results better than this one which means.
+     * Otherwise can be newly inserted data 'useless'.
      */
     @Override
     public boolean insertResult(BenchmarkResult benResult) {
@@ -178,38 +228,71 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String methodName = setting.getTestedMethod().toString();
         String generatorName = setting.getWorkload().toString();
         String data = setting.getWorkloadArguments().getValuesDBFormat(true);
-        int numberOfMeasurements = benResult.getStatistics().getNumberOfMeasurements();
 
-        Statement stmt;
-        ResultSet rs;
+        MeasurementQuality mQuality = setting.getMeasurementQuality();
+        int warmupTime = mQuality.getWarmupTime();
+        int warmupCycles = mQuality.getNumberOfWarmupCycles();
+        int measurementTime = mQuality.getMeasurementTime();
+        int measurementCycles = mQuality.getNumberOfMeasurementsCycles();
+
+        Statement stmt = null;
+        ResultSet rs = null;
 
         try {
             stmt = conn.createStatement();
-            String query = "SELECT number_of_measurements "
-                    + "FROM measurement_information"
-                    + " WHERE (method = '" + methodName
+
+            //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same method, workload and workloadArguments
+            String query = "SELECT idQuality, id"
+                    + " FROM measurement_information "
+                    + " NATURAL JOIN measurement_detailed "
+                    + " NATURAL JOIN measurement_quality "
+                    + " WHERE ( method = '" + methodName
                     + "' AND workload='" + generatorName
-                    + "' AND workload_arguments='" + data + "')";
-            log.log(Level.CONFIG, "Searching the data in database for before insert. Query:  {0}", query);
+                    + "' AND workload_arguments='" + data + "'"
+                    + " AND warmup_time<=" + warmupTime
+                    + " AND warmup_cycles<=" + warmupCycles
+                    + " AND measurement_time<=" + measurementTime
+                    + " AND measurement_cycles<=" + measurementCycles
+                    + ")";
+            log.log(Level.CONFIG, "Searching for the data in database before insert. Query:  {0}", query);
             rs = stmt.executeQuery(query);
 
-            //we expect one or zero results
-            if (!rs.next()) {
-                //if there is no row in the table containing the measured method with the data, we insert our results
-                insertNewResult(benResult);
-            } else {
-                int insertedNumberOfMeasurements = rs.getInt("number_of_measurements");
-
-                if (insertedNumberOfMeasurements < numberOfMeasurements) {
-                    //if data in database are less accurate, we update them to our value  
-                    updateResult(benResult);
-                } else {
-                    log.log(Level.CONFIG, "The data in database are better than mine. Not inserting anything.");
-                }
+            List<int[]> idList = new ArrayList<>();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                int idQuality = rs.getInt("idQuality");
+                idList.add(new int[]{id, idQuality});
             }
+
+            //if there are any such records, we delete them
+            for (int[] o : idList) {
+                int id = o[0];
+                int idQuality = o[1];
+                //delete all records from measurement_detailed
+                query = "DELETE FROM measurement_detailed"
+                        + " WHERE id=" + id;
+                stmt.executeUpdate(query);
+
+                //as well as from measurement_information
+                query = "DELETE FROM measurement_information"
+                        + " WHERE id=" + id;
+                stmt.executeUpdate(query);
+
+                //decrementing number of use in measurement_quality
+                query = "UPDATE measurement_quality"
+                        + " SET number_uses = number_uses - 1"
+                        + " WHERE idQuality=" + idQuality;
+                stmt.executeUpdate(query);
+            }
+
+            //and finally inserting record
+            insertNewResult(benResult);
         } catch (SQLException e) {
             log.log(Level.WARNING, "Unable to insert new result in the table", e);
             return false;
+        } finally {
+            closeResultSet(rs);
+            closeStatement(stmt);
         }
 
         return true;
@@ -219,58 +302,31 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String methodName = benResult.getBenchmarkSetting().getTestedMethod().toString();
         String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
         String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
-        int numberOfMeasurements = benResult.getStatistics().getNumberOfMeasurements();
         long time = benResult.getStatistics().computeMean();
 
+        BenchmarkSetting setting = benResult.getBenchmarkSetting();
+        MeasurementQuality mq = setting.getMeasurementQuality();
+
         Statement stmt = conn.createStatement();
+        //inserting measurement quality record
+        insertMeasurementQuality(mq);
 
-        String query = "INSERT INTO measurement_information (method, workload, workload_arguments, number_of_measurements, time) "
-                + "VALUES ('" + methodName + "', '" + workloadName + "', '" + workloadArguments + "', " + numberOfMeasurements + ", " + time + ")";
-        log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", query);
-        stmt.executeUpdate(query);
+        //inserting record into measurement_information
+        int idQuality = getIDQualityForGivenRecord(mq);
+        String queryInsertInfo = "INSERT INTO measurement_information (method, workload, workload_arguments, average, idQuality) "
+                + "VALUES ('" + methodName + "', '" + workloadName + "', '" + workloadArguments + "', " + time + ", " + idQuality + ")";
+        log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
+        stmt.executeUpdate(queryInsertInfo);
 
-        //unique identifier of record that will be updated
+        //and all times into measurement_detailed
         int id = getIDForGivenRecord(methodName, workloadName, workloadArguments);
-
         insertDetailedResults(id, benResult.getStatistics().getValues());
-
         closeStatement(stmt);
     }
 
-    private void updateResult(BenchmarkResult benResult) throws SQLException {
-        String methodName = benResult.getBenchmarkSetting().getTestedMethod().toString();
-        String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
-        String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
-        int numberOfMeasurements = benResult.getStatistics().getNumberOfMeasurements();
-        long time = benResult.getStatistics().computeMean();
-
-        Statement stmt = conn.createStatement();
-        
-        //unique identifier of record that will be updated
-        int id = getIDForGivenRecord(methodName, workloadName, workloadArguments);
-        
-        String query = "UPDATE measurement_information"
-                + " SET number_of_measurements=" + numberOfMeasurements + ", time=" + time
-                + " WHERE (id = " + id + ")";
-
-        log.log(Level.CONFIG, "Updating data in database. Query:  {0}", query);
-        stmt.executeUpdate(query);
-                
-        //deleting all old results
-        query = "DELETE FROM measurement_detailed"
-                + " WHERE (id = " + id + ")";
-        
-        log.log(Level.CONFIG, "Deleting records from measurement_detailed:  {0}", query);
-        stmt.executeUpdate(query);
-        
-        //and replacing them by the new ones
-        insertDetailedResults(id, benResult.getStatistics().getValues());
-
-        closeStatement(stmt);
-    }
-    
     /**
      * Returns the unique ID for the row identified by given arguments.
+     *
      * @param method
      * @param workload
      * @param workloadArgs
@@ -284,23 +340,103 @@ public class ResultDatabaseCache implements ResultAdminCache {
                 + " WHERE (method = '" + method + "'"
                 + " AND workload='" + workload + "'"
                 + " AND workload_arguments='" + workloadArgs + "')";
-        
+
         ResultSet rs = stmt.executeQuery(query);
-        
+
         if (!rs.next()) {
             throw new SQLException("Data were inserted badly.");
-        }        
+        }
         int id = rs.getInt("id");
         closeResultSet(rs);
         closeStatement(stmt);
         return id;
-    } 
-    
+    }
+
+    /**
+     * Returns the unique ID for the row identified by given arguments.
+     *
+     * @param method
+     * @param workload
+     * @param workloadArgs
+     * @return
+     * @throws SQLException if there's no such record in database
+     */
+    private int getIDQualityForGivenRecord(MeasurementQuality mq) throws SQLException {
+        Statement stmt = conn.createStatement();
+        String query = "SELECT idQuality"
+                + " FROM measurement_quality"
+                + " WHERE ("
+                + " warmup_time=" + mq.getWarmupTime()
+                + " AND warmup_cycles=" + mq.getNumberOfWarmupCycles()
+                + " AND measurement_time=" + mq.getMeasurementTime()
+                + " AND measurement_cycles=" + mq.getNumberOfMeasurementsCycles()
+                + ")";
+        ResultSet rs = stmt.executeQuery(query);
+
+        if (!rs.next()) {
+            throw new SQLException("Data were inserted badly.");
+        }
+        int idQuality = rs.getInt("idQuality");
+        closeResultSet(rs);
+        closeStatement(stmt);
+        return idQuality;
+    }
+
+    /**
+     * Inserts or update number of use of given MeasurementQuality in
+     * measurement_quality table.
+     *
+     * At first tries an update. If an update fails, than tries to create new
+     * record and when also this fails (due to concurrency), then the other
+     * thread must have already create record, so performing update is now OK.
+     *
+     * Update is considered to be much more frequent operation than the
+     * insert, which upholds for (not so natural) process.
+     *
+     * @param mq
+     */
+    private void insertMeasurementQuality(MeasurementQuality mq) throws SQLException {
+
+        Statement stmt = conn.createStatement();
+
+        String queryUpdateQuality = "UPDATE measurement_quality"
+                + " SET number_uses = number_uses + 1"
+                + " WHERE ("
+                + " warmup_time=" + mq.getWarmupTime()
+                + " AND warmup_cycles=" + mq.getNumberOfWarmupCycles()
+                + " AND measurement_time=" + mq.getMeasurementTime()
+                + " AND measurement_cycles=" + mq.getNumberOfMeasurementsCycles()
+                + ")";
+
+        if (stmt.executeUpdate(queryUpdateQuality) > 0) {
+            return; //number of affected rows is bigger than 0
+        }
+
+        try {
+            String queryInsertNew = "INSERT INTO measurement_quality (warmup_time,warmup_cycles,measurement_time,measurement_cycles,priority,number_uses)"
+                    + "VALUES (" + mq.getWarmupTime() + " , " + mq.getNumberOfWarmupCycles() + " , "
+                    + mq.getMeasurementTime() + " , " + mq.getNumberOfMeasurementsCycles() + " , "
+                    + mq.getPriority() + " , " + "1"
+                    + ")";
+
+            log.log(Level.CONFIG, "Updating data in database. Script for measurement_quality:  {0}", queryInsertNew);
+            stmt.executeUpdate(queryInsertNew);
+        } catch (SQLException ex) {
+            if (ex.getSQLState().equals("23505")) {
+                //if trying to insert duplicate key (value is already there)
+                stmt.executeUpdate(queryUpdateQuality);
+            } else {
+                log.log(Level.WARNING, "An exception occurred while inserting new meaurementQuality into cache", ex);
+            }
+        }
+    }
+
     /**
      * Inserts the given results into measurement_detailed table under given ID.
+     *
      * @param id the identifier, under which all results will be saved.
      * @param resultsToInsert
-     * @throws SQLException 
+     * @throws SQLException
      */
     private void insertDetailedResults(int id, Long[] resultsToInsert) throws SQLException {
         String query = "INSERT INTO measurement_detailed (id, time) "

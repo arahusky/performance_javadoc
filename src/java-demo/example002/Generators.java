@@ -40,7 +40,7 @@ public class Generators {
               @ParamDesc("Multiple waiting time by") SomeEnum en
               )
       {
-          int times = sw.getNumberCalls();          
+          int times = 1;          
           int multiply = 1;
           
           switch (en) {
@@ -67,7 +67,7 @@ public class Generators {
               @ParamDesc("Multiple waiting time by") SomeOtherEnum en
               )
       {
-          int times = sw.getNumberCalls();          
+          int times = 1;          
           int multiply = 1;
           
           switch (en) {

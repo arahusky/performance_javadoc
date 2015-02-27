@@ -55,7 +55,7 @@ public class MeasureRequestHandler implements HttpHandler {
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.set("Access-Control-Allow-Origin", "*");
 
-        //getting the json request
+        //getting the JSON request
         InputStream in = exchange.getRequestBody();
 
         //gets the body of the output
@@ -66,7 +66,6 @@ public class MeasureRequestHandler implements HttpHandler {
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             System.out.println(requestBody);
-            
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
             MethodMeasurer m = new MethodMeasurer(new MeasureRequest(requestBody), lockBase);

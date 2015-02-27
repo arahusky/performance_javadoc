@@ -143,7 +143,6 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         sb.append(genParametersText[range] + " (" + generator.getParams().get(range + 2) + ")");
         sb.append("</th>");
 
-        sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead>");
         
         Collection<BenchmarkResult> list = res.getResults(testedMethod, generator);
@@ -176,11 +175,6 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         }
         sb.append("<tr>");
         sb.append("<td>").append(data[rangeValue]).append("</td>");
-
-        //TODO proper statistics ... uncomment, delete
-        //int numberOfMeasurements = resultItem.getStatistics().getNumberOfMeasurements();
-        int numberOfMeasurements = resultItem.getBenchmarkSetting().getPriority();
-        sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
         long time = resultItem.getStatistics().computeMean();
         sb.append("<td>").append(time).append("</td>");

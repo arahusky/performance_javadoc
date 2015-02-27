@@ -22,6 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.PreparedStatement;
@@ -62,10 +63,10 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 String methodName = rs.getString("method");
                 String generator = rs.getString("workload");
                 String data = rs.getString("workload_arguments");
-                int numberOfMeasurements = rs.getInt("number_of_measurements");
-                long time = rs.getLong("time");
+                int idQuality = rs.getInt("idQuality");
+                long time = rs.getLong("average");
                 
-                BenchmarkSetting bs = new BenchmarkSettingImpl(new MethodInfo(methodName), new MethodInfo(generator), new MethodArgumentsImpl(data), numberOfMeasurements);
+                BenchmarkSetting bs = new BenchmarkSettingImpl(new MethodInfo(methodName), new MethodInfo(generator), new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality));
                 BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"), bs);
                 list.add(item);
             }
@@ -174,11 +175,11 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
 
             while (rs.next()) {
                 String data = rs.getString("workload_arguments");
-                int numberOfMeasurements = rs.getInt("number_of_measurements");
-                long time = rs.getLong("time");
+                int idQuality = rs.getInt("idQuality");
+                long time = rs.getLong("average");
 
                 BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"),
-                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), numberOfMeasurements));
+                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality)));
                 
                 list.add(item);
             }
@@ -207,5 +208,25 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             log.log(Level.INFO, "Unable to retrieve results from database", e);
             return null;
         }
+    }
+    
+    private MeasurementQuality getMeasureQualityFromID(int idQuality) throws SQLException {
+        String query = "SELECT * FROM measurement_quality "
+                + "WHERE idQuality=" + idQuality;
+        
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(query);
+        
+        if (!rs.next()) {
+            return null;
+        }
+        
+        int priority = rs.getInt("priority");
+        int warmupTime = rs.getInt("warmup_time");
+        int warmupCycles = rs.getInt("warmup_cycles");
+        int measurementTime = rs.getInt("measurement_time");
+        int measurementCycles = rs.getInt("measurement_cycles");
+        
+        return new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, priority);
     }
 }

@@ -39,7 +39,7 @@ public class MeasureRequest {
     private final MethodReflectionInfo testedMethod;
     private final MethodReflectionInfo workload;
     private final int rangeVal;
-    private final int priority;
+    private final MeasurementQuality measurementQuality;
     private final String userID;
 
     //the arguments for workload with proper type. The only exception is the range-argument, which is being hold as String.
@@ -60,12 +60,15 @@ public class MeasureRequest {
         String methodName = obj.getString("testedMethod");
         String workloadName = obj.getString("generator");
 
-        testedMethod = new MethodReflectionInfo(methodName);
-        workload = new MethodReflectionInfo(workloadName);
+        this.testedMethod = new MethodReflectionInfo(methodName);
+        this.workload = new MethodReflectionInfo(workloadName);
 
-        rangeVal = obj.getInt("rangeValue");
-        priority = obj.getInt("priority");
-        userID = obj.getString("id");
+        this.rangeVal = obj.getInt("rangeValue");
+        
+        int priority = obj.getInt("priority");
+        this.measurementQuality = new MeasurementQuality(priority);
+        
+        this.userID = obj.getString("id");
 
         JSONArray dataArray = obj.getJSONArray("data");
         List<Object> valuesList = new ArrayList<>();
@@ -159,8 +162,8 @@ public class MeasureRequest {
         return rangeVal;
     }
 
-    public int getPriority() {
-        return priority;
+    public MeasurementQuality getMeasurementQuality() {
+        return measurementQuality;
     }
 
     public String getUserID() {

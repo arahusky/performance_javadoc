@@ -20,7 +20,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 
 /**
  * Binds together all the information describing single point. That is method,
- * workload, parameters (for workload) and the priority.
+ * workload, parameters (for workload) and the measurement quality.
  *
  * @author Jakub Naplava
  */
@@ -32,5 +32,5 @@ public interface BenchmarkSetting {
 
     MethodArguments getWorkloadArguments();
     
-    int getPriority();
+    MeasurementQuality getMeasurementQuality();
 }

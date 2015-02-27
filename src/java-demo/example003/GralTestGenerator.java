@@ -36,7 +36,7 @@ public class GralTestGenerator {
             @ParamNum(description = "Number of points", min = 1, max = 10000, step = 1) int number_points,
             @ParamDesc("Frame size (resolution)") Size size) {
 
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 3;
         JFrame frame = new JFrame();
         prepareFrame(frame, size);
         for (int i = 0; i < times; i++) {
@@ -52,7 +52,7 @@ public class GralTestGenerator {
             @ParamNum(description = "Zoom", min = 0.1, max = 5, step = 0.2) double zoom,
             @ParamDesc("Frame size (resolution)") Size size) {
 
-        int times = service.getNumberCalls();
+        int times = service.getPriority() * 3 ;
         JFrame frame = new JFrame();
         prepareFrame(frame, size);
         for (int i = 0; i < times; i++) {

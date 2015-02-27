@@ -135,7 +135,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             sb.append(genParametersText[i] + " (" + generator.getParams().get(i + 2) + ")");
             sb.append("</th>");
         }
-        sb.append("<th>number of measurements</th>");
         sb.append("<th>time (ns)</th></tr></thead><tbody>");
 
         Collection<BenchmarkResult> list = res.getResults(testedMethod, generator);
@@ -148,11 +147,6 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
                 for (Object datum : data) {
                     sb.append("<td>").append(datum).append("</td>");
                 }
-
-                //TODO proper statistics -> uncomment and delete
-                //int numberOfMeasurements = resultItem.getStatistics().getNumberOfMeasurements();
-                int numberOfMeasurements = resultItem.getBenchmarkSetting().getPriority();
-                sb.append("<td>").append(numberOfMeasurements).append("</td>");
 
                 long time = resultItem.getStatistics().computeMean();
                 sb.append("<td>").append(time).append("</td>");
