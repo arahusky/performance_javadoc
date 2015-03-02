@@ -42,6 +42,12 @@ public class MethodMeasurer {
     private final ResultCache resultCache;
     private final LockBase lockBase;
 
+    //measured results
+    private final List<BenchmarkResult> results = new ArrayList<>();
+
+    //the i-th item says, whether i-th result was found in cache (true), thus no need to save him back into cache
+    private final List<Boolean> resultsMask = new ArrayList<>();
+
     /**
      * Creates new instance of MethodMeasurer for given MeasureRequest.
      *
@@ -63,7 +69,7 @@ public class MethodMeasurer {
     public JSONObject measure() {
         //requested measurement quality
         MeasurementQuality mQuality = measureRequest.getMeasurementQuality();
-        
+
         int priority = mQuality.getPriority();
 
         WorkloadImpl workloadImpl = new WorkloadImpl();
@@ -71,9 +77,6 @@ public class MethodMeasurer {
 
         //passing the priority to generator
         serviceImpl.setPriority(priority);
-
-        //list to store measured Statistics
-        List<BenchmarkResult> result = new ArrayList<>();
 
         //values chosen from rangeValue to measure data in
         double step = MeasuringUtils.findStepValue(measureRequest.getWorkload(), measureRequest.getRangeVal());
@@ -90,13 +93,17 @@ public class MethodMeasurer {
             BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
 
             //if cache contains results for given settings, we do not have to perform measurement
+            System.out.println("looking in cache");
             BenchmarkResult res = resultCache.getResult(benSetting);
             if (res != null) {
-                result.add(res);
+                results.add(res);
+                resultsMask.add(true);
+                System.out.println("cache found");
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
                 continue;
             }
-            
+            System.out.println("cache not found");
+
             BenchmarkRunner runner = null;
             switch (priority) {
                 case 1:
@@ -111,48 +118,63 @@ public class MethodMeasurer {
 
             //wait until we can measure (there is no lock for our hash)
             lockBase.waitUntilFree(measureRequest.getUserID());
-            result.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
-            lockBase.freeLock(measureRequest.getUserID());            
+            results.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
+            lockBase.freeLock(measureRequest.getUserID());
+
+            resultsMask.add(false);
         }
 
         log.log(Level.CONFIG, "Measurement succesfully done");
-
-        JSONObject jsonResults = processBenchmarkResults(result, valuesToMeasure);
-
-        if (resultCache != null) {
-            //we do not need the connection to database anymore
-            resultCache.closeConnection();
-        }
+;
+        JSONObject jsonResults = processBenchmarkResults(valuesToMeasure);
+        
         return jsonResults;
     }
 
     /**
      * Returns results saved in JSONObject that can be sent to end-user. This
-     * result will contain measured results and its units. Every result will be
-     * saved into database as well.
+     * result will contain measured results and its units. 
      *
      * @param list measured BenchmarkResults
      * @param valuesInWhichWasMeasured
      * @return
      */
-    private JSONObject processBenchmarkResults(List<BenchmarkResult> list, double[] valuesInWhichWasMeasured) {
+    private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured) {
         JSONObject jsonResults = new JSONObject();
 
         List<Long> computedMeans = new ArrayList<>();
         List<Long> computedMedians = new ArrayList<>();
-        for (BenchmarkResult br : list) {
+        for (BenchmarkResult br : results) {
             computedMeans.add(br.getStatistics().computeMean());
             computedMedians.add(br.getStatistics().computeMedian());
         }
+
         String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
-        
-        for (int i = 0; i < list.size(); i++) {
-            BenchmarkResult benRes = list.get(i);
-            resultCache.insertResult(benRes);
+        for (int i = 0; i < results.size(); i++) {
             jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
         }
         jsonResults.accumulate("units", units);
 
         return jsonResults;
     }
+
+    /**
+     * Saves results into cache and closes the connection with database.
+     */
+    public void saveResultsAndCloseConnection() {
+        for (int i = 0; i < results.size(); i++) {
+            BenchmarkResult benRes = results.get(i);
+
+            //if the result was not obtained from cache
+            if (resultsMask.get(i) == false) {
+                resultCache.insertResult(benRes);
+            }
+        }
+        
+        if (resultCache != null) {
+            //we do not need the connection to database anymore
+            resultCache.closeConnection();
+        }
+    }
+
 }

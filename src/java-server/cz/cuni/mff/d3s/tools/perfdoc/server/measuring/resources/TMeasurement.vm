@@ -40,7 +40,7 @@ public class TMeasurement {
         tGen.call(workloadImpl, serviceImpl);
        
         //warmup
-        long warmupCyclesSpent = 0;
+        int warmupCyclesSpent = 0;
         long warmupTimeSpent = 0;
         long warmupStartTime = System.currentTimeMillis() / 1000;
 

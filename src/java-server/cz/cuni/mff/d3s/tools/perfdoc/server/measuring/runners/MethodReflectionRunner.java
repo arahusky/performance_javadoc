@@ -28,6 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Implementation of BenchmarkRunner that uses Reflection to measure method
+ * execution time.
  *
  * @author Jakub Naplava
  */
@@ -37,26 +39,31 @@ public class MethodReflectionRunner extends MethodRunner {
 
     @Override
     public Statistics measure(BenchmarkSetting setting) {
+        int warmupTime = setting.getMeasurementQuality().getWarmupTime();
+        int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
+        int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
+        int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
+
         //the 0-th item in parameters should be the WorkloadImpl instance
         Object workloadCandidate = setting.getWorkloadArguments().getValues()[0];
 
         if (!(workloadCandidate instanceof WorkloadImpl)) {
             return null;
         }
-        
+
         WorkloadImpl workload = (WorkloadImpl) workloadCandidate;
-        
+
         //tested method
         MethodInfo methodInfo = setting.getTestedMethod();
         //generator
         MethodInfo generatorInfo = setting.getWorkload();
-        
+
         //we expect to get more specific MethodReflectionInfo from BenchmarkSetting
         if (!(methodInfo instanceof MethodReflectionInfo) || !(generatorInfo instanceof MethodReflectionInfo)) {
-            //TODO throw some exception
+            log.log(Level.SEVERE, "Method or Generator were not passed as instances of MethodReflectionInfo, thus no measurement can be performed.");
             return null;
         }
-        
+
         Method method = ((MethodReflectionInfo) methodInfo).getMethod();
         Method generator = ((MethodReflectionInfo) generatorInfo).getMethod();
         Class<?> generatorClass = ((MethodReflectionInfo) generatorInfo).getContainingClass();
@@ -69,23 +76,63 @@ public class MethodReflectionRunner extends MethodRunner {
 
         log.log(Level.CONFIG, msg);
         try {
-            //Generator prepares us the arguments for the invidual calls of tested method.
-            generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
+            //warmup
+            long warmupCyclesSpent = 0;
+            long warmupTimeSpent = 0;
+            long warmupStartTime = System.currentTimeMillis() / 1000;
 
-            Object[] objs;
+            while (true) {
+                warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
+                if ((warmupTimeSpent >= warmupTime) || (warmupCyclesSpent >= warmupCycles)) {
+                    System.out.println("warmup breaked");
+                    break;
+                }
+                    System.out.println("warmup cycle");
+                //preparing new arguments and instance for new calls
+                generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
 
-            /*The arguments for tested method should be prepared in WorkloadImpl.
-            We get one by one and measure the measured method with them.*/
-            while ((objs = workload.getCall()) != null) {
-                //second item are the arguments for the tested method
-                Object[] args = (Object[]) objs[1];
-                Object objectOnWhichToInvoke = objs[0];
+                //arguments and instance on which the call will be performed should be now prepared in workload
+                for (Object[] objs : workload.getCalls()) {
+                    //second item are the arguments for the tested method
+                    Object[] args = (Object[]) objs[1];
+                    Object objectOnWhichToInvoke = objs[0];
 
-                long before = System.nanoTime();
-                method.invoke(objectOnWhichToInvoke, args);
-                long after = System.nanoTime();
+                    method.invoke(objectOnWhichToInvoke, args);
+                }
+                
+                warmupCyclesSpent++;
+            }
+            
+            //measurement
+            long measurementCyclesSpent = 0;
+            long measurementTimeSpent = 0;
+            long measurementStartTime = System.currentTimeMillis() / 1000;
+            
+            while (true) {
+                measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
+                if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
+                    System.out.println("measurement done");
+                    break;
+                }
+                
+                System.out.println("measurement cycle");
+                //preparing new arguments and instance for new calls
+                generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
 
-                statistics.addResult(after - before);
+                //arguments and instance on which the call will be performed should be now prepared in workload
+                for (Object[] objs : workload.getCalls()) {
+                    //second item are the arguments for the tested method
+                    Object[] args = (Object[]) objs[1];
+                    Object objectOnWhichToInvoke = objs[0];
+
+                    long before = System.nanoTime();
+                    method.invoke(objectOnWhichToInvoke, args);
+                    long after = System.nanoTime();
+
+                    statistics.addResult(after - before);
+                }
+                
+                measurementCyclesSpent++;
             }
         } catch (IllegalAccessException ex) {
             log.log(Level.SEVERE, "MethodReflectionRunner: An IllegalAccessException occured", ex);

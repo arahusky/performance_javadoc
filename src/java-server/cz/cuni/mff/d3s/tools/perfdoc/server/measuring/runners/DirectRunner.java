@@ -16,8 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeGenerator;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
@@ -30,10 +30,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Implementation of BenchmarkRunner that uses code generation to generate code
+ * to be measured directly.
  *
  * @author Jakub Naplava
  */
-public class DirectRunner implements BenchmarkRunner {
+public class DirectRunner extends MethodRunner {
 
     private static final Logger log = Logger.getLogger(DirectRunner.class.getName());
 
@@ -61,9 +63,9 @@ public class DirectRunner implements BenchmarkRunner {
                 }
             }
 
-            //CodeGenerator created new folder, which should be (will all its content) deleted
+            //CodeGenerator created new folder, which should be (with all its content) deleted
             codeGen.deleteGeneratedContent();
-            
+
             return s;
         } catch (CompileException | IOException e) {
             return null;

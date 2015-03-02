@@ -65,19 +65,19 @@ public class MeasureRequestHandler implements HttpHandler {
         
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
-            System.out.println(requestBody);
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
             MethodMeasurer m = new MethodMeasurer(new MeasureRequest(requestBody), lockBase);
             
             JSONObject obj = m.measure();
-            System.out.println(obj.toString());
             try {
                 exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
                 responseBody.write(obj.toString().getBytes());
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
+            
+            m.saveResultsAndCloseConnection();
         } catch (ClassNotFoundException ec) {
             sendErrorMessage("Unable to find a testedMethod/generator class", exchange, responseBody);
         } catch (IllegalArgumentException ex) {

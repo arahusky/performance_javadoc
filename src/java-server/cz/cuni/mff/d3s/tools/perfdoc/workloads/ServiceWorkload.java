@@ -18,9 +18,9 @@ package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
 /**
  * The intent of this interface is to support additional information about
- * measuring to workload, so that he can prepare more accurate data.
+ * measuring to generator, so that he can prepare more accurate data.
  *
- * Workload can (but is not required to) use any of them at his will.
+ * Generator can (but is not required to) use any of them at his will.
  *
  * @author Jakub Naplava
  */
