@@ -39,6 +39,14 @@ public interface ResultCacheForWeb extends ResultCache {
     Collection<Object[]> getDetailedTableResults();
 
     /**
+     * Returns all MeasurementQuality saved in database.
+     *
+     * @return Object[], where on 0-th index is ID of the measurementQuality and
+     * on the 1-st index measurementQuality instance
+     */
+    Collection<Object[]> getQualityResults();
+
+    /**
      * Returns faked BenchmarkResults (with the Statistics containing only
      * computed results) for given testedMethod and generator
      *

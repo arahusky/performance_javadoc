@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache class information</title>
+</head>
+
+<body>
+
+  <p><a href = "$overviewSite"><-- Back to classes overview </a></p>
+
+  <h1>Class <i>$className</i></h1>
+
+  <h2>Methods</h2>
+  
+  <ul>
+    #foreach ($measuredMethod in $measuredMethods)
+                
+                <li>
+                  <a href="$measuredMethod.getURL()">$measuredMethod.getName()</a>
+                </li>
+                        
+      #end
+  </ul>
+
+</body>
+
+</html>

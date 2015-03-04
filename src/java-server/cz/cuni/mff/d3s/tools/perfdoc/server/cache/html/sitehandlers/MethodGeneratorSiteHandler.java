@@ -18,27 +18,31 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import java.util.Collection;
-
-import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler that shows all results for given tested method and its generator
  *
  * @author Jakub Naplava
  */
-public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
+public class MethodGeneratorSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(MethodGeneratorSiteHandler.class.getName());
+    
+    private static final String templateName = "methodGenerator";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
@@ -51,32 +55,48 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
             HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
             return;
         }
-        
+
         if (res != null) {
             try {
                 MethodInfo testedMethod;
                 MethodInfo generator;
-                
+
                 try {
-                    testedMethod = getMethodFromQuery(methods[0]);
-                    generator = getMethodFromQuery(methods[1]);
+                    testedMethod = SiteHandlingUtils.getMethodFromQuery(methods[0]);
+                    generator = SiteHandlingUtils.getMethodFromQuery(methods[1]);
                 } catch (IllegalArgumentException e) {
                     HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "The URL adress you passed seems to be incorrect.", 404, log);
                     return;
                 }
+
+                VelocityContext context = new VelocityContext();
+
+                String overviewSite = "http://localhost:" + getPort() + "/cache";
+                context.put("overviewSite", overviewSite);
+
+                String classSite = "class?" + testedMethod.getQualifiedClassName();
+                context.put("classSite", classSite);
                 
-                //adding links to JQquery in order to be able to use sort
-                addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
-                addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
-                addToHeader("<script src=\"js?tablesorter.js\"></script>");
-                addToHeader("<script>$(document).ready(function()  { "
-                        + "        $(\"#myTable\").tablesorter(); } ); </script> ");
+                String methodSite = "method?" + methods[0];
+                context.put("methodSite", methodSite);
+
+                context.put("methodName", testedMethod.getMethodName());
+                context.put("methodClassName", testedMethod.getQualifiedClassName());
+                context.put("methodParameters", SiteHandlingUtils.chainParameters(testedMethod.getParams()));
+
+                context.put("generatorName", generator.getMethodName());
+                context.put("generatorClass", generator.getQualifiedClassName());
+                context.put("generatorParameters", SiteHandlingUtils.chainParameters(generator.getParams()));
+
+                List<String> tHeads = getTHeads(generator);
                 
-                addCode(returnHeading(methods[0], testedMethod, generator));
-                addCode(getBody(testedMethod, generator, res));
-                String output = getCode();
-                
-                HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+                if (tHeads == null) {
+                    HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was problem when trying to find generator in database.", 500, log);
+                }
+                context.put("theads", tHeads);
+                context.put("measurements", getMeasurements(testedMethod, generator, res));
+
+                HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
             } catch (ClassNotFoundException | IOException | NoSuchMethodException ex) {
                 HttpExchangeUtils.sentErrorHeaderAndClose(exchange, ex.getMessage(), 500, log);
                 return;
@@ -89,75 +109,53 @@ public class MethodGeneratorSiteHandler extends AbstractSiteHandler {
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
-
-    private String returnHeading(String testedMethodNet, MethodInfo testedMethod, MethodInfo generator) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<p><a href = \"class?" + testedMethod.getQualifiedClassName() + "\"><-- Back to class " + testedMethod.getQualifiedClassName() + "</a></p>");
-        sb.append("<p><a href = \"method?" + testedMethodNet + "\"><-- Back to method " + testedMethod.getMethodName() + "</a></p>");
-        sb.append("<h1>Method <i>" + testedMethod.getMethodName() + "</i> with generator <i>" + generator.getMethodName() + "</i></h1>");
-
-        return sb.toString();
-    }
-
-    public String getBody(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<h3>Tested method:</h3>"
-                + "<ul>"
-                + "<li>Method name: " + testedMethod.getMethodName() + "</li>"
-                + "<li>Containing class: " + testedMethod.getQualifiedClassName() + "</li>"
-                + "<li>Parameters: " + chainParameters(testedMethod.getParams()) + "</li>"
-                + "</ul>");
-        sb.append("<h3>Generator:</h3>"
-                + "<ul>"
-                + "<li>Method name: " + generator.getMethodName() + "</li>"
-                + "<li>Containing class: " + generator.getQualifiedClassName() + "</li>"
-                + "<li>Parameters: " + chainParameters(generator.getParams()) + "</li>"
-                + "</ul>");
-        sb.append("<h3>Measurements:<h3>");
+    
+    private List<String> getTHeads(MethodInfo generator) throws ClassNotFoundException, IOException, NoSuchMethodException {
         
-        Method generatorMethod;
+        List<String> list = new ArrayList<>();
+        
+        Method generatorMethod = null;
         try {
             generatorMethod = new MethodReflectionInfo(generator.toString()).getMethod();
         } catch (ClassNotFoundException | IOException ex) {
             log.log(Level.INFO, "User obtained method that does not exist.");
-            return sb.toString();
+            return null;
         }
         String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
         if (genParametersText == null) {
-            return sb.toString();
+            return null;
         }
-        
-        sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
 
         for (int i = 0; i < genParametersText.length; i++) {
-            sb.append("<th>");
-            sb.append(genParametersText[i] + " (" + generator.getParams().get(i + 2) + ")");
-            sb.append("</th>");
+            list.add(genParametersText[i] + " (" + generator.getParams().get(i + 2) + ")");
         }
-        sb.append("<th>time (ns)</th></tr></thead><tbody>");
+        list.add("time (ns)");
+        
+        return list;
+    }
+    
+    private List<List<Object>> getMeasurements(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
+        
+        List<List<Object>> list = new ArrayList<>();
+        Collection<BenchmarkResult> benchmarkResults = res.getResults(testedMethod, generator);
 
-        Collection<BenchmarkResult> list = res.getResults(testedMethod, generator);
-       
-        if (list != null) {
-            for (BenchmarkResult resultItem : list) {
-                sb.append("<tr>");
-
+        if (benchmarkResults != null) {
+            for (BenchmarkResult resultItem : benchmarkResults) {
+                List<Object> pomList = new ArrayList<>();
+                
                 Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
                 for (Object datum : data) {
-                    sb.append("<td>").append(datum).append("</td>");
+                    pomList.add(datum);
                 }
 
                 long time = resultItem.getStatistics().computeMean();
-                sb.append("<td>").append(time).append("</td>");
-
-                sb.append("</tr>");
+                pomList.add(time);
+                
+                list.add(pomList);
             }
         }
 
-        sb.append("</tbody></table>");
-
-        return sb.toString();
+        return list;
     }
 
     private String[] getMethods(String query) {

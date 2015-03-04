@@ -18,23 +18,26 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler that shows all measured methods for the given class
  *
  * @author Jakub Naplava
  */
-public class ClassSiteHandler extends AbstractSiteHandler {
+public class ClassSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(ClassSiteHandler.class.getName());
+    
+    private final String templateName = "classMethods";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
@@ -46,13 +49,20 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         if (res != null) {
             //the methods of the class that have been measured 
             Collection<MethodInfo> testedMethods = res.getDistinctClassMethods(className);
-
-            addCode(returnHeading(className));
-            String classOutput = formatMethods(testedMethods);
-            addCode(classOutput);
-            String output = getCode();
-
-            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            if (testedMethods == null) {
+                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Sorry, but there was an error when trying to connect to database..", 500, log);
+            }
+            
+            VelocityContext context = new VelocityContext();
+            context.put("className", className);
+            
+            String overviewSite = "http://localhost:" + getPort() + "/cache";
+            context.put("overviewSite",overviewSite);
+            
+            List<NameUrl> measuredMethods = formatMethods(testedMethods);
+            context.put("measuredMethods", measuredMethods);
+                    
+            HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
         } else {
             //there is no database connection available
             //sending information about internal server error
@@ -62,34 +72,16 @@ public class ClassSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(String className) {
-        StringBuilder sb = new StringBuilder();
+    private List<NameUrl> formatMethods(Collection<MethodInfo> methods) {
+        List<NameUrl> list = new ArrayList<>();
 
-        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<h1>Class <i>").append(className).append("</i></h1>");
-        sb.append("<h2>Methods</h2>");
-
-        return sb.toString();
-    }
-
-    private String formatMethods(Collection<MethodInfo> methods) {
-
-        //unable to retrieve data from database
-        if (methods == null) {
-            return "<p>Sorry, but there was an error when trying to connect to database.</p>";
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<ul>");
         for (MethodInfo method : methods) {
             String methodInfo = formatMethod(method);
-            String url = getQueryURL(method.toString());
-            sb.append("<li><a href= \"method?" + url + "\">" + methodInfo + "</a></li>");
+            String url = "method?" + SiteHandlingUtils.getQueryURL(method.toString());
+            list.add(new NameUrl(methodInfo, url));
         }
-        sb.append("</ul>");
 
-        return sb.toString();
+        return list;
     }
 
     private String formatMethod(MethodInfo method) {

@@ -20,18 +20,24 @@ import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler that shows the content of cache in the form of table
  *
  * @author Jakub Naplava
  */
-public class FullDebugSiteHandler extends AbstractSiteHandler {
+public class FullDebugSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(FullDebugSiteHandler.class.getName());
+    
+    private static final String templateName = "full";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
@@ -40,11 +46,14 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         if (res != null) {
             Collection<BenchmarkResult> item = res.getMainTableResults();
             Collection<Object[]> detailedResults = res.getDetailedTableResults();
-            addCode(addMainTable(item));
-            addCode(addDetailedTable(detailedResults));
-            String output = getCode();
+            Collection<Object[]> qualityResults = res.getQualityResults();
+            
+            VelocityContext context = new VelocityContext();            
+            addInfoTable(item, context);
+            addQualityTable(qualityResults, context);
+            addDetailedTable(detailedResults, context);            
 
-            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
         } else {
             //there is no database connection available
             //sending information about internal server error
@@ -54,55 +63,101 @@ public class FullDebugSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String addMainTable(Collection<BenchmarkResult> output) {
-        StringBuilder sb = new StringBuilder("<table border = \"1\">");
-        sb.append("<tr>");
-        sb.append("<td><b>method</b></td>");
-        sb.append("<td><b>workload</b></td>");
-        sb.append("<td><b>workloadArgs</b></td>");
-        sb.append("<td><b>number Of Measurements</b></td>");
-        sb.append("<td><b>time</b></td>");
-        sb.append("</tr>");
+    /**
+     * Adds measurement_info table contents into context.
+     * @param output
+     * @param context 
+     */
+    private void addInfoTable(Collection<BenchmarkResult> output, VelocityContext context) {
+        
+        List<String> theadsInfo = new ArrayList<>();
+        theadsInfo.add("method");
+        theadsInfo.add("workload");
+        theadsInfo.add("workloadArgs");
+        theadsInfo.add("time");
+        context.put("theadsInfo",theadsInfo);
+        
+        List<List<Object>> measurementsInfo = new ArrayList<>();
 
         for (BenchmarkResult item : output) {
-            sb.append("<tr>");
+            List<Object> measurement = new ArrayList<>();
+            
             String methodName = item.getBenchmarkSetting().getTestedMethod().toString();
-            sb.append("<td>").append(methodName).append("</td>");
+            measurement.add(methodName);
 
             String generator = item.getBenchmarkSetting().getWorkload().toString();
-            sb.append("<td>").append(generator).append("</td>");
+            measurement.add(generator);
 
             String data = item.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(false);
-            sb.append("<td>").append(data).append("</td>");
+            measurement.add(data);
            
             long time = item.getStatistics().computeMean();
-            sb.append("<td>").append(time).append("</td>");
-
-            sb.append("</tr>");
+            measurement.add(time);
+            
+            measurementsInfo.add(measurement);
         }
 
-        sb.append("</table><br />");
-        return sb.toString();
+        context.put("measurementsInfo",measurementsInfo);
     }
     
-    private String addDetailedTable(Collection<Object[]> list) {
-        StringBuilder sb = new StringBuilder("<table border = \"1\">");
-        sb.append("<tr>");
-        sb.append("<td><b>id</b></td>");
-        sb.append("<td><b>time</b></td>");
-        sb.append("</tr>");
+    /**
+     * Adds measurement_quality into context.
+     * @param list
+     * @return 
+     */
+    private void addQualityTable(Collection<Object[]> list, VelocityContext context) {
+        
+        List<String> theadsQuality = new ArrayList<>();
+        theadsQuality.add("idQuality");
+        theadsQuality.add("warmupTime");
+        theadsQuality.add("warmupCycles");
+        theadsQuality.add("measurementTime");
+        theadsQuality.add("measurementCycles");
+        theadsQuality.add("priority");
+        context.put("theadsQuality",theadsQuality);
 
+        List<List<Object>> measurementsQuality = new ArrayList<>();
+        
         for (Object[] item : list) {
-            sb.append("<tr>");
+            List<Object> measurement = new ArrayList<>();       
+            //idQuality
+            measurement.add(item[0]);
             
-            sb.append("<td>").append(item[0]).append("</td>");
-
-            sb.append("<td>").append(item[1]).append("</td>");
-
-            sb.append("</tr>");
+            MeasurementQuality mq = (MeasurementQuality) item[1];
+            measurement.add(mq.getWarmupTime());
+            measurement.add(mq.getNumberOfWarmupCycles());
+            measurement.add(mq.getMeasurementTime());
+            measurement.add(mq.getNumberOfMeasurementsCycles());
+            measurement.add(mq.getPriority());
+            
+            measurementsQuality.add(measurement);            
         }
 
-        sb.append("</table>");
-        return sb.toString();
+        context.put("measurementsQuality",measurementsQuality);
+    }
+    
+    /**
+     * Adds measurement_detailed into context.
+     * @param list
+     * @return 
+     */
+    private void addDetailedTable(Collection<Object[]> list, VelocityContext context) {
+        
+        List<String> theadsDetailed = new ArrayList<>();
+        theadsDetailed.add("id");
+        theadsDetailed.add("time");
+        context.put("theadsDetailed",theadsDetailed);
+
+        List<List<Object>> measurementsDetailed = new ArrayList<>();
+        
+        for (Object[] item : list) {
+            List<Object> measurement = new ArrayList<>();            
+            measurement.add(item[0]);
+            measurement.add(item[1]);
+            
+            measurementsDetailed.add(measurement);            
+        }
+
+        context.put("measurementsDetailed",measurementsDetailed);
     }
 }

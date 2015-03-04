@@ -99,6 +99,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
             log.log(Level.INFO, "New table \"measurement_quality\" was created");
         }
 
+        //TODO index pres trojici (method, workload, workloadArgs)
         //derby creates indexes automatically for columns declared as primary key or foreign key, therefore there is no need to create any other
         if (!contains(conn, "measurement_information")) {
             String query = "CREATE TABLE measurement_information ("
@@ -223,7 +224,6 @@ public class ResultDatabaseCache implements ResultAdminCache {
      */
     @Override
     public boolean insertResult(BenchmarkResult benResult) {
-
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         String methodName = setting.getTestedMethod().toString();
         String generatorName = setting.getWorkload().toString();
@@ -240,9 +240,8 @@ public class ResultDatabaseCache implements ResultAdminCache {
 
         try {
             stmt = conn.createStatement();
-
             //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same method, workload and workloadArguments
-            String query = "SELECT idQuality, id"
+            String query = "SELECT id, idQuality"
                     + " FROM measurement_information "
                     + " NATURAL JOIN measurement_detailed "
                     + " NATURAL JOIN measurement_quality "
@@ -254,36 +253,42 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " AND measurement_time<=" + measurementTime
                     + " AND measurement_cycles<=" + measurementCycles
                     + ")";
-            log.log(Level.CONFIG, "Searching for the data in database before insert. Query:  {0}", query);
+            
             rs = stmt.executeQuery(query);
-
-            List<int[]> idList = new ArrayList<>();
+            log.log(Level.CONFIG, "Searching for the data in database before insert. Query:  {0}", query);
+            
+            StringBuilder sbId = new StringBuilder();
+            StringBuilder sbIdQuality = new StringBuilder();
             while (rs.next()) {
                 int id = rs.getInt("id");
                 int idQuality = rs.getInt("idQuality");
-                idList.add(new int[]{id, idQuality});
+                sbId.append(id + ",");
+                sbIdQuality.append(idQuality + ",");
+            }
+            
+            if (sbId.length() != 0) {
+                sbId.deleteCharAt(sbId.length()-1);
+            }
+            
+            if (sbIdQuality.length() != 0) {
+                sbIdQuality.deleteCharAt(sbIdQuality.length()-1);
             }
 
-            //if there are any such records, we delete them
-            for (int[] o : idList) {
-                int id = o[0];
-                int idQuality = o[1];
-                //delete all records from measurement_detailed
+            if (sbId.length() > 0) {
                 query = "DELETE FROM measurement_detailed"
-                        + " WHERE id=" + id;
+                        + " WHERE id IN (" + sbId.toString() + ")";                
                 stmt.executeUpdate(query);
-
                 //as well as from measurement_information
+                                              
                 query = "DELETE FROM measurement_information"
-                        + " WHERE id=" + id;
+                        + " WHERE id IN (" + sbId.toString() + ")";
                 stmt.executeUpdate(query);
-
                 //decrementing number of use in measurement_quality
                 query = "UPDATE measurement_quality"
                         + " SET number_uses = number_uses - 1"
-                        + " WHERE idQuality=" + idQuality;
+                        + " WHERE idQuality IN (" + sbIdQuality.toString() + ")";
                 stmt.executeUpdate(query);
-            }
+        }
 
             //and finally inserting record
             insertNewResult(benResult);
@@ -306,18 +311,15 @@ public class ResultDatabaseCache implements ResultAdminCache {
 
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         MeasurementQuality mq = setting.getMeasurementQuality();
-
         Statement stmt = conn.createStatement();
         //inserting measurement quality record
         insertMeasurementQuality(mq);
-
         //inserting record into measurement_information
         int idQuality = getIDQualityForGivenRecord(mq);
         String queryInsertInfo = "INSERT INTO measurement_information (method, workload, workload_arguments, average, idQuality) "
                 + "VALUES ('" + methodName + "', '" + workloadName + "', '" + workloadArguments + "', " + time + ", " + idQuality + ")";
         log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
         stmt.executeUpdate(queryInsertInfo);
-
         //and all times into measurement_detailed
         int id = getIDForGivenRecord(methodName, workloadName, workloadArguments);
         insertDetailedResults(id, benResult.getStatistics().getValues());

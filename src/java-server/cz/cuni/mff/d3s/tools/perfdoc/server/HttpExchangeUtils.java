@@ -20,8 +20,11 @@ package cz.cuni.mff.d3s.tools.perfdoc.server;
 import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 
 /**
  * Class that provides basic methods to handle HttpExchange.
@@ -30,6 +33,29 @@ import java.util.logging.Logger;
  */
 public class HttpExchangeUtils {
     
+    private static final Logger log = Logger.getLogger(HttpExchangeUtils.class.getName());
+         
+    public static final String templatesFolder = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/cache/html/resources/";
+
+    public static void mergeTemplateAndSentPositiveResponseAndClose(HttpExchange exchange, String templateName, VelocityContext context) {
+        
+        String templateLocation = templatesFolder + templateName + ".vm";
+
+        StringWriter w = new StringWriter();            
+        Velocity.mergeTemplate(templateLocation, "UTF-8", context, w);
+        byte[] message = w.getBuffer().toString().getBytes();
+            
+        try {
+            exchange.sendResponseHeaders(200, message.length);
+
+            //autoclosable handles closing
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(message);
+            }
+        } catch (IOException e) {
+            log.log(Level.INFO, "Unable to send the results to the client", e);
+        }
+    }
     /**
      * Sends the given message to the client with the success
      * headers and closes communication channel.

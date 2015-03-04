@@ -14,23 +14,29 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example001;
 
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads;
-import java.util.ArrayList;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 /**
  *
  * @author Jakub Naplava
  */
-public class MyArrayList<T> extends ArrayList<T> {
+public class NameUrl {
+    
+    private String name;
+    
+    private String URL;
 
-    @Workloads({
-        @Workload("example001.MyAListGenerator#prepareDataBad"),
-        @Workload("example001.MyAListGenerator#prepareDataGood")})
-    @Override
-    public boolean contains(Object o) {
-        return super.contains(o);
+    public NameUrl(String name, String URL) {
+        this.name = name;
+        this.URL = URL;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getURL() {
+        return URL;
     }
 }

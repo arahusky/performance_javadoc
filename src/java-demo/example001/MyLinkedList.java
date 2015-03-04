@@ -14,21 +14,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package example001;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads;
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
  * @author Jakub Naplava
  */
-public class MyArrayList<T> extends ArrayList<T> {
-
+public class MyLinkedList<T> extends LinkedList<T> {
+    
     @Workloads({
-        @Workload("example001.MyAListGenerator#prepareDataBad"),
-        @Workload("example001.MyAListGenerator#prepareDataGood")})
+        @Workload("example001.MyLListGenerator#prepareDataBad"),
+        @Workload("example001.MyLListGenerator#prepareDataGood")})
     @Override
     public boolean contains(Object o) {
         return super.contains(o);

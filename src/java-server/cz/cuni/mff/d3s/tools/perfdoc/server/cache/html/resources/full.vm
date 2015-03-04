@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache - full dump</title>
+
+</head>
+
+<body>
+
+<h1>Full database dump</h3>
+
+<h2>measurement_information</h2>
+  
+  <table border = "1">
+    <thead>
+      <tr>
+        #foreach ($theadInfo in $theadsInfo)
+          <th>$theadInfo</th>
+        #end
+      </tr>
+    </thead>
+
+    <tbody>
+      #foreach ($measurementInfo in $measurementsInfo)
+      <tr>
+        #foreach ($value in $measurementInfo)
+          <td>$value</td>
+        #end
+      </tr>
+      #end
+    </tbody>
+  </table>
+
+<h2>measurement_quality</h2>
+  
+  <table border = "1">
+    <thead>
+      <tr>
+        #foreach ($theadQuality in $theadsQuality)
+          <th>$theadQuality</th>
+        #end
+      </tr>
+    </thead>
+
+    <tbody>
+      #foreach ($measurementQuality in $measurementsQuality)
+      <tr>
+        #foreach ($value in $measurementQuality)
+          <td>$value</td>
+        #end
+      </tr>
+      #end
+    </tbody>
+  </table>
+
+<h2>measurement_detailed</h2>
+  
+  <table border = "1">
+    <thead>
+      <tr>
+        #foreach ($theadDetailed in $theadsDetailed)
+          <th>$theadDetailed</th>
+        #end
+      </tr>
+    </thead>
+
+    <tbody>
+      #foreach ($measurementDetailed in $measurementsDetailed)
+      <tr>
+        #foreach ($value in $measurementDetailed)
+          <td>$value</td>
+        #end
+      </tr>
+      #end
+    </tbody>
+  </table>
+
+</body>
+
+</html>

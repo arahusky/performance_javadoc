@@ -152,6 +152,7 @@
 			<fileset dir="${demo.src.dir}" defaultexcludes="yes">
 				<include name="**/SimpleWaiting.java"/>
 				<include name="**/MyArrayList.java"/>
+				<include name="**/MyLinkedList.java"/>
 				<include name="**/MyArrayListMoreOps.java"/>
 				<include name="**/GralTest.java"/>
 			</fileset>

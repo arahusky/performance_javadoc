@@ -62,22 +62,25 @@ public class MeasureRequestHandler implements HttpHandler {
         OutputStream responseBody = exchange.getResponseBody();
 
         String userID = "";
+        MethodMeasurer measurer = null;
+        MeasureRequest measureRequest = null;
         
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
-            MethodMeasurer m = new MethodMeasurer(new MeasureRequest(requestBody), lockBase);
+            //parsing incoming request
+            measureRequest = new MeasureRequest(requestBody);
             
-            JSONObject obj = m.measure();
+            measurer = new MethodMeasurer(measureRequest, lockBase);
+            
+            JSONObject obj = measurer.measure();
             try {
                 exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
                 responseBody.write(obj.toString().getBytes());
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
-            
-            m.saveResultsAndCloseConnection();
         } catch (ClassNotFoundException ec) {
             sendErrorMessage("Unable to find a testedMethod/generator class", exchange, responseBody);
         } catch (IllegalArgumentException ex) {
@@ -94,11 +97,16 @@ public class MeasureRequestHandler implements HttpHandler {
         } finally {
             try {
                 in.close();
-                responseBody.close();
+                responseBody.close();                
             } catch (IOException ex) {
                 //there is nothing we can do with it
                 log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
             }
+        }
+        
+        //results with highest priority are cached
+        if (measurer != null && measureRequest != null && measureRequest.getMeasurementQuality().getPriority() == 4) {
+            measurer.saveResultsAndCloseDatabaseConnection();
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user ({0}).", userID);

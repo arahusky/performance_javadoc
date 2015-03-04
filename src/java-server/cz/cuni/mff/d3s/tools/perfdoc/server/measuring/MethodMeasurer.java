@@ -93,16 +93,13 @@ public class MethodMeasurer {
             BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
 
             //if cache contains results for given settings, we do not have to perform measurement
-            System.out.println("looking in cache");
             BenchmarkResult res = resultCache.getResult(benSetting);
             if (res != null) {
                 results.add(res);
                 resultsMask.add(true);
-                System.out.println("cache found");
                 log.log(Level.CONFIG, "The value for measuring was found in cache.");
                 continue;
             }
-            System.out.println("cache not found");
 
             BenchmarkRunner runner = null;
             switch (priority) {
@@ -125,10 +122,7 @@ public class MethodMeasurer {
         }
 
         log.log(Level.CONFIG, "Measurement succesfully done");
-;
-        JSONObject jsonResults = processBenchmarkResults(valuesToMeasure);
-        
-        return jsonResults;
+        return processBenchmarkResults(valuesToMeasure);
     }
 
     /**
@@ -161,7 +155,7 @@ public class MethodMeasurer {
     /**
      * Saves results into cache and closes the connection with database.
      */
-    public void saveResultsAndCloseConnection() {
+    public void saveResultsAndCloseDatabaseConnection() {
         for (int i = 0; i < results.size(); i++) {
             BenchmarkResult benRes = results.get(i);
 

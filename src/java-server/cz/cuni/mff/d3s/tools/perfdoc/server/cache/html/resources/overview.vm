@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache overview</title>
+</head>
+
+<body>
+
+  <h1>Measured classes</h1>
+
+	#if ($measuredClasses.isEmpty())
+		<p>There are no classes measured.</p>
+	#else
+    <ul>
+		#foreach ($measuredClass in $measuredClasses)
+                
+          <li>
+           	<a href="$measuredClass.getURL()">$measuredClass.getName()</a>
+          </li>
+                        
+   	#end
+    </ul>
+  #end
+  
+</body>
+
+</html>

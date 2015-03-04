@@ -18,17 +18,20 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import java.util.Collection;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler that is shows specific results for given method, workload and
@@ -36,9 +39,11 @@ import java.util.Collection;
  *
  * @author Jakub Naplava
  */
-public class DetailedSiteHandler extends AbstractSiteHandler {
+public class DetailedSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(DetailedSiteHandler.class.getName());
+    
+    private static final String templateName = "detailed";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
@@ -60,25 +65,31 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
                 MethodInfo generator;
                 
                 try {
-                    testedMethod = getMethodFromQuery(data[0]);
-                    generator = getMethodFromQuery(data[1]);
+                    testedMethod = SiteHandlingUtils.getMethodFromQuery(data[0]);
+                    generator = SiteHandlingUtils.getMethodFromQuery(data[1]);
                 } catch (IllegalArgumentException e) {
                     HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
                     return;
                 }
                 String parameters = data[2];
                 
-                //adding links to JQquery in order to be able to use sort
-                addToHeader("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>");
-                addToHeader("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>");
-                addToHeader("<script src=\"js?tablesorter.js\"></script>");
-                addToHeader("<script>$(document).ready(function()  { "
-                        + "        $(\"#myTable\").tablesorter(); } ); </script> ");
+                VelocityContext context = new VelocityContext();
+
+                context.put("methodName", testedMethod.getMethodName());
+                context.put("methodClassName", testedMethod.getQualifiedClassName());
+                context.put("methodParameters", SiteHandlingUtils.chainParameters(testedMethod.getParams()));
+
+                context.put("generatorName", generator.getMethodName());
+                context.put("generatorClass", generator.getQualifiedClassName());
+                context.put("generatorParameters", SiteHandlingUtils.chainParameters(generator.getParams()));
                 
-                addCode(getBody(testedMethod, generator, parameters, res));
-                String output = getCode();
+                List<String> tHeads = getTHeads(generator, parameters);
+                context.put("theads",tHeads);
                 
-                HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+                List<List<Object>> measurements = getMeasurements(testedMethod, generator, parameters, res);
+                context.put("measurements", measurements);
+                
+                HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
             } catch (ClassNotFoundException | IOException | NoSuchMethodException ex) {
                 HttpExchangeUtils.sentErrorHeaderAndClose(exchange, ex.getMessage(), 500, log);
                 return;
@@ -96,91 +107,96 @@ public class DetailedSiteHandler extends AbstractSiteHandler {
         return query.split("separator=");
     }
 
-    public String getBody(MethodInfo testedMethod, MethodInfo generator, String parameters, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
+    private List<String> getTHeads(MethodInfo generator, String parameters) throws NoSuchMethodException {
+        List<String> tHeads = new ArrayList<>();
+        
         StringBuilder sb = new StringBuilder();
 
-        sb.append("<h3>Tested method:</h3>"
-                + "<ul>"
-                + "<li>Method name: " + testedMethod.getMethodName() + "</li>"
-                + "<li>Containing class: " + testedMethod.getQualifiedClassName() + "</li>"
-                + "<li>Parameters: " + chainParameters(testedMethod.getParams()) + "</li>"
-                + "</ul>");
-
-        sb.append("<h3>Generator:</h3>"
-                + "<ul>"
-                + "<li>Method name: " + generator.getMethodName() + "</li>"
-                + "<li>Containing class: " + generator.getQualifiedClassName() + "</li>"
-                + "<li>Parameters: " + chainParameters(generator.getParams()) + "</li>"
-                + "</ul>");
-        sb.append("<h3>Measurements:<h3>");
         Method generatorMethod;
         try {
             generatorMethod = new MethodReflectionInfo(generator.toString()).getMethod();
         } catch (ClassNotFoundException | IOException ex) {
             log.log(Level.INFO, "User obtained method that is not actually present on the server.");
             sb.append("Sorry, but the requested method is not actually present on the server.");
-            return sb.toString();
+            return null;
         }
         String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
         int range = getRangeValue(parameters, generator.getParams());
         
         if (genParametersText == null || (range == -1)) {
-            return sb.toString();
+            return null;
         }
         
+        tHeads.add(genParametersText[range] + " (" + generator.getParams().get(range + 2) + ")");
+        
+        tHeads.add("time (ns)");
+        tHeads.add("warmupTime");
+        tHeads.add("warmupCycles");
+        tHeads.add("measurementTime");        
+        tHeads.add("measurementCycles");
+        
+        return tHeads;
+    }
+    
+    private List<List<Object>> getMeasurements(MethodInfo testedMethod, MethodInfo generator, String parameters, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
+        List<List<Object>> list = new ArrayList<>();
+        
+        int range = getRangeValue(parameters, generator.getParams());
         String[] normalizedParameters = normalizeParameters(parameters, range, generator.getParams());
         
         if (normalizedParameters == null) {
-            return sb.toString();
+            return null;
         }
         
         double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
         double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
-
-        sb.append("<table border = \"1\" class=\"tablesorter\" id = \"myTable\"><thead><tr>");
-
-        sb.append("<th>");
-        sb.append(genParametersText[range] + " (" + generator.getParams().get(range + 2) + ")");
-        sb.append("</th>");
-
-        sb.append("<th>time (ns)</th></tr></thead>");
         
-        Collection<BenchmarkResult> list = res.getResults(testedMethod, generator);
+        Collection<BenchmarkResult> benchmarkResults = res.getResults(testedMethod, generator);
         
-        sb.append("<tbody>");
-        if (list != null) {
-            for (BenchmarkResult item : list) {
-                sb.append(getRowIfPass(normalizedParameters, item, min, max, range));
+        if (benchmarkResults != null) {
+            for (BenchmarkResult item : benchmarkResults) {
+                list.add(getRowIfPass(normalizedParameters, item, min, max, range));
             }
         }
         
-        sb.append("</tbody></table>");
-
-        return sb.toString();
+        return list;
     }
 
-    String getRowIfPass(String[] normalizedData, BenchmarkResult resultItem, double min, double max, int rangeValue) {
-        StringBuilder sb = new StringBuilder();
+    List<Object> getRowIfPass(String[] normalizedData, BenchmarkResult resultItem, double min, double max, int rangeValue) {
+        List<Object> list = new ArrayList<>();
+        
         Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
         for (int i = 0; i < data.length; i++) {
             if (i != rangeValue) {
                 if (!data[i].equals(normalizedData[i])) {
-                    return "";
+                    //TODO
+                    return null;
                 }
             }
         }
         double value = Double.parseDouble(data[rangeValue].toString());
         if (value > max || value < min) {
-            return "";
+            //TODO
+            return null;
         }
-        sb.append("<tr>");
-        sb.append("<td>").append(data[rangeValue]).append("</td>");
+        
+        list.add(data[rangeValue]);
 
         long time = resultItem.getStatistics().computeMean();
-        sb.append("<td>").append(time).append("</td>");
-
-        sb.append("</tr>");
-        return sb.toString();
+        list.add(time);
+        
+        MeasurementQuality mq = resultItem.getBenchmarkSetting().getMeasurementQuality();
+        int warmupTime = mq.getWarmupTime();
+        int warmupCycles = mq.getNumberOfWarmupCycles();
+        int measurementTime = mq.getMeasurementTime();
+        int measurementCycles = mq.getNumberOfMeasurementsCycles();
+        
+        list.add(warmupTime);
+        list.add(warmupCycles);
+        list.add(measurementTime);
+        list.add(measurementCycles);        
+        
+        return list;
     }
 
     int getRangeValue(String parameters, List<String> paramTypeNames) {

@@ -17,39 +17,45 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import java.util.Collection;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler, that shows all classes, that have any measured method
  *
  * @author Jakub Naplava
  */
-public class OverviewSiteHandler extends AbstractSiteHandler {
+public class OverviewSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(OverviewSiteHandler.class.getName());
+    
+    private static final String templateName = "overview";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new overview-site request. Starting to handle it.");
 
         if (res != null) {
-
             Collection<MethodInfo> testedMethod = res.getDistinctTestedMethods();
-
-            addCode(returnHeading());
-            String classOutput = formatClasses(testedMethod);
-            addCode(classOutput);
-            String output = getCode();
-
-            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            if (testedMethod == null) {
+                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "An error occured when trying to connect to DB.", 500, log);
+            }
+            
+            List<NameUrl> list = getClassNames(testedMethod);
+            
+            VelocityContext context = new VelocityContext();
+            context.put("measuredClasses", list);
+                                 
+            HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
         } else {
             //there is no database connection available
             //sending information about internal server error
@@ -57,31 +63,18 @@ public class OverviewSiteHandler extends AbstractSiteHandler {
         }
 
         log.log(Level.INFO, "Data were succesfully sent to the user.");
-    }
-
-    private String returnHeading() {
-        String heading = "<h1>Measured classes:</h1>";
-
-        return heading;
-    }
-
-    private String formatClasses(Collection<MethodInfo> output) {
-
-        //unable to retrieve data from database
-        if (output == null) {
-            return "<p>Sorry, but there was an error when trying to connect to database.</p>";
-        }
-
+    }    
+    
+    private List<NameUrl> getClassNames(Collection<MethodInfo> output) {
+        List<NameUrl> list = new ArrayList<>();
         Set<String> distinctClasses = getDistinctClasses(output);
         
-        StringBuilder sb = new StringBuilder();
-        sb.append("<ul>");
         for (String className : distinctClasses) {
-            sb.append("<li><a href= \"cache/class?" + className + "\">" + className + "</a></li>");
+            String URL = "cache/class?" + className;
+            list.add(new NameUrl(className, URL));            
         }
-        sb.append("</ul>");
-
-        return sb.toString();
+        
+        return list;
     }
     
     private Set<String> getDistinctClasses(Collection<MethodInfo> testedMethods) {

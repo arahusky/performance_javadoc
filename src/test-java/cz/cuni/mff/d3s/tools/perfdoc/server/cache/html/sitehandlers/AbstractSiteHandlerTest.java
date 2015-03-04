@@ -30,10 +30,8 @@ public class AbstractSiteHandlerTest {
 
     @Test
     public void testGetMethodFromQuery1() {
-        //implementation does not matter
-        AbstractSiteHandler ash = new ClassSiteHandler();
         
-        MethodInfo mi = ash.getMethodFromQuery("example002.SimpleWaiting&simpleWait&int&int");
+        MethodInfo mi = SiteHandlingUtils.getMethodFromQuery("example002.SimpleWaiting&simpleWait&int&int");
         
         Assert.assertEquals("example002.SimpleWaiting", mi.getQualifiedClassName());
         Assert.assertEquals("simpleWait", mi.getMethodName());
@@ -43,10 +41,8 @@ public class AbstractSiteHandlerTest {
     
     @Test
     public void testGetMethodFromQuery2() {
-        //implementation does not matter
-        AbstractSiteHandler ash = new ClassSiteHandler();
         
-        MethodInfo mi = ash.getMethodFromQuery("example001.MyArrayList&contains&java.lang.Object");
+        MethodInfo mi = SiteHandlingUtils.getMethodFromQuery("example001.MyArrayList&contains&java.lang.Object");
         
         Assert.assertEquals("example001.MyArrayList", mi.getQualifiedClassName());
         Assert.assertEquals("contains", mi.getMethodName());
@@ -59,16 +55,15 @@ public class AbstractSiteHandlerTest {
     
     @Test
     public void testGetParameterInfo() {
-        AbstractSiteHandler ash = new DetailedSiteHandler();
         ArrayList<String> params = new ArrayList<>();
 
-        Assert.assertEquals("", ash.chainParameters(params));
+        Assert.assertEquals("", SiteHandlingUtils.chainParameters(params));
         
         params.add("int");
-        Assert.assertEquals("int", ash.chainParameters(params));
+        Assert.assertEquals("int", SiteHandlingUtils.chainParameters(params));
         
         params.add("String");
         params.add("float");
-        Assert.assertEquals("int,String,float", ash.chainParameters(params));        
+        Assert.assertEquals("int,String,float", SiteHandlingUtils.chainParameters(params));        
     }
 }

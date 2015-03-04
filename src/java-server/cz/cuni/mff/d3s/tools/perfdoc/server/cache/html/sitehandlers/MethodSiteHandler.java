@@ -17,14 +17,16 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import java.util.Collection;
-
-import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
+import org.apache.velocity.VelocityContext;
 
 /**
  * Site handler that shows all generators, that have any measured result for the
@@ -32,41 +34,57 @@ import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
  *
  * @author Jakub Naplava
  */
-public class MethodSiteHandler extends AbstractSiteHandler {
+public class MethodSiteHandler implements SiteHandler {
 
     private static final Logger log = Logger.getLogger(MethodSiteHandler.class.getName());
+    
+    private static final String templateName = "method";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new method-site request. Starting to handle it.");
 
         String query = exchange.getRequestURI().getQuery();
-        MethodInfo methodName;
+        MethodInfo method;
 
         try {
-            methodName = getMethodFromQuery(query);
+            method = SiteHandlingUtils.getMethodFromQuery(query);
         } catch (IllegalArgumentException e) {
             //there is a problem with URL (probably own written URL)
             HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
-        if (methodName == null) {
+        if (method == null) {
             //there is a problem with URL (probably own written URL)
             HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
         }
 
         if (res != null) {
-            Collection<MethodInfo> availableGenerators = res.getDistinctGenerators(methodName);
+            Collection<MethodInfo> availableGenerators = res.getDistinctGenerators(method);
+            if (availableGenerators == null) {
+                HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Sorry, but there was an error when trying to connect to database.", 500, log);
+            }
+            
+            String className = method.getQualifiedClassName();
+            String methodName = method.getMethodName();
+            
+            VelocityContext context = new VelocityContext();
+            context.put("className", className);
+            context.put("methodName", methodName);
+            context.put("methodParameters", method.getParams());
+            
+            String overviewSite = "http://localhost:" + getPort() + "/cache";
+            context.put("overviewSite",overviewSite);
+            
+            String classSite = "class?" + className;
+            context.put("classSite", classSite);
 
-            addCode(returnHeading(methodName));
+            List<NameUrl> generators = getGenerators(method.toString(), availableGenerators);
+            context.put("generators", generators);
 
-            String classOutput = formatGenerators(methodName.toString(), availableGenerators);
-            addCode(classOutput);
-            String output = getCode();
-
-            HttpExchangeUtils.sentSuccesHeaderAndBodyAndClose(exchange, output.getBytes(), log);
+            HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
         } else {
             //there is no database connection available
             //sending information about internal server error
@@ -76,47 +94,16 @@ public class MethodSiteHandler extends AbstractSiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private String returnHeading(MethodInfo method) {
-        String className = method.getQualifiedClassName();
-        String methodName = method.getMethodName();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<p><a href = \"http://localhost:").append(getPort()).append("/cache\"><-- Back to classes overview </a></p>");
-        sb.append("<p><a href = \"class?" + className + "\"><-- Back to class " + className + "</a></p>");
-        sb.append("<h1>Method <i>" + methodName + "</i> in class <i>" + className + "</i></h1>");
-        sb.append("<h2>with parameters</h2>");
-
-        sb.append("<ul>");
-        for (String param : method.getParams()) {
-            sb.append("<li>");
-            sb.append(param);
-            sb.append("</li>");
-        }
-        sb.append("</ul>");
-
-        sb.append("<h2>has this possible saved generators</h2>");
-
-        return sb.toString();
-    }
-
-    private String formatGenerators(String methodName, Collection<MethodInfo> generators) {
-
-        //unable to retrieve data from database
-        if (generators == null) {
-            return "<p>Sorry, but there was an error when trying to connect to database.</p>";
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("<ul>");
+    private List<NameUrl> getGenerators(String methodName, Collection<MethodInfo> generators) {
+        List<NameUrl> list = new ArrayList<>();
+        
         for (MethodInfo generator : generators) {
             String generatorInfo = formatGenerator(generator);
-            String methodgeneratorURL = getMethodGeneratorURL(methodName, generator);
-            sb.append("<li><a href= \"methodgenerator?" + methodgeneratorURL + "\">" + generatorInfo + "</a></li>");
+            String methodgeneratorURL = "methodgenerator?" + getMethodGeneratorURL(methodName, generator);
+            list.add(new NameUrl(generatorInfo, methodgeneratorURL));
         }
-        sb.append("</ul>");
-
-        return sb.toString();
+        
+        return list;
     }
 
     private String formatGenerator(MethodInfo generator) {
@@ -128,8 +115,8 @@ public class MethodSiteHandler extends AbstractSiteHandler {
     }
 
     private String getMethodGeneratorURL(String method, MethodInfo generator) {
-        String methodQuery = getQueryURL(method);
-        String generatorQuery = getQueryURL(generator.toString());
+        String methodQuery = SiteHandlingUtils.getQueryURL(method);
+        String generatorQuery = SiteHandlingUtils.getQueryURL(generator.toString());
 
         return (methodQuery + "separator=" + generatorQuery);
     }

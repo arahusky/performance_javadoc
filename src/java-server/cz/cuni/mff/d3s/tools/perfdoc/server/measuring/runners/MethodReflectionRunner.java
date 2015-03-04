@@ -91,6 +91,8 @@ public class MethodReflectionRunner extends MethodRunner {
                 //preparing new arguments and instance for new calls
                 generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
 
+                Thread.yield();
+                
                 //arguments and instance on which the call will be performed should be now prepared in workload
                 for (Object[] objs : workload.getCalls()) {
                     //second item are the arguments for the tested method

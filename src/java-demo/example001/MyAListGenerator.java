@@ -27,7 +27,7 @@ import java.util.Random;
  *
  * @author Jakub Naplava
  */
-public class MyListGenerator {
+public class MyAListGenerator {
 
     @Generator(description = "Succesfull search in a collection", genName = "Succesfull search")
     public void prepareDataGood(

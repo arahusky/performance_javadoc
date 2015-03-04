@@ -1,4 +1,4 @@
-/*
+ /*
  Copyright 2014 Jakub Naplava
  
  This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ public class MyArrayListMoreOps extends ArrayList {
     /**
      * Sorts the collection.
      */
-    @Workload("example001.MyListGenerator#prepareDataSort")
+    @Workload("example001.MyAListGenerator#prepareDataSort")
     @SuppressWarnings("unchecked")
     public void sort() {
         Collections.sort(this);
@@ -53,7 +53,7 @@ public class MyArrayListMoreOps extends ArrayList {
      * hash values of objects stored in list and the computed value return.
      */
     @SuppressWarnings("unchecked")
-    @Workload("example001.MyListGenerator#prepareDataMultiple")
+    @Workload("example001.MyAListGenerator#prepareDataMultiple")
     public int doMultiple(int additions, int removals, int searches, int iterations) {
 
         int countedHash = 0;

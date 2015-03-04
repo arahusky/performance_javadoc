@@ -144,15 +144,15 @@ public class ResultCacheTest {
     @Test
     public void insertRowWithBetterMeasurementQualityShallUpdateRecord() throws SQLException {
         
-        BenchmarkResult brFirst = benResult1;
+        BenchmarkResult brFirst = benResult2;
 
         //creating second BenchmarkResult, that have exactly same methodName, worloadName, workloadArguments and Statistics, but have better measurement quality
-        MeasurementQuality mqSecond = new MeasurementQuality(measurementQuality1.getPriority() + 1,
-                measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupCycles() + 1, 
-                measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurementsCycles() + 1,
-                measurementQuality1.getNumberOfPoints());
-        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method1, workload1, methodArguments1, mqSecond);
-        BenchmarkResult brSecond = new BenchmarkResultImpl(statistics1, bsSecond);
+        MeasurementQuality mqSecond = new MeasurementQuality(measurementQuality2.getPriority() + 1,
+                measurementQuality2.getWarmupTime() + 1, measurementQuality2.getNumberOfWarmupCycles() + 1, 
+                measurementQuality2.getMeasurementTime() + 1, measurementQuality2.getNumberOfMeasurementsCycles() + 1,
+                measurementQuality2.getNumberOfPoints());
+        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method2, workload2, methodArguments2, mqSecond);
+        BenchmarkResult brSecond = new BenchmarkResultImpl(statistics2, bsSecond);
 
         res.insertResult(brFirst);
         res.insertResult(brSecond);

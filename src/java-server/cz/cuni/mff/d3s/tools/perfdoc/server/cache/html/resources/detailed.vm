@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache detailed results</title>
+
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <script src="js?tablesorter.js"></script>
+
+  <script>$(document).ready(function()  { 
+          $("#myTable").tablesorter(); } );
+  </script>
+</head>
+
+<body>
+
+  
+<h2>Tested method:</h2>
+
+<ul>
+  <li>Method name: $methodName</li>
+  <li>Containing class: $methodClassName</li>
+  <li>Parameters: $methodParameters</li>
+</ul>
+
+<h2>Generator:</h2>
+
+<ul>
+  <li>Method name: $generatorName</li>
+  <li>Containing class: $generatorClass</li>
+  <li>Parameters: $generatorParameters</li>
+</ul>
+
+<h3>Measurements:</h3>
+
+  <table border = "1" class="tablesorter" id = "myTable">
+    <thead>
+      <tr>
+        #foreach ($thead in $theads)
+          <th>$thead</th>
+        #end
+      </tr>
+    </thead>
+
+    <tbody>
+      #foreach ($measurement in $measurements)
+      <tr>
+        #foreach ($value in $measurement)
+          <td>$value</td>
+        #end
+      </tr>
+      #end
+    </tbody>
+  </table>
+
+</body>
+
+</html>

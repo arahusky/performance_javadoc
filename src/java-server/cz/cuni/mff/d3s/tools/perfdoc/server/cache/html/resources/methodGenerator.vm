@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache method information</title>
+
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <script src="js?tablesorter.js"></script>
+
+  <script>$(document).ready(function()  { 
+          $("#myTable").tablesorter(); } );
+  </script>
+</head>
+
+<body>
+
+<p>
+  <a href = "$overviewSite"><-- Back to classes overview </a>
+</p>
+<p>
+  <a href = "$classSite"><-- Back to class $methodClassName</a>
+</p>
+<p>
+  <a href = "$methodSite"><-- Back to method $methodName</a>
+</p>
+
+<h1>Method <i>$methodName</i> with generator <i>$generatorName</i></h1>
+  
+<h3>Tested method:</h3>
+
+<ul>
+  <li>Method name: $methodName</li>
+  <li>Containing class: $methodClassName</li>
+  <li>Parameters: $methodParameters</li>
+</ul>
+
+<h3>Generator:</h3>
+
+<ul>
+  <li>Method name: $generatorName</li>
+  <li>Containing class: $generatorClass</li>
+  <li>Parameters: $generatorParameters</li>
+</ul>
+
+<h3>Measurements:</h3>
+
+  <table border = "1" class="tablesorter" id = "myTable">
+    <thead>
+      <tr>
+        #foreach ($thead in $theads)
+          <th>$thead</th>
+        #end
+      </tr>
+    </thead>
+
+    <tbody>
+      #foreach ($measurement in $measurements)
+      <tr>
+        #foreach ($value in $measurement)
+          <td>$value</td>
+        #end
+      </tr>
+      #end
+    </tbody>
+  </table>
+
+</body>
+
+</html>

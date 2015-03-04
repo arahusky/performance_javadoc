@@ -16,78 +16,15 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
-import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Abstract class that defines method that are common for all site handlers
- *
+ * 
  * @author Jakub Naplava
  */
-public abstract class AbstractSiteHandler implements SiteHandler {
-
-    protected StringBuilder head = new StringBuilder();
-    protected StringBuilder code = new StringBuilder();
-
-    @Override
-    public abstract void handle(HttpExchange exchange, ResultCacheForWeb res);
-
-    /**
-     * Gets the html code
-     *
-     * @return
-     */
-    protected String getCode() {
-        if (code.length() == 0) {
-            startNewCode();
-            endCode(code);
-            return code.toString();
-        }
-
-        StringBuilder sb = new StringBuilder(code.toString());
-        endCode(sb);
-        return sb.toString();
-    }
-
-    /**
-     * Adds the code to the current code
-     *
-     * @param code
-     */
-    protected void addCode(String code) {
-        if (this.code.length() == 0) {
-            startNewCode();
-        }
-
-        this.code.append(code);
-    }
-
-    protected void addToHeader(String code) {
-        head.append(code);
-    }
-
-    private void startNewCode() {
-        code.append("<html>");
-        addHeader();
-    }
-
-    private void addHeader() {
-        code.append("<head>");
-        code.append(head);
-        code.append("</head> <body>");
-    }
-
-    private void endCode(StringBuilder code) {
-        code.append("</body>");
-        code.append("</html>");
-    }
+public class SiteHandlingUtils {
 
     /**
      * Encodes method (in database format), so that it can be easily passes as
@@ -96,7 +33,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
      * @param method
      * @return
      */
-    protected String getQueryURL(String method) {
+    public static String getQueryURL(String method) {
         String result = method.replaceAll("#@", "&").replaceAll("#", "&").replaceAll("@", "&");
 
         return result;
@@ -108,7 +45,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
      * @param query
      * @return as described; else if there is anything wrong null
      */
-    protected MethodInfo getMethodFromQuery(String query) {
+    public static MethodInfo getMethodFromQuery(String query) {
         String[] chunks = query.split("&");
 
         if (chunks.length < 2) {
@@ -131,7 +68,7 @@ public abstract class AbstractSiteHandler implements SiteHandler {
      * @param parameters
      * @return chained parameters in format: param1,param2,...,paramN
      */
-    protected String chainParameters(List<String> parameters) {
+    public static String chainParameters(List<String> parameters) {
         StringBuilder sb = new StringBuilder();
 
         if (parameters == null || parameters.isEmpty()) {

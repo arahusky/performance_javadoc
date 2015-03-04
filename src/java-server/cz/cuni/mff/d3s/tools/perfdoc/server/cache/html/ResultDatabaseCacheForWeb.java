@@ -229,4 +229,31 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         
         return new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, priority);
     }
+
+    @Override
+    public Collection<Object[]> getQualityResults() {
+        List<Object[]> list = new ArrayList<>();
+
+        try {
+            Statement stmt = conn.createStatement();
+            String query = "SELECT * FROM measurement_quality";
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                int idQuality = rs.getInt("idQuality");
+                int measurementTime = rs.getInt("measurement_time");
+                int measurementCycles = rs.getInt("measurement_cycles");
+                int warmupTime = rs.getInt("warmup_time");
+                int warmupCycles = rs.getInt("warmup_cycles");
+                int priority = rs.getInt("priority");
+                
+                MeasurementQuality mq = new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, 0);
+                    
+                list.add(new Object[] {idQuality, mq});
+            }
+            return list;
+        } catch (SQLException e) {
+            log.log(Level.INFO, "Unable to retrieve results from database", e);
+            return null;
+        }
+    }
 }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Measuring cache method information</title>
+</head>
+
+<body>
+
+  <p>
+    <a href = "$overviewSite"><-- Back to classes overview </a>
+  </p>
+  <p>
+    <a href = "$classSite"><-- Back to class $className</a>
+  </p>
+
+  <h1>Method <i>$methodName</i> in class <i>$className</i></h1>
+  
+  #if ($methodParameters.size() > 0)
+    <h2>with parameters</h2>
+    <ul>
+
+      #foreach ($methodParameter in $methodParameters)      
+        <li>
+          $methodParameter      
+        </li>
+      #end
+
+    </ul>
+  #else
+    <h2>parameter-less</h2>
+  #end
+
+  <h2>has this possible saved generators</h2>
+
+  <ul>
+    #foreach ($generator in $generators)
+      <li>
+        <a href= "$generator.getURL()">$generator.getName()</a>
+      </li>
+      #end
+  </ul>
+
+</body>
+
+</html>
