@@ -69,19 +69,20 @@ public class MethodSiteHandler implements SiteHandler {
             
             String className = method.getQualifiedClassName();
             String methodName = method.getMethodName();
+            String remoteAddress = SiteHandlingUtils.getRemoteAddress(exchange);
             
             VelocityContext context = new VelocityContext();
             context.put("className", className);
             context.put("methodName", methodName);
             context.put("methodParameters", method.getParams());
             
-            String overviewSite = "http://localhost:" + getPort() + "/cache";
+            String overviewSite = remoteAddress + "/cache";
             context.put("overviewSite",overviewSite);
             
             String classSite = "class?" + className;
             context.put("classSite", classSite);
 
-            List<NameUrl> generators = getGenerators(method.toString(), availableGenerators);
+            List<PairNameUrl> generators = getGenerators(method.toString(), availableGenerators);
             context.put("generators", generators);
 
             HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
@@ -94,13 +95,13 @@ public class MethodSiteHandler implements SiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private List<NameUrl> getGenerators(String methodName, Collection<MethodInfo> generators) {
-        List<NameUrl> list = new ArrayList<>();
+    private List<PairNameUrl> getGenerators(String methodName, Collection<MethodInfo> generators) {
+        List<PairNameUrl> list = new ArrayList<>();
         
         for (MethodInfo generator : generators) {
             String generatorInfo = formatGenerator(generator);
             String methodgeneratorURL = "methodgenerator?" + getMethodGeneratorURL(methodName, generator);
-            list.add(new NameUrl(generatorInfo, methodgeneratorURL));
+            list.add(new PairNameUrl(generatorInfo, methodgeneratorURL));
         }
         
         return list;

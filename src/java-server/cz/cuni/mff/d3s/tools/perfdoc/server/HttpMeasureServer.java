@@ -27,13 +27,14 @@ import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.velocity.app.Velocity;
 
 public class HttpMeasureServer {
 
     private static final Logger log = Logger.getLogger(HttpMeasureServer.class.getName());
 
     //port, on which the server runs (may be changed by command-line arguments)
-    private static int port = 8080;
+    private static int port = 4040;
 
     //flag whether to empty tables (may be changed by command-line arguments)
     private static boolean emptyTable = false;
@@ -75,12 +76,16 @@ public class HttpMeasureServer {
             }
             
             res.start();
+            
+            Velocity.init();
         } catch (ClassNotFoundException ex) {
-            //Could not find the database driver
+            log.log(Level.SEVERE, "Could not find the database driver", ex);
             return;
         } catch (SQLException ex) {
-            //The connection to database could have not been established
+            log.log(Level.SEVERE, "The connection to database could have not been established.", ex);
             return;
+        } catch (Exception e) {
+            log.log(Level.SEVERE, "Velocity could have not been started.", e);
         }
 
         server.start();

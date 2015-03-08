@@ -9,7 +9,7 @@
   <h1>Measured classes</h1>
 
 	#if ($measuredClasses.isEmpty())
-		<p>There are no classes measured.</p>
+		<p>No classes were yet measured.</p>
 	#else
     <ul>
 		#foreach ($measuredClass in $measuredClasses)

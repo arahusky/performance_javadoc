@@ -18,16 +18,17 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 /**
- *
+ * This class represents pair, whose two values are Name and URL.
+ * 
  * @author Jakub Naplava
  */
-public class NameUrl {
+public class PairNameUrl {
     
-    private String name;
+    private final String name;
     
-    private String URL;
+    private final String URL;
 
-    public NameUrl(String name, String URL) {
+    public PairNameUrl(String name, String URL) {
         this.name = name;
         this.URL = URL;
     }

@@ -69,9 +69,11 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
                     return;
                 }
 
+                String remoteAddress = SiteHandlingUtils.getRemoteAddress(exchange);
+                
                 VelocityContext context = new VelocityContext();
 
-                String overviewSite = "http://localhost:" + getPort() + "/cache";
+                String overviewSite = remoteAddress + "/cache";
                 context.put("overviewSite", overviewSite);
 
                 String classSite = "class?" + testedMethod.getQualifiedClassName();

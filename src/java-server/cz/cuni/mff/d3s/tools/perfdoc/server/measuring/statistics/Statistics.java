@@ -70,7 +70,7 @@ public final class Statistics {
             stats.addValue(l);
         }
         
-        return (long) stats.getPercentile(50);
+        return (long) stats.getMean();
     }
     
     public long computeMedian() {
@@ -82,7 +82,7 @@ public final class Statistics {
         for (Long l : measurementResults) {
             stats.addValue(l);
         }
-        return (long) stats.getMean();
+        return (long) stats.getPercentile(50);
     }
 
     public int getNumberOfMeasurements() {

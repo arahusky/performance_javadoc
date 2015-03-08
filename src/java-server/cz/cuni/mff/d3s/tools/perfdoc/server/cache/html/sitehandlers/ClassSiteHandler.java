@@ -45,6 +45,7 @@ public class ClassSiteHandler implements SiteHandler {
 
         //the requested class (format: package.className)
         String className = exchange.getRequestURI().getQuery();
+        String remoteAddress = SiteHandlingUtils.getRemoteAddress(exchange);
 
         if (res != null) {
             //the methods of the class that have been measured 
@@ -56,10 +57,10 @@ public class ClassSiteHandler implements SiteHandler {
             VelocityContext context = new VelocityContext();
             context.put("className", className);
             
-            String overviewSite = "http://localhost:" + getPort() + "/cache";
+            String overviewSite = remoteAddress + "/cache";
             context.put("overviewSite",overviewSite);
             
-            List<NameUrl> measuredMethods = formatMethods(testedMethods);
+            List<PairNameUrl> measuredMethods = formatMethods(testedMethods);
             context.put("measuredMethods", measuredMethods);
                     
             HttpExchangeUtils.mergeTemplateAndSentPositiveResponseAndClose(exchange, templateName, context);
@@ -72,13 +73,13 @@ public class ClassSiteHandler implements SiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }
 
-    private List<NameUrl> formatMethods(Collection<MethodInfo> methods) {
-        List<NameUrl> list = new ArrayList<>();
+    private List<PairNameUrl> formatMethods(Collection<MethodInfo> methods) {
+        List<PairNameUrl> list = new ArrayList<>();
 
         for (MethodInfo method : methods) {
             String methodInfo = formatMethod(method);
             String url = "method?" + SiteHandlingUtils.getQueryURL(method.toString());
-            list.add(new NameUrl(methodInfo, url));
+            list.add(new PairNameUrl(methodInfo, url));
         }
 
         return list;

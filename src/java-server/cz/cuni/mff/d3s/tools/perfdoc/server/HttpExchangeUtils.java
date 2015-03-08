@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -28,43 +27,31 @@ import org.apache.velocity.app.Velocity;
 
 /**
  * Class that provides basic methods to handle HttpExchange.
- * 
+ *
  * @author Jakub Naplava
  */
 public class HttpExchangeUtils {
-    
+
     private static final Logger log = Logger.getLogger(HttpExchangeUtils.class.getName());
-         
+
     public static final String templatesFolder = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/cache/html/resources/";
 
-    public static void mergeTemplateAndSentPositiveResponseAndClose(HttpExchange exchange, String templateName, VelocityContext context) {
-        
-        String templateLocation = templatesFolder + templateName + ".vm";
-
-        StringWriter w = new StringWriter();            
-        Velocity.mergeTemplate(templateLocation, "UTF-8", context, w);
-        byte[] message = w.getBuffer().toString().getBytes();
-            
-        try {
-            exchange.sendResponseHeaders(200, message.length);
-
-            //autoclosable handles closing
-            try (OutputStream responseBody = exchange.getResponseBody()) {
-                responseBody.write(message);
-            }
-        } catch (IOException e) {
-            log.log(Level.INFO, "Unable to send the results to the client", e);
-        }
-    }
     /**
-     * Sends the given message to the client with the success
-     * headers and closes communication channel.
+     * Merges template with context, then sends given message to the client with
+     * the success headers and closes communication channel.
      *
      * @param exchange stands for client's representation
-     * @param message Message to pass to the client
-     * @param log Logger to log exceptions
+     * @param templateName
+     * @param context
      */
-    public static void sentSuccesHeaderAndBodyAndClose(HttpExchange exchange, byte[] message, Logger log) {
+    public static void mergeTemplateAndSentPositiveResponseAndClose(HttpExchange exchange, String templateName, VelocityContext context) {
+
+        String templateLocation = templatesFolder + templateName + ".vm";
+
+        StringWriter w = new StringWriter();
+        Velocity.mergeTemplate(templateLocation, "UTF-8", context, w);
+        byte[] message = w.getBuffer().toString().getBytes();
+
         try {
             exchange.sendResponseHeaders(200, message.length);
 
@@ -78,7 +65,8 @@ public class HttpExchangeUtils {
     }
 
     /**
-     * Reports client of the occurred error and closes the communication channel.
+     * Reports client of the occurred error and closes the communication
+     * channel.
      *
      * @param exchange stands for client's representation
      * @param errorMessage
@@ -87,12 +75,12 @@ public class HttpExchangeUtils {
      */
     public static void sentErrorHeaderAndClose(HttpExchange exchange, String errorMessage, int errorCode, Logger log) {
         try {
-        exchange.sendResponseHeaders(errorCode, errorMessage.getBytes().length);
+            exchange.sendResponseHeaders(errorCode, errorMessage.getBytes().length);
 
-        //autoclosable handles closing
-        try (OutputStream responseBody = exchange.getResponseBody()) {
-            responseBody.write(errorMessage.getBytes());
-        }
+            //autoclosable handles closing
+            try (OutputStream responseBody = exchange.getResponseBody()) {
+                responseBody.write(errorMessage.getBytes());
+            }
         } catch (IOException e) {
             log.log(Level.INFO, "Unable to send the results to the client", e);
         }

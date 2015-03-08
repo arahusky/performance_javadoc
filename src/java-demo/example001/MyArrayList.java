@@ -26,6 +26,8 @@ import java.util.ArrayList;
  */
 public class MyArrayList<T> extends ArrayList<T> {
 
+    private static final long serialVersionUID = 1L;
+    
     @Workloads({
         @Workload("example001.MyAListGenerator#prepareDataBad"),
         @Workload("example001.MyAListGenerator#prepareDataGood")})

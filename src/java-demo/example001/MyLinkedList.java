@@ -27,6 +27,8 @@ import java.util.LinkedList;
  */
 public class MyLinkedList<T> extends LinkedList<T> {
     
+    private static final long serialVersionUID = 1L;
+    
     @Workloads({
         @Workload("example001.MyLListGenerator#prepareDataBad"),
         @Workload("example001.MyLListGenerator#prepareDataGood")})

@@ -43,7 +43,7 @@ public class MethodMeasurer {
     private final LockBase lockBase;
 
     //measured results
-    private final List<BenchmarkResult> results = new ArrayList<>();
+    private List<BenchmarkResult> results = new ArrayList<>();
 
     //the i-th item says, whether i-th result was found in cache (true), thus no need to save him back into cache
     private final List<Boolean> resultsMask = new ArrayList<>();
@@ -82,58 +82,131 @@ public class MethodMeasurer {
         double step = MeasuringUtils.findStepValue(measureRequest.getWorkload(), measureRequest.getRangeVal());
         Object rangeArgument = measureRequest.getValues()[measureRequest.getRangeVal()];
 
-        //note that this might end with IllegalArgument | NumberFormat Exception, that is being handled by the caller
-        double[] valuesToMeasure = MeasuringUtils.getValuesToMeasure(rangeArgument, step, mQuality.getNumberOfPoints());
-
-        //for every point, that should be measured, we perform a measurement
-        for (int i = 0; i < valuesToMeasure.length; i++) {
-
-            //the arguments for the generator 
-            Object[] args = MeasuringUtils.prepareArgsToCall(measureRequest, workloadImpl, serviceImpl, valuesToMeasure[i]);
-            BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
-
-            //if cache contains results for given settings, we do not have to perform measurement
-            BenchmarkResult res = resultCache.getResult(benSetting);
-            if (res != null) {
-                results.add(res);
-                resultsMask.add(true);
-                log.log(Level.CONFIG, "The value for measuring was found in cache.");
-                continue;
-            }
-
-            BenchmarkRunner runner = null;
-            switch (priority) {
-                case 1:
-                case 2:
-                case 3:
-                    runner = new MethodReflectionRunner();
-                    break;
-                case 4:
-                    runner = new DirectRunner();
-                    break;
-            }
-
-            //wait until we can measure (there is no lock for our hash)
-            lockBase.waitUntilFree(measureRequest.getUserID());
-            results.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
-            lockBase.freeLock(measureRequest.getUserID());
-
-            resultsMask.add(false);
+        //list, containing for each priority (respectively priority..4) values in which the measurement (for corresponding) priority, will be performed
+        List<double[]> valuesToMeasureList = new ArrayList<>();
+        for (int i = priority; i <= 4; i++) {
+            //note that this might end with IllegalArgument | NumberFormat Exception, that is being handled by the caller
+            double[] valuesToMeasure = MeasuringUtils.getValuesToMeasure(rangeArgument, step, new MeasurementQuality(i).getNumberOfPoints());
+            valuesToMeasureList.add(valuesToMeasure);
         }
 
+        int cachedPriority = checkWhetherCannotGiveBetterResults(valuesToMeasureList);
+
+        if (cachedPriority == 0) {
+            cachedPriority = measureRequest.getMeasurementQuality().getPriority();
+
+            //values in which the measurement will be performed
+            double[] valuesToMeasure = valuesToMeasureList.get(0);
+
+            //for every point, that should be measured, we perform a measurement
+            for (int i = 0; i < valuesToMeasure.length; i++) {
+
+                //the arguments for the generator 
+                Object[] args = MeasuringUtils.prepareArgsToCall(measureRequest, workloadImpl, serviceImpl, valuesToMeasure[i]);
+                BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest, new MethodArgumentsImpl(args));
+
+                //if cache contains results for given settings, we do not have to perform measurement
+                BenchmarkResult res = resultCache.getResult(benSetting);
+                if (res != null) {
+                    results.add(res);
+                    resultsMask.add(true);
+                    log.log(Level.CONFIG, "The value for measuring was found in cache.");
+                    continue;
+                }
+
+                BenchmarkRunner runner = null;
+                switch (priority) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        runner = new MethodReflectionRunner();
+                        break;
+                    case 4:
+                        runner = new DirectRunner();
+                        break;
+                }
+
+                //wait until we can measure (there is no lock for our hash)
+                lockBase.waitUntilFree(measureRequest.getUserID());
+                results.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
+                lockBase.freeLock(measureRequest.getUserID());
+
+                //the result was not found in cache
+                resultsMask.add(false);
+            }
+        }
         log.log(Level.CONFIG, "Measurement succesfully done");
-        return processBenchmarkResults(valuesToMeasure);
+
+        //values, in which the measurement was performed
+        double[] valuesToMeasure = valuesToMeasureList.get(cachedPriority - priority);
+        return processBenchmarkResults(valuesToMeasure, cachedPriority);
+    }
+
+    /**
+     * Checks cache for better results with better or equal priority.
+     *
+     * @param valuesToMeasure list of values, where an array on i-th index is
+     * array of valuesToMeasure for priority: (priority + i).
+     * @return priority priority of found results, 0 if no better or equal
+     * found.
+     */
+    private int checkWhetherCannotGiveBetterResults(List<double[]> valuesToMeasure) {
+        int priority = measureRequest.getMeasurementQuality().getPriority();
+        List<BenchmarkResult> list = new ArrayList<>();
+
+        //whether there is priority having all BenchmarkResults not equal to null 
+        boolean errorIndicator = false;
+
+        //starting with priority 4 down to priority
+        for (int i = 4; i >= priority; i--) {
+            MeasurementQuality mq = new MeasurementQuality(priority);
+
+            //for all valuesToMeasure
+            for (double val : valuesToMeasure.get(i - priority)) {
+                Object[] args = MeasuringUtils.prepareArgsToCall(measureRequest, null, null, val);
+
+                BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest.getTestedMethod(),
+                        measureRequest.getWorkload(), new MethodArgumentsImpl(args), mq);
+
+                BenchmarkResult benRes = resultCache.getResult(benSetting);
+
+                //if there is valueToMeasure with benchmarkResult null, current priority can not be satisfied
+                if (benRes == null) {
+                    errorIndicator = true;
+                    break;
+                } else {
+                    list.add(benRes);
+                }
+            }
+
+            //if there were found results for all valuesToMeasure, we satisfied priority = i
+            if (!errorIndicator) {
+                results = list;
+                
+                //all benchmarkResults were found in cache
+                for (BenchmarkResult result : results) {
+                    resultsMask.add(true);
+                }
+                
+                return i;
+            } else {
+                errorIndicator = false;
+                list.clear();
+            }
+        }
+
+        return 0;
     }
 
     /**
      * Returns results saved in JSONObject that can be sent to end-user. This
-     * result will contain measured results and its units. 
+     * result will contain measured results and its units.
      *
      * @param list measured BenchmarkResults
      * @param valuesInWhichWasMeasured
      * @return
      */
-    private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured) {
+    private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured, int priority) {
         JSONObject jsonResults = new JSONObject();
 
         List<Long> computedMeans = new ArrayList<>();
@@ -148,6 +221,7 @@ public class MethodMeasurer {
             jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
         }
         jsonResults.accumulate("units", units);
+        jsonResults.accumulate("priority", priority);
 
         return jsonResults;
     }
@@ -158,17 +232,15 @@ public class MethodMeasurer {
     public void saveResultsAndCloseDatabaseConnection() {
         for (int i = 0; i < results.size(); i++) {
             BenchmarkResult benRes = results.get(i);
-
             //if the result was not obtained from cache
             if (resultsMask.get(i) == false) {
                 resultCache.insertResult(benRes);
             }
         }
-        
+
         if (resultCache != null) {
             //we do not need the connection to database anymore
             resultCache.closeConnection();
         }
     }
-
 }

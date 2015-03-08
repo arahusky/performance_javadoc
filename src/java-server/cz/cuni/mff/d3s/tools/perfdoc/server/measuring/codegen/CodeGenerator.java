@@ -74,16 +74,7 @@ public class CodeGenerator {
     private final BenchmarkSetting setting;
 
     //name of directory, where the current (current BenchmarkSetting) generated code will be placed
-    private final String directoryName;
-
-    static {
-        //initiating Velocity engine
-        try {
-            Velocity.init();
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "Unable to start Velocity.", e);
-        }
-    }
+    private final String directoryName;    
 
     public CodeGenerator(BenchmarkSetting setting) {
         this.setting = setting;

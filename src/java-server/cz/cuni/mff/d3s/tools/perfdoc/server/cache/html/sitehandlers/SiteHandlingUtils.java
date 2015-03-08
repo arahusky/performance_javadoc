@@ -16,7 +16,10 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
+import com.sun.net.httpserver.HttpExchange;
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,5 +84,21 @@ public class SiteHandlingUtils {
 
         sb.append(parameters.get(parameters.size() - 1));
         return sb.toString();
+    }
+    
+    /**
+     * Returns address of the site, from which the request has been performed.
+     * @param exchange
+     * @return 
+     */
+    public static String getRemoteAddress(HttpExchange exchange) {
+        InetAddress address = exchange.getRemoteAddress().getAddress();
+        int port = HttpMeasureServer.getPort();
+        
+        if (address.isLoopbackAddress()) {
+            return "http://localhost:" + port;
+        }
+        
+        return address.getHostName() + ":" + port;
     }
 }

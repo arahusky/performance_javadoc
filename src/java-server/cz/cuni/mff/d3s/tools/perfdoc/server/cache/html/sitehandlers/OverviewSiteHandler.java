@@ -41,7 +41,7 @@ public class OverviewSiteHandler implements SiteHandler {
     private static final String templateName = "overview";
 
     @Override
-    public void handle(HttpExchange exchange, ResultCacheForWeb res) {
+    public void handle(HttpExchange exchange, ResultCacheForWeb res) {        
         log.log(Level.INFO, "Got new overview-site request. Starting to handle it.");
 
         if (res != null) {
@@ -50,7 +50,7 @@ public class OverviewSiteHandler implements SiteHandler {
                 HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "An error occured when trying to connect to DB.", 500, log);
             }
             
-            List<NameUrl> list = getClassNames(testedMethod);
+            List<PairNameUrl> list = getClassNames(testedMethod);
             
             VelocityContext context = new VelocityContext();
             context.put("measuredClasses", list);
@@ -65,13 +65,13 @@ public class OverviewSiteHandler implements SiteHandler {
         log.log(Level.INFO, "Data were succesfully sent to the user.");
     }    
     
-    private List<NameUrl> getClassNames(Collection<MethodInfo> output) {
-        List<NameUrl> list = new ArrayList<>();
+    private List<PairNameUrl> getClassNames(Collection<MethodInfo> output) {
+        List<PairNameUrl> list = new ArrayList<>();
         Set<String> distinctClasses = getDistinctClasses(output);
         
         for (String className : distinctClasses) {
             String URL = "cache/class?" + className;
-            list.add(new NameUrl(className, URL));            
+            list.add(new PairNameUrl(className, URL));            
         }
         
         return list;

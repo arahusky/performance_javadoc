@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class AbstractSiteHandlerTest {
+public class SiteHandlingTest {
 
     @Test
     public void testGetMethodFromQuery1() {

@@ -227,8 +227,9 @@
 	</target>
 
 	<target name="clean" description="Remove all the generated files.">
-		<delete dir="${build.dir}" />
-		<delete dir="cacheDB" />		
+		<delete dir="${build.dir}/demo" />
+		<delete dir="${build.dir}/classes" />
+		<delete dir="database" />		
 		<delete dir="test" />
 		<delete file="derby.log" />
 		<delete file="server.jar" />		

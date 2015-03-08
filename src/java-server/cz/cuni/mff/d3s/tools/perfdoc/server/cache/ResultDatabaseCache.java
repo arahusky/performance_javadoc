@@ -238,6 +238,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         Statement stmt = null;
         ResultSet rs = null;
 
+        System.out.println("started inserting");
         try {
             stmt = conn.createStatement();
             //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same method, workload and workloadArguments
@@ -253,10 +254,10 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " AND measurement_time<=" + measurementTime
                     + " AND measurement_cycles<=" + measurementCycles
                     + ")";
-            
+
             rs = stmt.executeQuery(query);
             log.log(Level.CONFIG, "Searching for the data in database before insert. Query:  {0}", query);
-            
+
             StringBuilder sbId = new StringBuilder();
             StringBuilder sbIdQuality = new StringBuilder();
             while (rs.next()) {
@@ -265,21 +266,21 @@ public class ResultDatabaseCache implements ResultAdminCache {
                 sbId.append(id + ",");
                 sbIdQuality.append(idQuality + ",");
             }
-            
+
             if (sbId.length() != 0) {
-                sbId.deleteCharAt(sbId.length()-1);
+                sbId.deleteCharAt(sbId.length() - 1);
             }
-            
+
             if (sbIdQuality.length() != 0) {
-                sbIdQuality.deleteCharAt(sbIdQuality.length()-1);
+                sbIdQuality.deleteCharAt(sbIdQuality.length() - 1);
             }
 
             if (sbId.length() > 0) {
                 query = "DELETE FROM measurement_detailed"
-                        + " WHERE id IN (" + sbId.toString() + ")";                
+                        + " WHERE id IN (" + sbId.toString() + ")";
                 stmt.executeUpdate(query);
                 //as well as from measurement_information
-                                              
+
                 query = "DELETE FROM measurement_information"
                         + " WHERE id IN (" + sbId.toString() + ")";
                 stmt.executeUpdate(query);
@@ -288,7 +289,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
                         + " SET number_uses = number_uses - 1"
                         + " WHERE idQuality IN (" + sbIdQuality.toString() + ")";
                 stmt.executeUpdate(query);
-        }
+            }
 
             //and finally inserting record
             insertNewResult(benResult);
@@ -308,7 +309,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
         String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
         long time = benResult.getStatistics().computeMean();
-
+        System.out.println("detailed inserting");
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         MeasurementQuality mq = setting.getMeasurementQuality();
         Statement stmt = conn.createStatement();
@@ -392,8 +393,8 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * record and when also this fails (due to concurrency), then the other
      * thread must have already create record, so performing update is now OK.
      *
-     * Update is considered to be much more frequent operation than the
-     * insert, which upholds for (not so natural) process.
+     * Update is considered to be much more frequent operation than the insert,
+     * which upholds for (not so natural) process.
      *
      * @param mq
      */
@@ -441,15 +442,20 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * @throws SQLException
      */
     private void insertDetailedResults(int id, Long[] resultsToInsert) throws SQLException {
+        //in order to increase performance of inserting multiple records, we turn the autocommit mode to false and commit transaction in the end
         String query = "INSERT INTO measurement_detailed (id, time) "
                 + "VALUES (" + id + ",?)";
 
+        conn.setAutoCommit(false);
         PreparedStatement preparedStmt = conn.prepareStatement(query);
 
         for (long val : resultsToInsert) {
             preparedStmt.setLong(1, val);
-            preparedStmt.executeUpdate();
+            preparedStmt.addBatch();
         }
+        
+        preparedStmt.executeBatch();
+        conn.commit();
 
         closeStatement(preparedStmt);
     }
