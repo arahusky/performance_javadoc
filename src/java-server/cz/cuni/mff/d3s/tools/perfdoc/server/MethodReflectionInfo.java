@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 
 /**
  * Extension of MethodInfo adding reflection information about method and its
- * containing class
+ * containing class.
  *
  * @author Jakub Naplava
  */

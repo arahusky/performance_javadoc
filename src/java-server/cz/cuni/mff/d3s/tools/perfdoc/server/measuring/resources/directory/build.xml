@@ -5,7 +5,7 @@
 <target name="run" description="Test run">
  		<java fork="true" classname="TMeasurement">
  			<classpath>
- 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\measuring\code_generation\measurement_method523629277workload1606426007args901745132"/>
+ 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\measuring\code_generation\measurement_method151076184workload-25316941args1348194449"/>
  				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-demo"/>
  				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-server"/>
  			</classpath>
@@ -14,12 +14,13 @@
 
 
 <target name="compile" description="Compile">
- 		<javac
+ 		<javac  srcdir="."
+ 				destdir="."
 				debug="true"
 				includeantruntime="false">
 			<compilerarg value="-Xlint:all"/>
 			<classpath>				
-				<pathelement path="C:\Users\arahusky\Desktop\kino\out\measuring\code_generation\measurement_method523629277workload1606426007args901745132"/>
+				<pathelement path="C:\Users\arahusky\Desktop\kino\out\measuring\code_generation\measurement_method151076184workload-25316941args1348194449"/>
 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-demo"/>
 				<pathelement path="C:\Users\arahusky\Desktop\kino\out\classes\java-server"/>
 			</classpath>

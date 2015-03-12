@@ -21,7 +21,7 @@ import java.io.IOException;
 
 /**
  * Class that maintains Javascript code associated with an AJAX communication
- * 
+ *
  * @author Jakub Naplava
  */
 public class JSAjaxHandler {
@@ -38,7 +38,7 @@ public class JSAjaxHandler {
      */
     public static String returnCallServerFunction(String serverAddress) throws IOException {
         String pattern = JavascriptLoader.getFileContent("callserver.js");
-        
+
         //placing right serverAddress in the pattern by replacing $serverAddress
         return pattern.replace("$serverAddress", serverAddress);
     }
@@ -56,10 +56,10 @@ public class JSAjaxHandler {
      * generator, this function handles incoming JSON results (puts them in the
      * right graph, changes graph color, ...)
      */
-    public static String returnSuccessFunction() throws IOException {        
+    public static String returnSuccessFunction() throws IOException {
         return JavascriptLoader.getFileContent("successfunction.js");
-    }    
-    
+    }
+
     public static String returnIdentifierFunction() throws IOException {
         return JavascriptLoader.getFileContent("identifier.js");
     }
@@ -77,7 +77,7 @@ public class JSAjaxHandler {
     /**
      * Returns the javascript code to call the server with right data
      */
-    public static String returnSuccessButtonHandleFunction() {        
+    public static String returnSuccessButtonHandleFunction() {
         String graphName = returnDivName();
 
         //data in JSON format
@@ -91,7 +91,7 @@ public class JSAjaxHandler {
                 + "xAxisLabel : paramResult.rangeValueName,"
                 + "graph : null"
                 + "};");
-        
+
         sb.append("callServer( json, graphInfo, 1);");
 
         return sb.toString();
@@ -121,8 +121,23 @@ public class JSAjaxHandler {
     public static String getTestedMethod() {
         return testedMethod;
     }
-    
+
     public static void setTestedMethod(String testedMethod) {
         JSAjaxHandler.testedMethod = testedMethod;
+    }
+
+    public static String getCodeForRadioOutput(String radioFormName, String divName) {
+        return "$('#" + radioFormName + "')"
+                + ".change(function() {"
+                + " value = $('input:radio[name=" + radioFormName + "]:checked').val();"
+                + " if (value == 'graph') {"
+                + " $(\"#" + divName + " .right .graph\").show();"
+                + " $(\"#" + divName + " .right .table\").hide();"
+                + "} else {"
+                + " $(\"#" + divName + " .right .graph\").hide();"
+                + " $(\"#" + divName + " .right .table\").show();"
+                + "}"
+                + "});"
+                ;
     }
 }

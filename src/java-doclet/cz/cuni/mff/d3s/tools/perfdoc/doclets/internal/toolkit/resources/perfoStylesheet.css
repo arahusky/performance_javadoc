@@ -16,3 +16,13 @@
   display: table;
   clear: both;
 }
+
+.hidden {
+   display: none;
+}
+
+.resultTable {
+  border-collapse: collapse;
+  border: 1px solid black;
+  width: 80%;
+}

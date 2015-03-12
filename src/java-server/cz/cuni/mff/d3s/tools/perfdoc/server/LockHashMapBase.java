@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 /**
  * Implementation of LockBase interface that uses HashMap to store Locks under
- * given hashes
+ * given hashes.
  *
  * @author Jakub Naplava
  */

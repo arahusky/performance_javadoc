@@ -31,6 +31,12 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
+ * This class prepares measurement points.
+ *
+ * It contains counting points, in which the measurement will be performed,
+ * searching cache for results and if no results are found, then also preparing
+ * arguments for BenchmarkRunners, which are then called. After measurement is
+ * done, measured results can be via this class saved into cache.
  *
  * @author Jakub Naplava
  */
@@ -182,12 +188,12 @@ public class MethodMeasurer {
             //if there were found results for all valuesToMeasure, we satisfied priority = i
             if (!errorIndicator) {
                 results = list;
-                
+
                 //all benchmarkResults were found in cache
                 for (BenchmarkResult result : results) {
                     resultsMask.add(true);
                 }
-                
+
                 return i;
             } else {
                 errorIndicator = false;

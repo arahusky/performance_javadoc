@@ -26,7 +26,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 /**
- * Class that provides basic methods to handle HttpExchange.
+ * This class provides basic methods to handle HttpExchange.
  *
  * @author Jakub Naplava
  */

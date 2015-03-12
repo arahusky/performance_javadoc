@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * Structure containing basic information about a method. This structure is used
- * in whole project as parameter as well as the item in database (toString).
+ * Structure containing basic information about a method.
+ *
+ * This structure is used within whole project as parameter as well as the item
+ * in database (toString).
  *
  * @author Jakub Naplava
  */
@@ -108,8 +110,8 @@ public class MethodInfo {
 
     /**
      * @return String representation in format:
-     * package.className#methodName#@param1&param2&...&paramN
-     * This format is used for storing method in database.
+     * package.className#methodName#@param1&param2&...&paramN This format is
+     * used for storing method in database.
      */
     @Override
     public String toString() {

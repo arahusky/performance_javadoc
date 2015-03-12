@@ -26,8 +26,10 @@ import com.sun.tools.doclets.internal.toolkit.util.DocletConstants;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSAjaxHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSControlWriter;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JSSliderWriter;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParamNumException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
@@ -115,16 +117,25 @@ public class PerformanceBodyWriter {
         //div, where the graph will be shown
         HtmlTree graph = new HtmlTree(HtmlTag.DIV);
         graph.addAttr(HtmlAttr.CLASS, "graph");
-        graph.addContent("Here will be the image / table + checkbox to choose the values");
-
-        //div, where the link to accurate results will be shown
-        HtmlTree url = new HtmlTree(HtmlTag.DIV);
-        url.addAttr(HtmlAttr.CLASS, "url");
-        url.addContent(" ");
-
-        rightSide.addContent(graph);
-        rightSide.addContent(url);
-
+        graph.addContent("Here will be the image + checkbox to choose the values");
+        rightSide.addContent(graph); 
+        
+        //div, where the table with results will be shown
+        HtmlTree table = new HtmlTree(HtmlTag.DIV);
+        table.addAttr(HtmlAttr.CLASS, "table hidden");
+        table.addContent("Here will be the table + checkbox to choose the values");
+        rightSide.addContent(table); 
+        
+        //div, where radios to choose output are
+        HtmlTree outputFormat = new HtmlTree(HtmlTag.DIV);
+        
+        String radiosName = uniqueWorkloadName + "_radio";
+        outputFormat.addContent(new RawHtml("<form id=\"" + radiosName + "\"><input type=\"radio\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">Graph <input type=\"radio\" name=\"" + radiosName + "\" value=\"table\">Table </form>"));
+        String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueWorkloadName);
+        JavascriptCodeBox.addLocalCode(js);
+        
+        rightSide.addContent(outputFormat);
+        
         navList.addContent(rightSide);
         navList.addContent(leftSide);
 

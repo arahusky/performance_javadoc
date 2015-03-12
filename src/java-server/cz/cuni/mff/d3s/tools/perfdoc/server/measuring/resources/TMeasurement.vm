@@ -50,18 +50,7 @@ public class TMeasurement {
                 break;
             }
 
-            for (Object[] objs : workloadImpl.getCalls()) {
-                Object[] args = (Object[]) objs[1];
-                Object objectOnWhichToInvoke = objs[0];
-
-                #if ($mFunctionIsStatic)
-                TMethod tMet = new TMethod();
-                tMet.call(args);
-                #else
-                TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
-                tMet.call(args);
-                #end
-            }
+            measure(workloadImpl, null);
 
             //refresh object instances
             workloadImpl = new WorkloadImpl();
@@ -81,27 +70,7 @@ public class TMeasurement {
                 break;
             }
 
-            for (Object[] objs : workloadImpl.getCalls()) {
-                Object[] args = (Object[]) objs[1];
-                Object objectOnWhichToInvoke = objs[0];
-
-                #if ($mFunctionIsStatic)
-                TMethod tMet = new TMethod();
-                #else
-                TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
-                #end
-
-                //Thread.yield();
-
-                long startTime = System.nanoTime();
-                tMet.call(args);
-                long endTime = System.nanoTime();
-                
-                //skip if it's the first sample, which is ussualy bad (except for the case, when MEASUREMENT_CYCLES == 1)
-                if (!(MEASUREMENT_CYCLES > 1) || (measurementCyclesSpent > 0)) {
-                    times.add(endTime - startTime);
-                }
-            }
+            measure(workloadImpl, times);
 
             //refresh object instances
             workloadImpl = new WorkloadImpl();
@@ -117,5 +86,36 @@ public class TMeasurement {
                 writer.println(l);
             }
         }
+    }
+
+    /**
+     * Performs warmup/measurement cycle with arguments and instance from given workloadImpl.
+     *
+     * @param workloadImpl instance containing prepared arguments and instances to call workload
+     * @param times if warming-up then null, otherwise instance, in which the
+     * method execution time will be saved.
+     */
+    private void measure(WorkloadImpl workloadImpl, List<Long> times) throws Throwable {
+        for (Object[] objs : workloadImpl.getCalls()) {
+                Object[] args = (Object[]) objs[1];
+                Object objectOnWhichToInvoke = objs[0];
+
+                #if ($mFunctionIsStatic)
+                TMethod tMet = new TMethod();
+                #else
+                TMethod tMet = new TMethod(($mClass)objectOnWhichToInvoke);
+                #end
+
+                //Thread.yield();
+
+                long startTime = System.nanoTime();
+                tMet.call(args);
+                long endTime = System.nanoTime();
+                
+                //if measuring (not warming-up)
+                if (times != null) {
+                    times.add(endTime - startTime);                    
+                }
+            }
     }
 }

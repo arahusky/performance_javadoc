@@ -113,11 +113,9 @@ public class MethodReflectionRunner extends MethodRunner {
             while (true) {
                 measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
                 if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
-                    System.out.println("measurement done");
                     break;
                 }
                 
-                System.out.println("measurement cycle");
                 //preparing new arguments and instance for new calls
                 generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
 
