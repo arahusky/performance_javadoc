@@ -128,7 +128,7 @@ public class PerformanceBodyWriter {
         
         //div, where radios to choose output are
         HtmlTree outputFormat = new HtmlTree(HtmlTag.DIV);
-        
+        outputFormat.addAttr(HtmlAttr.CLASS, "radio");
         String radiosName = uniqueWorkloadName + "_radio";
         outputFormat.addContent(new RawHtml("<form id=\"" + radiosName + "\"><input type=\"radio\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">Graph <input type=\"radio\" name=\"" + radiosName + "\" value=\"table\">Table </form>"));
         String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueWorkloadName);
@@ -299,7 +299,7 @@ public class PerformanceBodyWriter {
         JSSliderWriter.addNewSlider(uniqueSliderName, uniqueTextboxName, min, max, step, axis);
 
         String labelName = uniqueTextboxName + "Label";
-        content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\" id = \"" + labelName + "\">" + description + ":   </label>"));
+        content.addContent(new RawHtml("<p>" + "<label for=\"" + uniqueTextboxName + "\" id = \"" + labelName + "\">" + description + "      </label>"));
         content.addContent(new RawHtml("<input type=\"text\" id=\"" + uniqueTextboxName + "\" style=\"border:0; color:#f6931f; font-weight:bold;\"> </p>"));
         content.addContent(new RawHtml("<div id=\"" + uniqueSliderName + "\" style=\"margin:10\"></div>"));
 

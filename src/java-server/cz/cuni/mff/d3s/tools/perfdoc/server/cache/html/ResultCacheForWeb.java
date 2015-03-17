@@ -57,13 +57,13 @@ public interface ResultCacheForWeb extends ResultCache {
     Collection<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
 
     /**
-     * Returns all methods, that have already been tested and have some result
+     * Returns all methods, that have already been measured and have some result
      * in cache
      *
      * @return ArrayList containing the names of searched methods; if there was
      * an error, then null
      */
-    Collection<MethodInfo> getDistinctTestedMethods();
+    Collection<MethodInfo> getDistinctMeasuredMethods();
 
     /**
      * Returns all method, that are in specified class and have some result in

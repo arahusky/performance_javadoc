@@ -76,8 +76,8 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertEquals(3, list.size());
         
         Assert.assertEquals(benResult1.getStatistics().computeMean(), list.get(0).getStatistics().computeMean());
-        Assert.assertEquals(benResult1.getBenchmarkSetting().getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(benResult1.getBenchmarkSetting().getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(benResult1.getBenchmarkSetting().getMeasuredMethod(), list.get(0).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(benResult1.getBenchmarkSetting().getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
        
         System.out.println("MeasureTime:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getMeasurementTime());
         System.out.println("Num meaurements:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfMeasurementsCycles());
@@ -96,13 +96,13 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertEquals(benResult1.getBenchmarkSetting().getMeasurementQuality(), list.get(0).getBenchmarkSetting().getMeasurementQuality());
         
         Assert.assertEquals(benResult2.getStatistics().computeMean(), list.get(1).getStatistics().computeMean());
-        Assert.assertEquals(benResult2.getBenchmarkSetting().getTestedMethod(), list.get(1).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(benResult2.getBenchmarkSetting().getWorkload(), list.get(1).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(benResult2.getBenchmarkSetting().getMeasuredMethod(), list.get(1).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(benResult2.getBenchmarkSetting().getGenerator(), list.get(1).getBenchmarkSetting().getGenerator());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getMeasurementQuality(), list.get(1).getBenchmarkSetting().getMeasurementQuality());
         
         Assert.assertEquals(benResult3.getStatistics().computeMean(), list.get(2).getStatistics().computeMean());
-        Assert.assertEquals(benResult3.getBenchmarkSetting().getTestedMethod(), list.get(2).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(benResult3.getBenchmarkSetting().getWorkload(), list.get(2).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(benResult3.getBenchmarkSetting().getMeasuredMethod(), list.get(2).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(benResult3.getBenchmarkSetting().getGenerator(), list.get(2).getBenchmarkSetting().getGenerator());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getMeasurementQuality(), list.get(2).getBenchmarkSetting().getMeasurementQuality());
     }
 
@@ -112,14 +112,14 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benResult2);
         res.insertResult(benResult3);
         res.insertResult(benResult4);
-        Collection<MethodInfo> list = res.getDistinctTestedMethods();
+        Collection<MethodInfo> list = res.getDistinctMeasuredMethods();
 
         Assert.assertNotNull(list);
         Assert.assertEquals(4, list.size());
-        Assert.assertTrue(list.contains(method1));
-        Assert.assertTrue(list.contains(method2));
-        Assert.assertTrue(list.contains(method3));
-        Assert.assertTrue(list.contains(method4));
+        Assert.assertTrue(list.contains(measuredMethod1));
+        Assert.assertTrue(list.contains(measuredMethod2));
+        Assert.assertTrue(list.contains(measuredMethod3));
+        Assert.assertTrue(list.contains(measuredMethod4));
     }
 
     @Test
@@ -129,29 +129,29 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benResult3);
         res.insertResult(benResult4);
 
-        Collection<MethodInfo> list = res.getDistinctClassMethods(method1.getQualifiedClassName());
+        Collection<MethodInfo> list = res.getDistinctClassMethods(measuredMethod1.getQualifiedClassName());
 
         Assert.assertNotNull(list);
         Assert.assertEquals(2, list.size());
-        Assert.assertTrue(list.contains(method1));
-        Assert.assertTrue(list.contains(method2));
+        Assert.assertTrue(list.contains(measuredMethod1));
+        Assert.assertTrue(list.contains(measuredMethod2));
     }
 
     @Test
     public void testGetDistinctGenerators() {
         res.insertResult(benResult1);
 
-        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments3, measurementQuality2);
-        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(method1, workload2, methodArguments4, measurementQuality1);
+        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments3, measurementQuality2);
+        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(measuredMethod1, generator2, generatorArguments4, measurementQuality1);
         res.insertResult(new BenchmarkResultImpl(statistics1, benSet5));
         res.insertResult(new BenchmarkResultImpl(statistics1, benSet6));
 
-        Collection<MethodInfo> list = res.getDistinctGenerators(method1);
+        Collection<MethodInfo> list = res.getDistinctGenerators(measuredMethod1);
 
         Assert.assertNotNull(list);
         Assert.assertEquals(2, list.size());
-        Assert.assertTrue(list.contains(workload1));
-        Assert.assertTrue(list.contains(workload2));
+        Assert.assertTrue(list.contains(generator1));
+        Assert.assertTrue(list.contains(generator2));
     }
 
     /*the database data contain all parameters as String and do not contain the first two of them (workload, serviceWorkload). Therefore just partial test is possible*/
@@ -162,32 +162,32 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(benResult3);
         res.insertResult(benResult4);
 
-        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(method1, workload1, methodArguments2, measurementQuality1);
-        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(method1, workload1, methodArguments3, measurementQuality2);
-        BenchmarkSetting benSet7 = new BenchmarkSettingImpl(method1, workload1, methodArguments4, measurementQuality4);
+        BenchmarkSetting benSet5 = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments2, measurementQuality1);
+        BenchmarkSetting benSet6 = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments3, measurementQuality2);
+        BenchmarkSetting benSet7 = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments4, measurementQuality4);
         res.insertResult(new BenchmarkResultImpl(statistics1, benSet5));
         res.insertResult(new BenchmarkResultImpl(statistics2, benSet6));
         res.insertResult(new BenchmarkResultImpl(statistics3, benSet7));
 
-        List<BenchmarkResult> list = res.getResults(method1, workload1);
+        List<BenchmarkResult> list = res.getResults(measuredMethod1, generator1);
 
         Assert.assertNotNull(list);
         Assert.assertEquals(4, list.size());
 
         Assert.assertEquals(benResult1.getStatistics(), list.get(0).getStatistics());
-        Assert.assertEquals(benSet1.getTestedMethod(), list.get(0).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(benSet1.getWorkload(), list.get(0).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(benSet1.getMeasuredMethod(), list.get(0).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(benSet1.getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
         
         Assert.assertEquals(statistics1.computeMean(), list.get(1).getStatistics().computeMean());
-        Assert.assertEquals(method1, list.get(1).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(workload1, list.get(1).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(measuredMethod1, list.get(1).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(generator1, list.get(1).getBenchmarkSetting().getGenerator());
         
         Assert.assertEquals(statistics2.computeMean(), list.get(2).getStatistics().computeMean());
-        Assert.assertEquals(method1, list.get(2).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(workload1, list.get(2).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(measuredMethod1, list.get(2).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(generator1, list.get(2).getBenchmarkSetting().getGenerator());
         
         Assert.assertEquals(statistics3.computeMean(), list.get(3).getStatistics().computeMean());
-        Assert.assertEquals(method1, list.get(3).getBenchmarkSetting().getTestedMethod());
-        Assert.assertEquals(workload1, list.get(3).getBenchmarkSetting().getWorkload());
+        Assert.assertEquals(measuredMethod1, list.get(3).getBenchmarkSetting().getMeasuredMethod());
+        Assert.assertEquals(generator1, list.get(3).getBenchmarkSetting().getGenerator());
     }
 }

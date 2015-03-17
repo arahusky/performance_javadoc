@@ -26,37 +26,37 @@ import java.util.Objects;
  */
 public class BenchmarkSettingImpl implements BenchmarkSetting {
 
-    private final MethodInfo testedMethod;
-    private final MethodInfo workload;
+    private final MethodInfo measuredMethod;
+    private final MethodInfo generator;
     private final MethodArguments arguments;
     private final MeasurementQuality measurementQuality;
 
-    public BenchmarkSettingImpl(MethodInfo testedMethod, MethodInfo workload, MethodArguments arguments, MeasurementQuality measurementQuality) {
-        this.testedMethod = testedMethod;
-        this.workload = workload;
+    public BenchmarkSettingImpl(MethodInfo measuredMethod, MethodInfo generator, MethodArguments arguments, MeasurementQuality measurementQuality) {
+        this.measuredMethod = measuredMethod;
+        this.generator = generator;
         this.arguments = arguments;
         this.measurementQuality = measurementQuality;
     }
 
     public BenchmarkSettingImpl(MeasureRequest measureRequest, MethodArguments arguments) {
-        this.testedMethod = measureRequest.getTestedMethod();
-        this.workload = measureRequest.getWorkload();
+        this.measuredMethod = measureRequest.getMeasuredMethod();
+        this.generator = measureRequest.getGenerator();
         this.measurementQuality = measureRequest.getMeasurementQuality();
         this.arguments = arguments;
     }
 
     @Override
-    public MethodInfo getTestedMethod() {
-        return testedMethod;
+    public MethodInfo getMeasuredMethod() {
+        return measuredMethod;
     }
 
     @Override
-    public MethodInfo getWorkload() {
-        return workload;
+    public MethodInfo getGenerator() {
+        return generator;
     }
 
     @Override
-    public MethodArguments getWorkloadArguments() {
+    public MethodArguments getGeneratorArguments() {
         return arguments;
     }
 
@@ -68,8 +68,8 @@ public class BenchmarkSettingImpl implements BenchmarkSetting {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.testedMethod);
-        hash = 89 * hash + Objects.hashCode(this.workload);
+        hash = 89 * hash + Objects.hashCode(this.measuredMethod);
+        hash = 89 * hash + Objects.hashCode(this.generator);
         hash = 89 * hash + Objects.hashCode(this.arguments);
         hash = 89 * hash + Objects.hashCode(this.measurementQuality);
         return hash;
@@ -87,7 +87,7 @@ public class BenchmarkSettingImpl implements BenchmarkSetting {
 
         return bs.arguments.equals(this.arguments)
                 && bs.measurementQuality.equals(this.measurementQuality)
-                && bs.testedMethod.equals(this.testedMethod)
-                && bs.workload.equals(this.workload);
+                && bs.measuredMethod.equals(this.measuredMethod)
+                && bs.generator.equals(this.generator);
     }
 }

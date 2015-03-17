@@ -37,7 +37,7 @@ public class MeasuringUtils {
     private static final Logger log = Logger.getLogger(MeasuringUtils.class.getName());
 
     /**
-     * Prepares arguments for the call of workload method.
+     * Prepares arguments for the call of generator.
      *
      * @param measureRequest
      * @param workload
@@ -58,7 +58,7 @@ public class MeasuringUtils {
 
         int rangeValPosition = measureRequest.getRangeVal();
         //all values have already good type (method normalize in JSONParser) except for the range value
-        String parameter = measureRequest.getWorkload().getParams().get(rangeValPosition + 2);
+        String parameter = measureRequest.getGenerator().getParams().get(rangeValPosition + 2);
         switch (parameter) {
             case "int":
                 newArgs[rangeValPosition + 2] = (int) rangeValValue;
@@ -75,7 +75,7 @@ public class MeasuringUtils {
     }
 
     /**
-     * Chooses the right data in which the workload will generate data.
+     * Chooses the right data in which the generator will generate data.
      *
      * The data are chosen to divide the interval to the very same pieces (using
      * binary interval dividing).
@@ -205,12 +205,12 @@ public class MeasuringUtils {
     }
 
     /**
-     * Finds the step value in the workload for given rangeValue.
+     * Finds the step value in the generator for given rangeValue.
      */
-    public static double findStepValue(MethodReflectionInfo workload, int rangeValue) {
+    public static double findStepValue(MethodReflectionInfo generator, int rangeValue) {
         //first two parameters are workload and serviceWorkload
         int numInParams = rangeValue + 2;
-        Annotation[][] params = workload.getMethod().getParameterAnnotations();
+        Annotation[][] params = generator.getMethod().getParameterAnnotations();
 
         Annotation[] annotations = params[numInParams];
         String ParamNumName = ParamNum.class.getName();
@@ -226,7 +226,8 @@ public class MeasuringUtils {
     
     /**
      * 
-     * @param results
+     * @param first
+     * @param second
      * @return 
      */
     public static String convertUnits(List<Long> first, List<Long>second) {

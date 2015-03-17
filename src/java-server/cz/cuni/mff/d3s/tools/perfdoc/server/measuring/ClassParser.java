@@ -34,7 +34,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Class to load and store requested .class files
+ * This class represents a .class file and provides simple methods to work with
+ * it.
+ *
+ * This class also maintains loading class into JVM (if is not present).
  *
  * @author Jakub Naplava
  */
@@ -42,28 +45,29 @@ public class ClassParser {
 
     private static final Logger log = Logger.getLogger(ClassParser.class.getName());
 
+    //class path, where the classes, which are needed for correct run, are located
     private static final List<String> classPaths;
 
     static {
         classPaths = prepareClassPaths();
     }
 
-    //the cache where the tested classes and generators are stored in order to better performance
+    //cache where the already loaded measuredMethods and generators are stored
     private ReflectionCache refCache;
 
     //loaded class
     private Class<?> clazz;
 
-    //classloader that is used to load all tested methods and generators
+    //classloader that is used to load all measuredMethods and generators
     static ClassLoader cl;
 
     /**
      * Creates new ClassParser instance for the specified class, which is
-     * determined by a className
+     * determined by a className.
      *
      * @param className
-     * @throws ClassNotFoundException when tested method or generator method
-     * were not found
+     * @throws ClassNotFoundException when measuredMethod or generator method were not
+     * found
      * @throws MalformedURLException when files in which to search the files are
      * in a bad format
      */
@@ -72,11 +76,11 @@ public class ClassParser {
     }
 
     /**
-     * Loads and saves the specified class
+     * Loads and saves the specified class.
      *
      * @param className
-     * @throws ClassNotFoundException when tested method or generator method
-     * were not found
+     * @throws ClassNotFoundException when measuredMethod or generator method were not
+     * found
      * @throws MalformedURLException when files in which to search the files are
      * in a bad format
      */
@@ -85,7 +89,7 @@ public class ClassParser {
             refCache = ReflectionConcurrentMapCache.getInstance();
 
             if (cl == null) {
-                URL[] urls = findClassClassPaths();
+                URL[] urls = findClassPaths();
                 cl = new URLClassLoader(urls);
                 clazz = cl.loadClass(className);
                 refCache.addClass(className, clazz);
@@ -110,12 +114,12 @@ public class ClassParser {
     }
 
     /**
-     * Returns array containing URL of all workload paths.
+     * Returns array containing URL of all class paths.
      *
      * @return
      * @throws IOException
      */
-    private URL[] findClassClassPaths() throws IOException {
+    private URL[] findClassPaths() throws IOException {
         List<URL> urls = new ArrayList<>();
 
         for (String path : prepareClassPaths()) {
@@ -128,7 +132,8 @@ public class ClassParser {
     }
 
     /**
-     * Gets classPath of all workloads, that are used.
+     * Gets class paths of all methods, that are used by measuredMethod or
+     * generator.
      *
      * Specifically reads all lines from Class_classPath.txt, where the paths
      * are stored.
@@ -145,25 +150,30 @@ public class ClassParser {
                 classPaths.add(line);
             }
         } catch (FileNotFoundException ex) {
-            log.log(Level.SEVERE, "File containing workload-classPaths was not found.", ex);
+            log.log(Level.SEVERE, "File containing class paths was not found.", ex);
         } catch (IOException e) {
-            log.log(Level.SEVERE, "There was a problem while working with file containing workload-classPaths.", e);
+            log.log(Level.SEVERE, "There was a problem while working with file containing class paths.", e);
         }
 
         if (classPaths.isEmpty()) {
-            log.log(Level.WARNING, "File containing workload-classPaths is empty, the server will probably have troubles finding the right workloads.");
+            log.log(Level.WARNING, "File containing class paths is empty, the server will probably have troubles finding the right generators.");
         }
 
         return classPaths;
     }
 
+    /**
+     * Returns the class path, where the classes, which are needed for correct
+     * run, are located.
+     *
+     * @return
+     */
     public static List<String> getClassPaths() {
         return classPaths;
-
     }
 
     /**
-     * Finds specified method
+     * Finds specified method determined by MethodInfo instance.
      *
      * @param methodInfo
      * @return the Method instance if found, otherwise null

@@ -60,9 +60,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             String query = "SELECT * FROM measurement_information";
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                String methodName = rs.getString("method");
-                String generator = rs.getString("workload");
-                String data = rs.getString("workload_arguments");
+                String methodName = rs.getString("measured_method");
+                String generator = rs.getString("generator");
+                String data = rs.getString("generator_arguments");
                 int idQuality = rs.getInt("idQuality");
                 long time = rs.getLong("average");
                 
@@ -81,16 +81,16 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-    public Collection<MethodInfo> getDistinctTestedMethods() {
+    public Collection<MethodInfo> getDistinctMeasuredMethods() {
         Collection<MethodInfo> list = new ArrayList<>();
 
         try {
             Statement stmt = conn.createStatement();
-            String query = "SELECT DISTINCT method FROM measurement_information";
+            String query = "SELECT DISTINCT measured_method FROM measurement_information";
             ResultSet rs = stmt.executeQuery(query);
 
             while (rs.next()) {
-                String methodName = rs.getString("method");
+                String methodName = rs.getString("measured_method");
 
                 list.add(new MethodInfo(methodName));
             }
@@ -109,16 +109,16 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         Collection<MethodInfo> list = new ArrayList<>();
 
         try {
-            String query = "SELECT DISTINCT method "
+            String query = "SELECT DISTINCT measured_method "
                     + "FROM measurement_information "
-                    + "WHERE method LIKE ?";
+                    + "WHERE measured_method LIKE ?";
             
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, className + "#%");
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String methodName = rs.getString("method");
+                String methodName = rs.getString("measured_method");
 
                 list.add(new MethodInfo(methodName));
             }
@@ -137,9 +137,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         Collection<MethodInfo> list = new ArrayList<>();
 
         try {
-            String query = "SELECT DISTINCT workload "
+            String query = "SELECT DISTINCT generator "
                     + "FROM measurement_information "
-                    + "WHERE method = ?";
+                    + "WHERE measured_method = ?";
 
             //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -148,7 +148,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String generator = rs.getString("workload");
+                String generator = rs.getString("generator");
 
                 list.add(new MethodInfo(generator));
             }
@@ -166,7 +166,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         try {
             String query = "SELECT * "
                     + "FROM measurement_information "
-                    + "WHERE (method = ? AND workload = ?)";
+                    + "WHERE (measured_method = ? AND generator = ?)";
              //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, testedMethod.toString());
@@ -174,7 +174,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                String data = rs.getString("workload_arguments");
+                String data = rs.getString("generator_arguments");
                 int idQuality = rs.getInt("idQuality");
                 long time = rs.getLong("average");
 

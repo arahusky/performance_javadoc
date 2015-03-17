@@ -34,8 +34,8 @@ import java.util.logging.Logger;
 import org.apache.velocity.VelocityContext;
 
 /**
- * Site handler that is shows specific results for given method, workload and
- * some of the workload argument values.
+ * Site handler that is shows specific results for given measuredMethod, generator and
+ * some of the generator argument values.
  *
  * @author Jakub Naplava
  */
@@ -49,11 +49,11 @@ public class DetailedSiteHandler implements SiteHandler {
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         log.log(Level.INFO, "Got new detailed request. Starting to handle it.");
         
-        //URL adress should be in format: .../detailed?methodseparator=workloadseparator=workloadArgs
+        //URL adress should be in format: .../detailed?methodseparator=generatorseparator=generatorArgs
         String query = exchange.getRequestURI().getQuery();
         String[] data = getData(query);
 
-        //the data array should contain: method, workload, workloadArguments
+        //the data array should contain: measuredMethod, generator, generatorArguments
         if (data.length != 3) {
             HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "There was some problem with the URL adress you requested.", 404, log);
             return;
@@ -165,7 +165,7 @@ public class DetailedSiteHandler implements SiteHandler {
     List<Object> getRowIfPass(String[] normalizedData, BenchmarkResult resultItem, double min, double max, int rangeValue) {
         List<Object> list = new ArrayList<>();
         
-        Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
+        Object[] data = resultItem.getBenchmarkSetting().getGeneratorArguments().getValues();
         for (int i = 0; i < data.length; i++) {
             if (i != rangeValue) {
                 if (!data[i].equals(normalizedData[i])) {

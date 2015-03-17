@@ -45,7 +45,7 @@ public class OverviewSiteHandler implements SiteHandler {
         log.log(Level.INFO, "Got new overview-site request. Starting to handle it.");
 
         if (res != null) {
-            Collection<MethodInfo> testedMethod = res.getDistinctTestedMethods();
+            Collection<MethodInfo> testedMethod = res.getDistinctMeasuredMethods();
             if (testedMethod == null) {
                 HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "An error occured when trying to connect to DB.", 500, log);
             }

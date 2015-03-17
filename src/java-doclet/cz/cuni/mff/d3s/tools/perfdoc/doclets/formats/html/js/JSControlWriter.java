@@ -25,7 +25,7 @@ import java.util.ArrayList;
 /**
  * Class that provides method for generating the code to generate the action
  * after the submit button is pressed. It involves parameter check and if
- * everything's good than call of appropriate Ajax function
+ * everything is good than call of appropriate Ajax function.
  *
  * @author Jakub Naplava
  */

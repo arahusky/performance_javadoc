@@ -64,6 +64,8 @@ public final class Statistics {
         if (measurementResults.isEmpty()) {
             return -1;
         }
+        
+        System.out.println("size: " + getNumberOfMeasurements()) ;
 
         DescriptiveStatistics stats = new DescriptiveStatistics();
         for (Long l : measurementResults) {

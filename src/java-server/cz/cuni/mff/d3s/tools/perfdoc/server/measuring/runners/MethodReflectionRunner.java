@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of BenchmarkRunner that uses Reflection to measure method
+ * Implementation of BenchmarkRunner that uses reflection to measure method
  * execution time.
  *
  * @author Jakub Naplava
@@ -45,7 +45,7 @@ public class MethodReflectionRunner extends MethodRunner {
         int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
 
         //the 0-th item in parameters should be the WorkloadImpl instance
-        Object workloadCandidate = setting.getWorkloadArguments().getValues()[0];
+        Object workloadCandidate = setting.getGeneratorArguments().getValues()[0];
 
         if (!(workloadCandidate instanceof WorkloadImpl)) {
             return null;
@@ -53,10 +53,10 @@ public class MethodReflectionRunner extends MethodRunner {
 
         WorkloadImpl workload = (WorkloadImpl) workloadCandidate;
 
-        //tested method
-        MethodInfo methodInfo = setting.getTestedMethod();
+        //measured method 
+        MethodInfo methodInfo = setting.getMeasuredMethod();
         //generator
-        MethodInfo generatorInfo = setting.getWorkload();
+        MethodInfo generatorInfo = setting.getGenerator();
 
         //we expect to get more specific MethodReflectionInfo from BenchmarkSetting
         if (!(methodInfo instanceof MethodReflectionInfo) || !(generatorInfo instanceof MethodReflectionInfo)) {
@@ -87,51 +87,37 @@ public class MethodReflectionRunner extends MethodRunner {
                     System.out.println("warmup breaked");
                     break;
                 }
-                    System.out.println("warmup cycle");
+                System.out.println("warmup cycle");
                 //preparing new arguments and instance for new calls
-                generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
+                generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
 
                 Thread.yield();
-                
-                //arguments and instance on which the call will be performed should be now prepared in workload
-                for (Object[] objs : workload.getCalls()) {
-                    //second item are the arguments for the tested method
-                    Object[] args = (Object[]) objs[1];
-                    Object objectOnWhichToInvoke = objs[0];
 
-                    method.invoke(objectOnWhichToInvoke, args);
-                }
-                
+                //arguments and instance on which the call will be performed should be now prepared in workload
+                reflectionCallCycle(method, workload, null);
+
                 warmupCyclesSpent++;
             }
-            
+
             //measurement
             long measurementCyclesSpent = 0;
             long measurementTimeSpent = 0;
             long measurementStartTime = System.currentTimeMillis() / 1000;
-            
+
             while (true) {
                 measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
                 if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
                     break;
                 }
-                
+
                 //preparing new arguments and instance for new calls
-                generator.invoke(generatorClass.newInstance(), setting.getWorkloadArguments().getValues());
+                generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
 
-                //arguments and instance on which the call will be performed should be now prepared in workload
-                for (Object[] objs : workload.getCalls()) {
-                    //second item are the arguments for the tested method
-                    Object[] args = (Object[]) objs[1];
-                    Object objectOnWhichToInvoke = objs[0];
-
-                    long before = System.nanoTime();
-                    method.invoke(objectOnWhichToInvoke, args);
-                    long after = System.nanoTime();
-
-                    statistics.addResult(after - before);
-                }
+                Thread.yield();
                 
+                //arguments and instance on which the call will be performed should be now prepared in workload
+                reflectionCallCycle(method, workload, statistics);
+
                 measurementCyclesSpent++;
             }
         } catch (IllegalAccessException ex) {
@@ -149,5 +135,38 @@ public class MethodReflectionRunner extends MethodRunner {
         }
 
         return statistics;
+    }
+
+    /**
+     * Performs one reflective measurement cycle on given method with instances
+     * and arguments obtained from given workload.
+     *
+     * @param method method, on which the measurement will be reflectively
+     * performed
+     * @param workload workloadImpl containing prepared arguments and instances
+     * @param statistics instance of Statistics, where the measured results will
+     * be stored (in case of measuring cycle), if just warming up, then null
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     * @throws InvocationTargetException
+     */
+    private void reflectionCallCycle(Method method, WorkloadImpl workload, Statistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+        //arguments and instance on which the call will be performed should be now prepared in workload
+        for (Object[] objs : workload.getCalls()) {
+            //second item are the arguments for the tested method
+            Object[] args = (Object[]) objs[1];
+            //first item is the instance (possibly null for non-static methods)
+            Object objectOnWhichToInvoke = objs[0];
+
+            long before = System.nanoTime();
+            method.invoke(objectOnWhichToInvoke, args);
+            long after = System.nanoTime();
+
+            //if not warmup (but measurement) cycle
+            if (statistics != null) {
+                statistics.addResult(after - before);
+            }
+        }
     }
 }

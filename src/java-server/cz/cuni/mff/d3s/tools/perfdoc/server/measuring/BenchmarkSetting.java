@@ -19,18 +19,18 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 
 /**
- * Binds together all the information describing single point. That is method,
- * workload, parameters (for workload) and the measurement quality.
+ * Binds together all the information describing single point. That is measured
+ * method, generator, parameters (for generator) and the measurement quality.
  *
  * @author Jakub Naplava
  */
 public interface BenchmarkSetting {
 
-    MethodInfo getTestedMethod();
+    MethodInfo getMeasuredMethod();
 
-    MethodInfo getWorkload();
+    MethodInfo getGenerator();
 
-    MethodArguments getWorkloadArguments();
-    
+    MethodArguments getGeneratorArguments();
+
     MeasurementQuality getMeasurementQuality();
 }

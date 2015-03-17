@@ -72,8 +72,8 @@ public class FullDebugSiteHandler implements SiteHandler {
         
         List<String> theadsInfo = new ArrayList<>();
         theadsInfo.add("method");
-        theadsInfo.add("workload");
-        theadsInfo.add("workloadArgs");
+        theadsInfo.add("generator");
+        theadsInfo.add("generatorArgs");
         theadsInfo.add("time");
         context.put("theadsInfo",theadsInfo);
         
@@ -82,13 +82,13 @@ public class FullDebugSiteHandler implements SiteHandler {
         for (BenchmarkResult item : output) {
             List<Object> measurement = new ArrayList<>();
             
-            String methodName = item.getBenchmarkSetting().getTestedMethod().toString();
+            String methodName = item.getBenchmarkSetting().getMeasuredMethod().toString();
             measurement.add(methodName);
 
-            String generator = item.getBenchmarkSetting().getWorkload().toString();
+            String generator = item.getBenchmarkSetting().getGenerator().toString();
             measurement.add(generator);
 
-            String data = item.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(false);
+            String data = item.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(false);
             measurement.add(data);
            
             long time = item.getStatistics().computeMean();

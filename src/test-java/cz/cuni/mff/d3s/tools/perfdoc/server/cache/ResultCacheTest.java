@@ -67,23 +67,23 @@ public class ResultCacheTest {
     }
 
     private void checkResultSetFor1(ResultSet rs) throws SQLException {
-        Assert.assertEquals(method1.toString(), rs.getString("method"));
-        Assert.assertEquals(workload1.toString(), rs.getString("workload"));
-        Assert.assertEquals("[arg1]", rs.getString("workload_arguments"));
+        Assert.assertEquals(measuredMethod1.toString(), rs.getString("measured_method"));
+        Assert.assertEquals(generator1.toString(), rs.getString("generator"));
+        Assert.assertEquals("[arg1]", rs.getString("generator_arguments"));
         Assert.assertEquals(statistics1.computeMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor2(ResultSet rs) throws SQLException {
-        Assert.assertEquals(method2.toString(), rs.getString("method"));
-        Assert.assertEquals(workload2.toString(), rs.getString("workload"));
-        Assert.assertEquals("[1,2.0]", rs.getString("workload_arguments"));
+        Assert.assertEquals(measuredMethod2.toString(), rs.getString("measured_method"));
+        Assert.assertEquals(generator2.toString(), rs.getString("generator"));
+        Assert.assertEquals("[1,2.0]", rs.getString("generator_arguments"));
         Assert.assertEquals(statistics2.computeMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor3(ResultSet rs) throws SQLException {
-        Assert.assertEquals(method3.toString(), rs.getString("method"));
-        Assert.assertEquals(workload3.toString(), rs.getString("workload"));
-        Assert.assertEquals("[2.0]", rs.getString("workload_arguments"));
+        Assert.assertEquals(measuredMethod3.toString(), rs.getString("measured_method"));
+        Assert.assertEquals(generator3.toString(), rs.getString("generator"));
+        Assert.assertEquals("[2.0]", rs.getString("generator_arguments"));
         Assert.assertEquals(statistics3.computeMean(), rs.getLong("average"));
     }
 
@@ -151,7 +151,7 @@ public class ResultCacheTest {
                 measurementQuality2.getWarmupTime() + 1, measurementQuality2.getNumberOfWarmupCycles() + 1, 
                 measurementQuality2.getMeasurementTime() + 1, measurementQuality2.getNumberOfMeasurementsCycles() + 1,
                 measurementQuality2.getNumberOfPoints());
-        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method2, workload2, methodArguments2, mqSecond);
+        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(measuredMethod2, generator2, generatorArguments2, mqSecond);
         BenchmarkResult brSecond = new BenchmarkResultImpl(statistics2, bsSecond);
 
         res.insertResult(brFirst);
@@ -178,7 +178,7 @@ public class ResultCacheTest {
         BenchmarkResult brFirst = benResult1;
 
         //create new BenchmarkResult, that has same measurementQuality as previous
-        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(method2, workload2, methodArguments2, measurementQuality1);
+        BenchmarkSetting bsSecond = new BenchmarkSettingImpl(measuredMethod2, generator2, generatorArguments2, measurementQuality1);
         BenchmarkResult brSecond = new BenchmarkResultImpl(statistics2, bsSecond);
 
         res.insertResult(brFirst);
@@ -216,7 +216,7 @@ public class ResultCacheTest {
                 measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupCycles() + 1, 
                 measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurementsCycles() + 1,
                 measurementQuality1.getNumberOfPoints());
-        BenchmarkSetting bsFirst = new BenchmarkSettingImpl(method1, workload1, methodArguments1, mqFirst);
+        BenchmarkSetting bsFirst = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments1, mqFirst);
         BenchmarkResult brFirst = new BenchmarkResultImpl(statistics1, bsFirst);
 
         BenchmarkResult brSecond = benResult1;

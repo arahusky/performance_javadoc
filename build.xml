@@ -176,6 +176,7 @@
 
 	<target name="run-server" depends="compile-server" description="Run server.">
  		<java fork="true" classname="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer">
+ 			<jvmarg value="-Djava.util.logging.config.file=config/logging.properties" />
  			<classpath>
  				<pathelement path="${server.build.dir}"/>
  				<pathelement path="${derby.jar}"/>

@@ -145,7 +145,7 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
             for (BenchmarkResult resultItem : benchmarkResults) {
                 List<Object> pomList = new ArrayList<>();
                 
-                Object[] data = resultItem.getBenchmarkSetting().getWorkloadArguments().getValues();
+                Object[] data = resultItem.getBenchmarkSetting().getGeneratorArguments().getValues();
                 for (Object datum : data) {
                     pomList.add(datum);
                 }

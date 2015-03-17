@@ -130,7 +130,7 @@ public class CodeGenerator {
 
     private void makeAndCompileMethodCode(BenchmarkSetting setting) throws CompileException, IOException {
 
-        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getTestedMethod();
+        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getMeasuredMethod();
         Method testedMethod = mrInfo.getMethod();
 
         VelocityContext context = new VelocityContext();
@@ -153,7 +153,7 @@ public class CodeGenerator {
 
     private void makeAndCompileGeneratorCode(BenchmarkSetting setting) throws CompileException, IOException {
 
-        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getWorkload();
+        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getGenerator();
         Method generator = mrInfo.getMethod();
 
         VelocityContext context = new VelocityContext();
@@ -165,7 +165,7 @@ public class CodeGenerator {
         //TODO if enum - need to prefix with full name + dot
         context.put("gParameterType", generator.getParameterTypes());
         
-        context.put("gArgument", setting.getWorkloadArguments().getValues());
+        context.put("gArgument", setting.getGeneratorArguments().getValues());
         
         
         writeCode(context, templateGeneratorName);
@@ -181,7 +181,7 @@ public class CodeGenerator {
 
     private void makeAndCompileMeasurementCode(BenchmarkSetting setting) throws CompileException, IOException {
 
-        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getTestedMethod();
+        MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getMeasuredMethod();
         Method testedMethod = mrInfo.getMethod();
         MeasurementQuality measurementQuality = setting.getMeasurementQuality();
 
@@ -232,13 +232,13 @@ public class CodeGenerator {
      * @return
      */
     private String getDirectoryName() {
-        /*Every measurement is uniquely defined by the measured method, workload 
-         and the arguments for the workload.*/
-        MethodInfo method = setting.getTestedMethod();
-        MethodInfo workload = setting.getWorkload();
-        MethodArguments mArgs = setting.getWorkloadArguments();
+        /*Every measurement is uniquely defined by the measured method, generator 
+         and the arguments for the generator.*/
+        MethodInfo method = setting.getMeasuredMethod();
+        MethodInfo generator = setting.getGenerator();
+        MethodArguments generatorArgs = setting.getGeneratorArguments();
 
-        return ("measurement_method" + method.hashCode()+ "workload" + workload.hashCode()+ "args" + mArgs.hashCode());
+        return ("measurement_method" + method.hashCode()+ "generator" + generator.hashCode()+ "args" + generatorArgs.hashCode());
     }
 
     /**

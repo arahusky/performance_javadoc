@@ -86,7 +86,7 @@ public class CodeRunner {
      * Returns class paths that are used for call of the new JVM.
      *
      * Main class to be run is saved in 'measurementDirPath', other classes,
-     * that may be needed are obtained from ClassParser
+     * that may be needed are obtained from ClassParser.
      *
      * @return String that may be used as an argument for -cp
      */

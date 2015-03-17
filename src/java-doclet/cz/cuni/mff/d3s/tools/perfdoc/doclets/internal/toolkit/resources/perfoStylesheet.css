@@ -26,3 +26,17 @@
   border: 1px solid black;
   width: 80%;
 }
+
+.table, .radio, .graph {
+      padding-left: 10px;
+}
+
+.table {
+  padding-right: 10px;
+}
+
+.ui-slider {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+

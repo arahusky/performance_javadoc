@@ -29,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,9 +103,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
         if (!contains(conn, "measurement_information")) {
             String query = "CREATE TABLE measurement_information ("
                     + " id INTEGER PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),"
-                    + " method VARCHAR(500),"
-                    + " workload VARCHAR(500),"
-                    + " workload_arguments VARCHAR(300),"
+                    + " measured_method VARCHAR(500),"
+                    + " generator VARCHAR(500),"
+                    + " generator_arguments VARCHAR(300),"
                     + " average BIGINT,"
                     + " idQuality INTEGER,"
                     + " FOREIGN KEY (idQuality) REFERENCES measurement_quality(idQuality)"
@@ -158,9 +157,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
      */
     @Override
     public BenchmarkResult getResult(BenchmarkSetting setting) {
-        String methodName = setting.getTestedMethod().toString();
-        String workloadName = setting.getWorkload().toString();
-        String workloadArguments = setting.getWorkloadArguments().getValuesDBFormat(true);
+        String measuredMethodName = setting.getMeasuredMethod().toString();
+        String generatorName = setting.getGenerator().toString();
+        String generatorArguments = setting.getGeneratorArguments().getValuesDBFormat(true);
 
         int warmupTime = setting.getMeasurementQuality().getWarmupTime();
         int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
@@ -169,14 +168,14 @@ public class ResultDatabaseCache implements ResultAdminCache {
 
         try {
             Statement stmt = conn.createStatement();
-            //we want to get results, that have same methodName, workloadName and arguments and were measured at least as precisely as we need to
+            //we want to get results, that have same measuredMethodName, generatorName and generatorArguments and were measured at least as precisely as we need to
             String query = "SELECT time"
                     + " FROM measurement_information"
                     + " NATURAL JOIN measurement_detailed"
                     + " NATURAL JOIN measurement_quality"
-                    + " WHERE (method = '" + methodName + "'"
-                    + " AND workload='" + workloadName + "'"
-                    + " AND workload_arguments='" + workloadArguments + "'"
+                    + " WHERE (measured_method = '" + measuredMethodName + "'"
+                    + " AND generator='" + generatorName + "'"
+                    + " AND generator_arguments='" + generatorArguments + "'"
                     + " AND warmup_time>=" + warmupTime
                     + " AND warmup_cycles>=" + warmupCycles
                     + " AND measurement_time>=" + measurementTime
@@ -214,9 +213,10 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * {@inheritDoc}
      *
      * Inserting new results contains also deleting of no longer needed cache
-     * results. This means, that when there are results having same methodName,
-     * workloadName and arguments and theirs measurement quality is lower than
-     * ours, than such results can be deleted (replaced by better ones).
+     * results. This means, that when there are results having same
+     * measuredMethodName, generatorName and generatorArguments and theirs
+     * measurement quality is lower than ours, than such results can be deleted
+     * (replaced by better ones).
      *
      * Before calling this method, you should better call getResults first to
      * ensure, that there are no results better than this one which means.
@@ -225,9 +225,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
     @Override
     public boolean insertResult(BenchmarkResult benResult) {
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
-        String methodName = setting.getTestedMethod().toString();
-        String generatorName = setting.getWorkload().toString();
-        String data = setting.getWorkloadArguments().getValuesDBFormat(true);
+        String measuredMethodName = setting.getMeasuredMethod().toString();
+        String generatorName = setting.getGenerator().toString();
+        String data = setting.getGeneratorArguments().getValuesDBFormat(true);
 
         MeasurementQuality mQuality = setting.getMeasurementQuality();
         int warmupTime = mQuality.getWarmupTime();
@@ -241,14 +241,14 @@ public class ResultDatabaseCache implements ResultAdminCache {
         System.out.println("started inserting");
         try {
             stmt = conn.createStatement();
-            //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same method, workload and workloadArguments
+            //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same measuredMethod, generator and generatorArguments
             String query = "SELECT id, idQuality"
                     + " FROM measurement_information "
                     + " NATURAL JOIN measurement_detailed "
                     + " NATURAL JOIN measurement_quality "
-                    + " WHERE ( method = '" + methodName
-                    + "' AND workload='" + generatorName
-                    + "' AND workload_arguments='" + data + "'"
+                    + " WHERE ( measured_method = '" + measuredMethodName
+                    + "' AND generator='" + generatorName
+                    + "' AND generator_arguments='" + data + "'"
                     + " AND warmup_time<=" + warmupTime
                     + " AND warmup_cycles<=" + warmupCycles
                     + " AND measurement_time<=" + measurementTime
@@ -305,9 +305,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
     }
 
     private void insertNewResult(BenchmarkResult benResult) throws SQLException {
-        String methodName = benResult.getBenchmarkSetting().getTestedMethod().toString();
-        String workloadName = benResult.getBenchmarkSetting().getWorkload().toString();
-        String workloadArguments = benResult.getBenchmarkSetting().getWorkloadArguments().getValuesDBFormat(true);
+        String measuredMethodName = benResult.getBenchmarkSetting().getMeasuredMethod().toString();
+        String generatorName = benResult.getBenchmarkSetting().getGenerator().toString();
+        String generatorArguments = benResult.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(true);
         long time = benResult.getStatistics().computeMean();
         System.out.println("detailed inserting");
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
@@ -317,32 +317,32 @@ public class ResultDatabaseCache implements ResultAdminCache {
         insertMeasurementQuality(mq);
         //inserting record into measurement_information
         int idQuality = getIDQualityForGivenRecord(mq);
-        String queryInsertInfo = "INSERT INTO measurement_information (method, workload, workload_arguments, average, idQuality) "
-                + "VALUES ('" + methodName + "', '" + workloadName + "', '" + workloadArguments + "', " + time + ", " + idQuality + ")";
+        String queryInsertInfo = "INSERT INTO measurement_information (measured_method, generator, generator_arguments, average, idQuality) "
+                + "VALUES ('" + measuredMethodName + "', '" + generatorName + "', '" + generatorArguments + "', " + time + ", " + idQuality + ")";
         log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
         stmt.executeUpdate(queryInsertInfo);
         //and all times into measurement_detailed
-        int id = getIDForGivenRecord(methodName, workloadName, workloadArguments);
+        int id = getIDForGivenRecord(measuredMethodName, generatorName, generatorArguments);
         insertDetailedResults(id, benResult.getStatistics().getValues());
         closeStatement(stmt);
     }
 
     /**
-     * Returns the unique ID for the row identified by given arguments.
+     * Returns the unique ID for the row measuredMethodName by given arguments.
      *
-     * @param method
-     * @param workload
-     * @param workloadArgs
+     * @param measuredMethodName
+     * @param generatorName
+     * @param generatorArguments
      * @return
      * @throws SQLException if there's no such record in database
      */
-    private int getIDForGivenRecord(String method, String workload, String workloadArgs) throws SQLException {
+    private int getIDForGivenRecord(String measuredMethodName, String generatorName, String generatorArguments) throws SQLException {
         Statement stmt = conn.createStatement();
         String query = "SELECT id "
                 + "FROM measurement_information"
-                + " WHERE (method = '" + method + "'"
-                + " AND workload='" + workload + "'"
-                + " AND workload_arguments='" + workloadArgs + "')";
+                + " WHERE (measured_method = '" + measuredMethodName + "'"
+                + " AND generator='" + generatorName + "'"
+                + " AND generator_arguments='" + generatorArguments + "')";
 
         ResultSet rs = stmt.executeQuery(query);
 
@@ -358,9 +358,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
     /**
      * Returns the unique ID for the row identified by given arguments.
      *
-     * @param method
-     * @param workload
-     * @param workloadArgs
+     * @param mq
      * @return
      * @throws SQLException if there's no such record in database
      */
@@ -453,9 +451,11 @@ public class ResultDatabaseCache implements ResultAdminCache {
             preparedStmt.setLong(1, val);
             preparedStmt.addBatch();
         }
-        
+
         preparedStmt.executeBatch();
         conn.commit();
+        
+        conn.setAutoCommit(true);
 
         closeStatement(preparedStmt);
     }

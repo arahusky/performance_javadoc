@@ -37,6 +37,8 @@ public class MyArrayListMoreOps extends ArrayList {
     @SuppressWarnings("unchecked")
     public void sort() {
         Collections.sort(this);
+        
+        //TODO possibly return sorted collection or use Blackhole! 
     }
 
     /**

@@ -27,22 +27,22 @@ import org.json.JSONObject;
 /**
  * Container for incoming JSON request. It contains all information from the
  * request in easy-to-work representation (e.g. methods represented via
- * MethodReflectionInfo, all arguments of workload in proper types, ...).
+ * MethodReflectionInfo, all arguments of generator in proper types, ...).
  *
- * While creating inner representation, it also checks, whether testedMethod and
- * workload exists (via MethodReflectionInfo)
+ * While creating inner representation, it also checks, whether measuredMethod
+ * and generator exists (via MethodReflectionInfo)
  *
  * @author Jakub Naplava
  */
 public class MeasureRequest {
 
-    private final MethodReflectionInfo testedMethod;
-    private final MethodReflectionInfo workload;
+    private final MethodReflectionInfo measuredMethod;
+    private final MethodReflectionInfo generator;
     private final int rangeVal;
     private final MeasurementQuality measurementQuality;
     private final String userID;
 
-    //the arguments for workload with proper type. The only exception is the range-argument, which is being hold as String.
+    //the arguments for generator with proper type. The only exception is the range-argument, which is being hold as String.
     private final Object[] values;
 
     /**
@@ -57,17 +57,17 @@ public class MeasureRequest {
     public MeasureRequest(String JSONRequest) throws ClassNotFoundException, IOException, NoSuchMethodException {
         JSONObject obj = new JSONObject(JSONRequest);
 
-        String methodName = obj.getString("testedMethod");
-        String workloadName = obj.getString("generator");
+        String measuredMethodName = obj.getString("testedMethod");
+        String generatorName = obj.getString("generator");
 
-        this.testedMethod = new MethodReflectionInfo(methodName);
-        this.workload = new MethodReflectionInfo(workloadName);
+        this.measuredMethod = new MethodReflectionInfo(measuredMethodName);
+        this.generator = new MethodReflectionInfo(generatorName);
 
         this.rangeVal = obj.getInt("rangeValue");
-        
+
         int priority = obj.getInt("priority");
         this.measurementQuality = new MeasurementQuality(priority);
-        
+
         this.userID = obj.getString("id");
 
         JSONArray dataArray = obj.getJSONArray("data");
@@ -98,7 +98,7 @@ public class MeasureRequest {
             if (i != rangeValue) {
                 Object item = valuesList.get(i);
 
-                String parameter = getArgName(workload, i);
+                String parameter = getArgName(generator, i);
                 //if it is a number, it must be on it converted
                 if (parameter.equals("int") || parameter.equals("float") || parameter.equals("double")) {
                     if (((String) item).contains(" to ")) {
@@ -143,19 +143,19 @@ public class MeasureRequest {
     }
 
     /**
-     * Returns the i+2 argument name of the given method (omiting workload and
+     * Returns the i+2 argument name of the given method (omitting generator and
      * serviceWorkload arguments)
      */
     private static String getArgName(MethodInfo mi, int i) {
         return mi.getParams().get(i + 2);
     }
 
-    public MethodReflectionInfo getTestedMethod() {
-        return testedMethod;
+    public MethodReflectionInfo getMeasuredMethod() {
+        return measuredMethod;
     }
 
-    public MethodReflectionInfo getWorkload() {
-        return workload;
+    public MethodReflectionInfo getGenerator() {
+        return generator;
     }
 
     public int getRangeVal() {

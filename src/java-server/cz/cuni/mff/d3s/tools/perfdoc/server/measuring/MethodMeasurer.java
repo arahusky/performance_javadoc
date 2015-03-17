@@ -85,7 +85,7 @@ public class MethodMeasurer {
         serviceImpl.setPriority(priority);
 
         //values chosen from rangeValue to measure data in
-        double step = MeasuringUtils.findStepValue(measureRequest.getWorkload(), measureRequest.getRangeVal());
+        double step = MeasuringUtils.findStepValue(measureRequest.getGenerator(), measureRequest.getRangeVal());
         Object rangeArgument = measureRequest.getValues()[measureRequest.getRangeVal()];
 
         //list, containing for each priority (respectively priority..4) values in which the measurement (for corresponding) priority, will be performed
@@ -171,8 +171,8 @@ public class MethodMeasurer {
             for (double val : valuesToMeasure.get(i - priority)) {
                 Object[] args = MeasuringUtils.prepareArgsToCall(measureRequest, null, null, val);
 
-                BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest.getTestedMethod(),
-                        measureRequest.getWorkload(), new MethodArgumentsImpl(args), mq);
+                BenchmarkSetting benSetting = new BenchmarkSettingImpl(measureRequest.getMeasuredMethod(),
+                        measureRequest.getGenerator(), new MethodArgumentsImpl(args), mq);
 
                 BenchmarkResult benRes = resultCache.getResult(benSetting);
 

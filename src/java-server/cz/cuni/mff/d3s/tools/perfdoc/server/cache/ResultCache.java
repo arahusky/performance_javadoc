@@ -29,11 +29,11 @@ public interface ResultCache {
     /**
      * Returns the BenchmarkResult corresponding to the given BenchmarkSetting.
      *
-     * It means, that the cache is searched for record having same methodName,
-     * workloadName, workloadArguments and was measured at least as precisely as
-     * we need to (measured warmupTime, warmupCycles, measurementTime,
-     * measurementCycles are at least as big as our requirements saved in
-     * setting).
+     * It means, that the cache is searched for record having same
+     * measuredMethodName, generatorName, generatorArguments and was measured at
+     * least as precisely as we need to (measured warmupTime, warmupCycles,
+     * measurementTime, measurementCycles are at least as big as our
+     * requirements saved in setting).
      *
      * @param setting
      * @return the BenchmarkResult with Statistics obtained from the cache. If
