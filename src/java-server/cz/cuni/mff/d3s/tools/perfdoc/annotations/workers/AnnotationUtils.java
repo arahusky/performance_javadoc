@@ -26,9 +26,7 @@ import java.util.logging.Logger;
  *
  * @author Jakub Naplava
  */
-public class AnnotationWorker {
-
-    private static final Logger log = Logger.getLogger(AnnotationWorker.class.getName());
+public class AnnotationUtils {
 
     /**
      * Returns description of generator parameters (except for first two of

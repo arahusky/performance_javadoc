@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
@@ -120,7 +120,7 @@ public class DetailedSiteHandler implements SiteHandler {
             sb.append("Sorry, but the requested method is not actually present on the server.");
             return null;
         }
-        String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
+        String[] genParametersText = AnnotationUtils.geParameterDescriptions(generatorMethod);
         int range = getRangeValue(parameters, generator.getParams());
         
         if (genParametersText == null || (range == -1)) {

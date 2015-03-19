@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationWorker;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
@@ -123,7 +123,7 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
             log.log(Level.INFO, "User obtained method that does not exist.");
             return null;
         }
-        String[] genParametersText = AnnotationWorker.geParameterDescriptions(generatorMethod);
+        String[] genParametersText = AnnotationUtils.geParameterDescriptions(generatorMethod);
         if (genParametersText == null) {
             return null;
         }

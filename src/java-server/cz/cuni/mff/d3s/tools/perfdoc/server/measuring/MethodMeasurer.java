@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
- * This class prepares measurement points.
+ * This class performs measurement.
  *
  * It contains counting points, in which the measurement will be performed,
  * searching cache for results and if no results are found, then also preparing

@@ -130,7 +130,13 @@ public class PerformanceBodyWriter {
         HtmlTree outputFormat = new HtmlTree(HtmlTag.DIV);
         outputFormat.addAttr(HtmlAttr.CLASS, "radio");
         String radiosName = uniqueWorkloadName + "_radio";
-        outputFormat.addContent(new RawHtml("<form id=\"" + radiosName + "\"><input type=\"radio\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">Graph <input type=\"radio\" name=\"" + radiosName + "\" value=\"table\">Table </form>"));
+        String radioContent = "<form id=\"" + radiosName + "\">"
+                + "<input type=\"radio\" id =\"" + radiosName + "_graph\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">"
+                + "<label for=\"" + radiosName + "_graph\"> Graph</label> "
+                + "<input type=\"radio\" id =\"" + radiosName + "_table\" name=\"" + radiosName + "\" value=\"table\">"
+                + "<label for=\"" + radiosName + "_table\"> Table</label> "
+                + "</form>";
+        outputFormat.addContent(new RawHtml(radioContent));
         String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueWorkloadName);
         JavascriptCodeBox.addLocalCode(js);
         
