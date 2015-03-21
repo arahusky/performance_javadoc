@@ -128,7 +128,11 @@ public class MethodMeasurer {
                         runner = new MethodReflectionRunner();
                         break;
                     case 4:
-                        runner = new DirectRunner();
+                        if (MeasurementConfiguration.getCodeGenerationFlag()) {
+                            runner = new DirectRunner();
+                        } else {
+                            runner = new MethodReflectionRunner();
+                        }
                         break;
                 }
 

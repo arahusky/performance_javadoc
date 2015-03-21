@@ -43,12 +43,16 @@ public class DirectRunner extends MethodRunner {
     public Statistics measure(BenchmarkSetting setting) {
         try {
             //generating code for measurement
+            log.log(Level.FINE, "Starting to generate benchmark code.");
             CodeGenerator codeGen = new CodeGenerator(setting);
             codeGen.generate();
+            log.log(Level.FINE, "Benchmark code generated.");
 
             //running generated code
             CodeRunner codeRunner = new CodeRunner(codeGen.getDirectory());
+            log.log(Level.FINE, "Running benchmark code.");
             codeRunner.run();
+            log.log(Level.FINE, "Benchmark code running done.");
 
             //collecting generated results
             Statistics s = collectResults(codeGen.getDirectory());
@@ -63,8 +67,9 @@ public class DirectRunner extends MethodRunner {
                 }
             }
 
+            log.log(Level.FINE, "Deleting folder containing generated code.");
             //CodeGenerator created new folder, which should be (with all its content) deleted
-            codeGen.deleteGeneratedContent();
+            //codeGen.deleteGeneratedContent();
 
             return s;
         } catch (CompileException | IOException e) {
@@ -81,7 +86,7 @@ public class DirectRunner extends MethodRunner {
      * @param fileName Name of the file containing measured results
      * @return Statistics containing measured results
      */
-    private Statistics collectResults(String fileName) {
+    private Statistics collectResults(String fileName) throws IOException {
         Statistics s = new Statistics();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName + File.separator + "results.txt"))) {
@@ -91,8 +96,9 @@ public class DirectRunner extends MethodRunner {
                 s.addResult(time);
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to find measured results", e);
-            return null;
+            //log.log(Level.SEVERE, "Unable to find measured results", e);
+            //throw e;
+            //TODO
         }
 
         return s;

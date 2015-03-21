@@ -66,8 +66,8 @@ public class ClassParser {
      * determined by a className.
      *
      * @param className
-     * @throws ClassNotFoundException when measuredMethod or generator method were not
-     * found
+     * @throws ClassNotFoundException when measuredMethod or generator method
+     * were not found
      * @throws MalformedURLException when files in which to search the files are
      * in a bad format
      */
@@ -79,8 +79,8 @@ public class ClassParser {
      * Loads and saves the specified class.
      *
      * @param className
-     * @throws ClassNotFoundException when measuredMethod or generator method were not
-     * found
+     * @throws ClassNotFoundException when measuredMethod or generator method
+     * were not found
      * @throws MalformedURLException when files in which to search the files are
      * in a bad format
      */
@@ -169,7 +169,13 @@ public class ClassParser {
      * @return
      */
     public static List<String> getClassPaths() {
-        return classPaths;
+        //we do not want to share our private list, but only its copy
+        List<String> newList = new ArrayList<>(classPaths.size());
+        for (String str : classPaths) {
+            newList.add(str);
+        }
+        
+        return newList;
     }
 
     /**

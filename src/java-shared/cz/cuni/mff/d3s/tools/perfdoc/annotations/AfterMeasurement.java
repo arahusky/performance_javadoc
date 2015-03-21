@@ -17,6 +17,7 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,12 +27,9 @@ import java.lang.annotation.Target;
  *
  * @author Jakub Naplava
  */
-@Target(ElementType.PARAMETER)
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ParamNum {
-    String description();
-    double min();
-    double max();
-    double step() default 1;
-    boolean axis() default true;
+public @interface AfterMeasurement
+{
+    
 }

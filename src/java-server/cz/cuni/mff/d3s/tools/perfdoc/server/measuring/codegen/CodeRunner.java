@@ -65,10 +65,28 @@ public class CodeRunner {
         String classpath = getClassPath();
 
         ProcessBuilder processBuilder = new ProcessBuilder(path, "-cp", classpath, measurementClassName);
-
+      
         Process process = processBuilder.start();
-        process.waitFor();
+        
+        //output the process must be processed (otherwise process never ends - deadlock)
+        final InputStream stdIn = process.getInputStream();
+                
+        //reading stdIn must be done in separate thread (otherwise, when there's no input, but just errors, deadlock occurs)
+        new Thread(new Runnable() {
 
+            @Override
+            public void run() {
+                int c = 0;
+                try {
+                    while ((c = stdIn.read()) != -1) {
+                        //doNothing (we do not care about what other code produces
+                    }
+                } catch (IOException ex) {
+                    //doNothing
+                }
+            }
+        }).start();
+        
         //catching error messages
         InputStream in = process.getErrorStream();
         StringBuilder errorMsg = new StringBuilder();
@@ -80,13 +98,16 @@ public class CodeRunner {
         if (errorMsg.length() != 0) {
             log.log(Level.SEVERE, "An error occured when trying to run new JVM to run a measurement", errorMsg.toString());
         }
+        
+        process.waitFor();
     }
 
     /**
      * Returns class paths that are used for call of the new JVM.
      *
-     * Main class to be run is saved in 'measurementDirPath', other classes,
-     * that may be needed are obtained from ClassParser.
+     * Main class to be run is saved in 'measurementDirPath', then all workload
+     * with their implementations are in 'CodeGenerator.workloadsRootDir' and
+     * other classes, that may be needed are obtained from ClassParser.
      *
      * @return String that may be used as an argument for -cp
      */
@@ -94,6 +115,9 @@ public class CodeRunner {
         List<String> workloadPaths = ClassParser.getClassPaths();
 
         StringBuilder classPathBuilder = new StringBuilder(measurementDirPath);
+
+        classPathBuilder.append(File.pathSeparator + CodeGenerator.workloadsRootDir);
+
         for (String classPath : workloadPaths) {
             classPathBuilder.append(File.pathSeparator + classPath);
         }

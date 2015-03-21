@@ -60,7 +60,7 @@ public class CodeGenerator {
     private static final String compiledClassDestinationDir = "out/measuring/code_generation/";
 
     //root directory for workloads (Workload, WorkloadImpl, ServiceWorkload, ServiceWorkloadImpl)
-    private static final String workloadsRootDir = "out/classes/java-server";
+    public static final String workloadsRootDir = "out/classes/java-server";
 
     //name of template containing measured method call
     private static final String templateMethodName = "TMethod";

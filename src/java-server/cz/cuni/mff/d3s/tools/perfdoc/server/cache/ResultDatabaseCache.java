@@ -309,18 +309,21 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String generatorName = benResult.getBenchmarkSetting().getGenerator().toString();
         String generatorArguments = benResult.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(true);
         long time = benResult.getStatistics().computeMean();
-        System.out.println("detailed inserting");
+        
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         MeasurementQuality mq = setting.getMeasurementQuality();
+        
         Statement stmt = conn.createStatement();
         //inserting measurement quality record
         insertMeasurementQuality(mq);
+        
         //inserting record into measurement_information
         int idQuality = getIDQualityForGivenRecord(mq);
         String queryInsertInfo = "INSERT INTO measurement_information (measured_method, generator, generator_arguments, average, idQuality) "
                 + "VALUES ('" + measuredMethodName + "', '" + generatorName + "', '" + generatorArguments + "', " + time + ", " + idQuality + ")";
         log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
         stmt.executeUpdate(queryInsertInfo);
+        
         //and all times into measurement_detailed
         int id = getIDForGivenRecord(measuredMethodName, generatorName, generatorArguments);
         insertDetailedResults(id, benResult.getStatistics().getValues());

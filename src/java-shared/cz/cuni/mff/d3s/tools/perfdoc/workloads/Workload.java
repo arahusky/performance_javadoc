@@ -32,4 +32,23 @@ public interface Workload {
      * @param args Arguments for the measured method.
      */
     public void addCall(Object obj, Object... args);
+
+    /**
+     * Set class containing code to be run after measurement and after
+     * benchmark.
+     *
+     * There may be one method having annotation AfterMeasurement, which means
+     * that its code will be run just after running one measurement (= one code
+     * set by addCall method).
+     *
+     * There may be one method having annotation AfterBenchmark, which means
+     * that its code will be run after running all "calls", which are set by
+     * addCall method.
+     *
+     * When there are multiple methods having same annotation, the last of them
+     * is called.
+     *
+     * @param obj instance of class, which contains specified methods.
+     */
+    public void setHooks(Object obj);
 }

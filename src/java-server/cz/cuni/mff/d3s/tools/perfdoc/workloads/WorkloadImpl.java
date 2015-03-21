@@ -17,6 +17,10 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.workloads;
 
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterBenchmark;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterMeasurement;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +31,13 @@ import java.util.List;
 public class WorkloadImpl implements Workload{
 
     private final List<Object[]> list = new ArrayList<>();
+    
+    private Object instance;
+    
+    private Method afterMeasurementMethod;
+    
+    private Method afterBenchmarkMethod;
+    
     
     @Override
     public void addCall(Object obj, Object... args) {
@@ -43,5 +54,48 @@ public class WorkloadImpl implements Workload{
     
     public List<Object[]> getCalls() {
         return list;
+    }
+
+    @Override
+    public void setHooks(Object obj) {
+        this.instance = obj;
+        
+        Class<?> objClass = obj.getClass();
+        
+        Method[] methods = objClass.getMethods();
+        
+        for (Method method : methods) {
+            Annotation annotation = method.getAnnotation(AfterMeasurement.class);            
+            if (annotation != null) {
+                afterMeasurementMethod = method;
+            }
+            
+            annotation = method.getAnnotation(AfterBenchmark.class);
+            if (annotation != null) {
+                afterBenchmarkMethod = method;
+            }
+        }
+    }
+
+    public Object getInstance() {
+        return instance;
+    }
+
+    public Method getAfterMeasurementMethod() {
+        return afterMeasurementMethod;
+    }
+
+    public Method getAfterBenchmarkMethod() {
+        return afterBenchmarkMethod;
+    }    
+    
+    /**
+     * Empties workload.
+     */
+    public void reset() {
+        this.list.clear();
+        this.afterBenchmarkMethod = null;
+        this.afterMeasurementMethod = null;
+        this.instance = null;
     }
 }

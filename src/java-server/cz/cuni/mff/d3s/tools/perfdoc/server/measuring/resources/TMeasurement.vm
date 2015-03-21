@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
@@ -29,7 +30,7 @@ public class TMeasurement {
 
     public TMeasurement(String[] argv) 
             throws Throwable {
-        
+
         WorkloadImpl workloadImpl = new WorkloadImpl();
         ServiceWorkloadImpl serviceImpl = new ServiceWorkloadImpl();
 
@@ -37,8 +38,7 @@ public class TMeasurement {
         serviceImpl.setPriority(PRIORITY);
 
         TGenerator tGen = new TGenerator();
-        tGen.call(workloadImpl, serviceImpl);
-       
+        
         //warmup
         int warmupCyclesSpent = 0;
         long warmupTimeSpent = 0;
@@ -50,11 +50,13 @@ public class TMeasurement {
                 break;
             }
 
-            measure(workloadImpl, null);
+            //preparing workload for new results
+            workloadImpl.reset();
+            
+            tGen.call(workloadImpl, serviceImpl);       
 
-            //refresh object instances
-            workloadImpl = new WorkloadImpl();
-            tGen.call(workloadImpl, serviceImpl);
+            measure(workloadImpl, null);
+            
             warmupCyclesSpent++;
         }
 
@@ -70,16 +72,18 @@ public class TMeasurement {
                 break;
             }
 
-            measure(workloadImpl, times);
-
-            //refresh object instances
-            workloadImpl = new WorkloadImpl();
+            //preparing workload for new results
+            workloadImpl.reset();
+            
             tGen.call(workloadImpl, serviceImpl);
 
+            measure(workloadImpl, times);
+    
             measurementCyclesSpent++;
         }
 
         File file = new File(directoryWhereToSaveResults + "results.txt");
+        file.createNewFile();
 
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
             for (Long l : times) {
@@ -116,6 +120,18 @@ public class TMeasurement {
                 if (times != null) {
                     times.add(endTime - startTime);                    
                 }
+
+                Method afterMeasurementMethod = workloadImpl.getAfterMeasurementMethod();
+                if (afterMeasurementMethod != null) {
+                    Object instance = workloadImpl.getInstance();
+                    afterMeasurementMethod.invoke(instance, objs);
+                }
+            }
+
+            Method afterBenchmarkMethod = workloadImpl.getAfterBenchmarkMethod();        
+            if (afterBenchmarkMethod != null) {
+                Object instance = workloadImpl.getInstance();
+                afterBenchmarkMethod.invoke(instance, (Object[]) null);
             }
     }
 }

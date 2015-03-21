@@ -15,12 +15,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+package cz.cuni.mff.d3s.tools.perfdoc.annotations;
+
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  *
  * @author Jakub Naplava
  */
-public interface Workload {
-    public void addCall(Object obj, Object... args);
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AfterBenchmark {
+    
 }

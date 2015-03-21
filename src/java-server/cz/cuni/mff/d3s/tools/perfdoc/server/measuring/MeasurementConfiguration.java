@@ -75,6 +75,10 @@ public class MeasurementConfiguration {
         }
     }
 
+    public static boolean getCodeGenerationFlag() {
+        return getBoolProperty("useCodeGeneration");
+    }
+
     /**
      * Returns the number of values, in which the measurement should be
      * performed.
@@ -85,13 +89,13 @@ public class MeasurementConfiguration {
     public static int getNumberOfPoints(int priority) {
         switch (priority) {
             case 1:
-                return getProperty("priorityOneNumberOfPoints");
+                return getIntProperty("priorityOneNumberOfPoints");
             case 2:
-                return getProperty("priorityTwoNumberOfPoints");
+                return getIntProperty("priorityTwoNumberOfPoints");
             case 3:
-                return getProperty("priorityThreeNumberOfPoints");
+                return getIntProperty("priorityThreeNumberOfPoints");
             case 4:
-                return getProperty("priorityFourNumberOfPoints");
+                return getIntProperty("priorityFourNumberOfPoints");
             default:
                 return -1;
         }
@@ -108,13 +112,13 @@ public class MeasurementConfiguration {
 
         switch (priority) {
             case 1:
-                return getProperty("priorityOneNumberOfCyclesWarmup");
+                return getIntProperty("priorityOneNumberOfCyclesWarmup");
             case 2:
-                return getProperty("priorityTwoNumberOfCyclesWarmup");
+                return getIntProperty("priorityTwoNumberOfCyclesWarmup");
             case 3:
-                return getProperty("priorityThreeNumberOfCyclesWarmup");
+                return getIntProperty("priorityThreeNumberOfCyclesWarmup");
             case 4:
-                return getProperty("priorityFourNumberOfCyclesWarmup");
+                return getIntProperty("priorityFourNumberOfCyclesWarmup");
             default:
                 return -1;
         }
@@ -131,13 +135,13 @@ public class MeasurementConfiguration {
 
         switch (priority) {
             case 1:
-                return getProperty("priorityOneElapsedTimeWarmup");
+                return getIntProperty("priorityOneElapsedTimeWarmup");
             case 2:
-                return getProperty("priorityTwoElapsedTimeWarmup");
+                return getIntProperty("priorityTwoElapsedTimeWarmup");
             case 3:
-                return getProperty("priorityThreeElapsedTimeWarmup");
+                return getIntProperty("priorityThreeElapsedTimeWarmup");
             case 4:
-                return getProperty("priorityFourElapsedTimeWarmup");
+                return getIntProperty("priorityFourElapsedTimeWarmup");
             default:
                 return -1;
         }
@@ -154,13 +158,13 @@ public class MeasurementConfiguration {
 
         switch (priority) {
             case 1:
-                return getProperty("priorityOneNumberOfCyclesMeasurement");
+                return getIntProperty("priorityOneNumberOfCyclesMeasurement");
             case 2:
-                return getProperty("priorityTwoNumberOfCyclesMeasurement");
+                return getIntProperty("priorityTwoNumberOfCyclesMeasurement");
             case 3:
-                return getProperty("priorityThreeNumberOfCyclesMeasurement");
+                return getIntProperty("priorityThreeNumberOfCyclesMeasurement");
             case 4:
-                return getProperty("priorityFourNumberOfCyclesMeasurement");
+                return getIntProperty("priorityFourNumberOfCyclesMeasurement");
             default:
                 return -1;
         }
@@ -177,24 +181,24 @@ public class MeasurementConfiguration {
 
         switch (priority) {
             case 1:
-                return getProperty("priorityOneElapsedTimeMeasurement");
+                return getIntProperty("priorityOneElapsedTimeMeasurement");
             case 2:
-                return getProperty("priorityTwoElapsedTimeMeasurement");
+                return getIntProperty("priorityTwoElapsedTimeMeasurement");
             case 3:
-                return getProperty("priorityThreeElapsedTimeMeasurement");
+                return getIntProperty("priorityThreeElapsedTimeMeasurement");
             case 4:
-                return getProperty("priorityFourElapsedTimeMeasurement");
+                return getIntProperty("priorityFourElapsedTimeMeasurement");
             default:
                 return -1;
         }
     }
 
-    private static int getProperty(String propertyName) {
+    private static int getIntProperty(String propertyName) {
 
         String propertyValue = measurementProperties.getProperty(propertyName);
         //if such a property does not exist or has a value of -1, we use default property value
         if (propertyValue == null || propertyValue.equals("-1")) {
-            return getDefaultProperty(propertyName);
+            return getDefaultIntProperty(propertyName);
         }
 
         try {
@@ -202,11 +206,24 @@ public class MeasurementConfiguration {
             return value;
         } catch (NumberFormatException e) {
             log.log(Level.WARNING, "The measurement properties file contains non-integer value. Using default one.", e);
-            return getDefaultProperty(propertyName);
+            return getDefaultIntProperty(propertyName);
         }
     }
 
-    private static int getDefaultProperty(String propertyName) {
+    private static boolean getBoolProperty(String propertyName) {
+
+        String propertyValue = measurementProperties.getProperty(propertyName);
+        //if such a property does not exist or has a value of -1, we use default property value
+        if (propertyValue == null || propertyValue.equals("-1")) {
+            return getDefaultBoolProperty(propertyName);
+        }
+
+        boolean value = Boolean.parseBoolean(propertyValue);
+        return value;
+
+    }
+
+    private static int getDefaultIntProperty(String propertyName) {
         String defPropertyName = "def" + propertyName;
         String defPropertyValue = defMeasurementProperties.getProperty(defPropertyName);
 
@@ -217,5 +234,13 @@ public class MeasurementConfiguration {
             log.log(Level.SEVERE, "The default measurement properties file contains non-integer value.", e);
             return -1;
         }
+    }
+
+    private static boolean getDefaultBoolProperty(String propertyName) {
+        String defPropertyName = "def" + propertyName;
+        String defPropertyValue = defMeasurementProperties.getProperty(defPropertyName);
+
+        boolean value = Boolean.parseBoolean(defPropertyValue);
+        return value;
     }
 }

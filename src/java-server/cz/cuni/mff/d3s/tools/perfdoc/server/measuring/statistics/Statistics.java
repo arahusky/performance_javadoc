@@ -65,8 +65,6 @@ public final class Statistics {
             return -1;
         }
         
-        System.out.println("size: " + getNumberOfMeasurements()) ;
-
         DescriptiveStatistics stats = new DescriptiveStatistics();
         for (Long l : measurementResults) {
             stats.addValue(l);
