@@ -61,7 +61,6 @@ public class MeasureRequestHandler implements HttpHandler {
         //gets the body of the output
         OutputStream responseBody = exchange.getResponseBody();
 
-        String userID = "";
         MethodMeasurer measurer = null;
         MeasureRequest measureRequest = null;
         
@@ -109,7 +108,7 @@ public class MeasureRequestHandler implements HttpHandler {
             measurer.saveResultsAndCloseDatabaseConnection();
         }
 
-        log.log(Level.INFO, "Data were succesfully sent to the user ({0}).", userID);
+        log.log(Level.INFO, "Data were succesfully sent to the user ({0}).", measureRequest.getUserID());
     }
     
     private void sendErrorMessage(String msg, HttpExchange exchange, OutputStream out) {

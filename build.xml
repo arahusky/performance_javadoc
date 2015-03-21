@@ -155,7 +155,8 @@
 				<include name="**/MyLinkedList.java"/>
 				<include name="**/MyArrayListMoreOps.java"/>
 				<include name="**/GralTest.java"/>
-				<include name="**/SimpleOperations.java"/>
+				<include name="**/FileRead.java"/>
+				<include name="**/DatabaseInsert.java"/>
 			</fileset>
 			<doclet
 				name="cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard"

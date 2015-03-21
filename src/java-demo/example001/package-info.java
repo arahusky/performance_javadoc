@@ -14,21 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * This annotation is used to set multiple workload generators for the method.
- *
- * @author Jakub Naplava
+ * <p>This package contains methods to show the basic functionality of the harness.</p>
+ * 
+ * <p>The classes, which methods should be measured, are ArrayList and LinkedList.</p>
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Workloads {
-
-    Workload[] value();
-}
+package example001;

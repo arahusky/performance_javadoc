@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation is used to describe a parameter of generator.
  *
  * @author Jakub Naplava
  */

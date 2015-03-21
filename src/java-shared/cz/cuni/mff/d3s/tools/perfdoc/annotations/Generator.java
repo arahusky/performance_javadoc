@@ -22,13 +22,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation marks method that serves as generator (= data preparer).
  *
  * @author Jakub Naplava
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Generator
-{
+public @interface Generator {
+
     String description();
+
     String genName();
 }

@@ -31,6 +31,7 @@ import java.util.*;
 
 import com.sun.javadoc.*;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
+import static cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriter.configuration;
 
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.*;
@@ -304,16 +305,16 @@ public class HtmlDocletWriter extends HtmlDocWriter {
     }
 
     /**
-     * Adds the performance information to the given method
+     * Adds the performance information to the given method.
      *
-     * @param doc the MethoDoc that represents the method to which the
+     * @param doc the MethodDoc that represents the method to which the
      * performance info will be added
      * @param htmltree the documentation tree to which the tags will be added
      */
     protected void addPerformanceInfo(MethodDoc doc, Content htmltree) {
-        String[] workloadNames;
-        //if there's any workload annotation containing some generator
-        if ((workloadNames = returnWorkloadNames(doc)) != null) {
+        String[] generatorNames;
+        //if there's any workload generator set for our method (=method contains workload annotation)
+        if ((generatorNames = returnGeneratorNames(doc)) != null) {
             if (JavascriptCodeBox.isGlobalCodePrinted == false) {
                 JavascriptCodeBox.isGlobalCodePrinted = true;
                 try {
@@ -328,11 +329,9 @@ public class HtmlDocletWriter extends HtmlDocWriter {
             PerformanceOutputImpl output = new PerformanceOutputImpl("");
             
             try {
-            PerformanceWriter.genPerfOutput(doc, output, workloadNames);
-            } catch (ClassNotFoundException e) {
-                System.out.println(e);
+                PerformanceWriter.genPerfOutput(doc, output, generatorNames);
             } catch (MalformedURLException ex) {
-                System.out.println(ex);
+                configuration.root.printWarning("An error occured when trying to initialize ClassLoader for loading generator classes." );
             }
 
             String outputString = output.toString().trim();
@@ -345,14 +344,14 @@ public class HtmlDocletWriter extends HtmlDocWriter {
     }
 
     /**
-     * Returns all the Workload annotations of specified method
+     * Returns all the generators (=Workload annotations) of specified method.
      *
      * @param doc the MethodDoc that represents the method
      * @return the String[] containing the Workload (resp. from Workloads all
      * contained Workload) arguments of the specified method; null, if there's
      * no such annotation
      */
-    private String[] returnWorkloadNames(MethodDoc doc) {
+    private String[] returnGeneratorNames(MethodDoc doc) {
         ArrayList<String> list = new ArrayList<>();
         AnnotationDesc[] annotations = doc.annotations();
 

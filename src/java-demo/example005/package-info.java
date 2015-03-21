@@ -14,13 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
-
 /**
- *
- * @author Jakub Naplava
+ * This package contains code to manage files (respectively theirs streams) to
+ * demonstrate functionality of AfterMeasurement and AfterBenchmark annotations.
  */
-public interface Workload {
-    public void addCall(Object obj, Object... args);
-}
+package example005;

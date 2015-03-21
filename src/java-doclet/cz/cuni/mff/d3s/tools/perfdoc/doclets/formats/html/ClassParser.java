@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class that maintains searching of generators (including loading .java file)
- * (using doclet API)
+ * Class that maintains searching of workload generators.
  *
  * @author Jakub Naplava
  */
@@ -35,17 +34,18 @@ public class ClassParser {
     private static ClassLoader workloadClassLoader;
 
     /**
-     *
-     * @param workloadName the workloadName in format package.className#method
+     * Returns all methods that correspond to given name.
+     * 
+     * @param generatorName the generatorName in format package.className#method
      * @return all methods, that are in the specified package with the specified
      * method name and contain generator annotation
      */
-    public static Method[] findMethods(String workloadName) throws ClassNotFoundException, MalformedURLException {
+    public static Method[] findMethods(String generatorName) throws ClassNotFoundException, MalformedURLException {
         if (workloadClassLoader == null) {
             initializeWorkloadClassLoader();
         }
 
-        String[] field = workloadName.split("#");
+        String[] field = generatorName.split("#");
 
         String className = field[0];
         String methodName = field[1];

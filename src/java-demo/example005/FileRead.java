@@ -14,14 +14,37 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package example005;
 
-package cz.cuni.mff.d3s.tools.perfdoc.workloads;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
- *
+ * 
  * @author Jakub Naplava
  */
-public interface ServiceWorkload {
-    public int getNumberCalls();
-    public int getPriority();
+public class FileRead {
+
+    /**
+     * Reads from input stream, until EOF reached.
+     *
+     * @param stream
+     * @return against DCE
+     */
+    @Workload("example005.FileGenerator#prepareStream")
+    public static int read(FileInputStream stream) {
+        int character;
+        int sum = 0;
+
+        try {
+            while ((character = stream.read()) != -1) {
+                sum += character;
+            }
+        } catch (IOException ex) {
+            System.err.println("Stream already closed");
+        }
+
+        return sum;
+    }
 }

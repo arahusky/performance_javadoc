@@ -14,21 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * This annotation is used to set multiple workload generators for the method.
+ * <p>
+ * This package contains code to show the effectivity of different approaches to inserting
+ * multiple records into database.</p>
  *
- * @author Jakub Naplava
+ * <p>
+ * Note that because we're working with Derby <b>embedded</b> database, only one
+ * VM can have access to the database, thus no code generation with measuring
+ * code in another VM is possible (codeGenerationFlag in measurement.properties
+ * must be set to false).</p>
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Workloads {
-
-    Workload[] value();
-}
+package example006;

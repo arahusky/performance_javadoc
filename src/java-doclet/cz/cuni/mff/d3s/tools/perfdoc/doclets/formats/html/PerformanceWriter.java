@@ -50,35 +50,41 @@ public abstract class PerformanceWriter {
     protected abstract PerformanceOutput returnTitleOutput();
 
     /**
-     * Generates performance measurement code for the given method
+     * Generates performance measurement output for the given (measured) method
+     * into given PerformanceOutput instance.
      *
      * @param doc measured method
      * @param output the PerformanceOutput to which the measurement code will be
      * added
-     * @param workloadNames the workloadNames for the given method
+     * @param generatorNames the workloadNames for the given method
      */
-    public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] workloadNames) throws ClassNotFoundException, MalformedURLException {
+    public static void genPerfOutput(MethodDoc doc, PerformanceOutput output, String[] generatorNames) throws MalformedURLException {
 
         //passing full method name to the ajax handler
-        JSAjaxHandler.setTestedMethod(perfWriter.getUniqueFullInfo(doc));
+        JSAjaxHandler.setTestedMethod(PerformanceNamingUtils.getUniqueFullInfo(doc));
 
-        //list, that will contain all workloads for the given method (doc) 
-        List<Method> workloads = new ArrayList<>();
-        for (String w : workloadNames) {
-            //for given workloadName may exist 0..n of generators
-            Method[] docs = ClassParser.findMethods(w);
-            if (docs != null) {
-                workloads.addAll(Arrays.asList(docs));
+        //list, that will contain all generators for the given method (doc) 
+        List<Method> generators = new ArrayList<>();
+        for (String w : generatorNames) {
+            //for given generatorName may exist 0..n of generators
+            try {
+                Method[] docs = ClassParser.findMethods(w);
+                if (docs != null) {
+                    generators.addAll(Arrays.asList(docs));
+                }
+            } catch (ClassNotFoundException e) {
+                //workload annotation points to generator that is not present on the server
+                configuration.root.printWarning("Generator referenced as '" + w + "' was not found on the server.");
             }
         }
 
-        if (workloads.isEmpty()) {
+        if (generators.isEmpty()) {
             configuration.root.printWarning("There were found no generators for method: " + doc.qualifiedName() + ". Therefore, no performance info for this method will be added.");
-        } else if (workloads.size() == 1) {
-            addPerfoInfoOneDiv(workloads.get(0), output);
+        } else if (generators.size() == 1) {
+            addPerfoInfoOneDiv(generators.get(0), output);
         } else {
             try {
-                addPerfoInfoMoreDivs(doc, workloads, output);
+                addPerfoInfoMoreDivs(doc, generators, output);
             } catch (GeneratorParameterException ex) {
                 configuration.root.printWarning(ex.getMessage());
             }
@@ -86,16 +92,17 @@ public abstract class PerformanceWriter {
     }
 
     /**
-     * Adds performance info with one workload
+     * Adds performance info of one generator to the given PerformanceOutput
+     * instance.
      *
      * @param method the measured method
      * @param output the PerformanceOutput to which to insert the content
      */
     private static void addPerfoInfoOneDiv(Method method, PerformanceOutput output) {
 
-        String workloadFullName = perfWriter.getUniqueFullInfoReflection(method);
-        String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
-        HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueWorkloadName, workloadFullName, false);
+        String generatorFullName = PerformanceNamingUtils.getUniqueFullInfoReflection(method);
+        String uniqueGeneratorName = PerformanceNamingUtils.getUniqueInfo(generatorFullName);
+        HtmlTree tree = perfWriter.returnPerfoDiv(method, uniqueGeneratorName, generatorFullName, false);
 
         if (tree != null) {
             //if the tree was succesfully built, we can add the performance title and then the tree
@@ -105,7 +112,7 @@ public abstract class PerformanceWriter {
     }
 
     /**
-     * Add the performance info with multiple workloads
+     * Add the performance info with multiple workloads.
      *
      * @param doc the measured method
      * @param list the List of all workloads
@@ -124,13 +131,13 @@ public abstract class PerformanceWriter {
             return;
         }
 
-        //first we need to check that the descriptions are different -> also the workloads are different
+        //first we need to check that the descriptions are different -> also the generators are different
         ArrayList<String> genNames = new ArrayList<>();
 
         for (Method m : list) {
             Generator gen = m.getAnnotation(cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.class);
             String genName = gen.genName();
-            
+
             if (genNames.contains(genName)) {
                 //if for the measured method already exists generator, that has the genName 
                 throw new GeneratorParameterException("The method: " + doc.qualifiedName() + " has two or more workloads that have the same genName. Therefore, no performance info for this method will be added.");
@@ -139,23 +146,23 @@ public abstract class PerformanceWriter {
             }
         }
 
-        //list, that contains the HtmlTrees of all workloads for the measured method
+        //list, that contains the HtmlTrees of all generators for the measured method
         ArrayList<HtmlTree> generatorDivs = new ArrayList<>();
 
         //list, that contains the unique IDs of Divs, which are stored in generatorDivs
         ArrayList<String> generatorDivsIDs = new ArrayList<>();
 
-        //filling in these two arraylist by going through the workloads and generating their's code
+        //filling in these two arraylist by going through the generators and generating their's code
         for (int i = 0; i < list.size(); i++) {
             //the i-th generator
             Method m = list.get(i);
 
-            String workloadFullName = perfWriter.getUniqueFullInfoReflection(m);
-            String uniqueWorkloadName = perfWriter.getUniqueInfo(workloadFullName);
+            String generatorFullName = PerformanceNamingUtils.getUniqueFullInfoReflection(m);
+            String uniqueGeneratorName = PerformanceNamingUtils.getUniqueInfo(generatorFullName);
 
             if (i == 0) {
-                //if it is the first workload, we do not want it to be hidden
-                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, false);
+                //if it is the first generator, we do not want it to be hidden
+                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueGeneratorName, generatorFullName, false);
 
                 if (t == null) {
                     //if there was an error, we call ourselves, but without the first (= bad) method
@@ -166,7 +173,7 @@ public abstract class PerformanceWriter {
                     generatorDivs.add(t);
                 }
             } else {
-                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueWorkloadName, workloadFullName, true);
+                HtmlTree t = perfWriter.returnPerfoDiv(m, uniqueGeneratorName, generatorFullName, true);
 
                 //if there was an error, we call ourselves, but without the bad method (i-th), which we have to first locate and exclude
                 if (t == null) {
@@ -184,7 +191,7 @@ public abstract class PerformanceWriter {
                     generatorDivs.add(t);
                 }
             }
-            generatorDivsIDs.add(uniqueWorkloadName);
+            generatorDivsIDs.add(uniqueGeneratorName);
         }
 
         //now everything is prepared (checked) and we start adding the content
@@ -195,13 +202,13 @@ public abstract class PerformanceWriter {
         HtmlTree tree = new HtmlTree(HtmlTag.DIV);
         //we need to give this div an unique id in order to be able to find it and replace its content
         //in this case the uniqueMethodID is generated from the package + methodName + its argument + just for sure (should never happen) there's also hashmap to remember, whether there was no such id before
-        String uniqueMethodID = perfWriter.getUniqueInfo(perfWriter.getUniqueFullInfo(doc));
+        String uniqueMethodID = PerformanceNamingUtils.getUniqueInfo(PerformanceNamingUtils.getUniqueFullInfo(doc));
         tree.addAttr(HtmlAttr.ID, uniqueMethodID);
 
         //second we add the select content
         HtmlTree selectButton = new HtmlTree(HtmlTag.UL);
         HtmlTree contentLI = new HtmlTree(HtmlTag.LI);
-        contentLI.addContent("Workload: ");
+        contentLI.addContent("Generator: ");
         contentLI.addContent(returnSelect(genNames, generatorDivsIDs, uniqueMethodID));
         selectButton.addContent(contentLI);
         output.appendOutput(new PerformanceOutputImpl(selectButton.toString()));

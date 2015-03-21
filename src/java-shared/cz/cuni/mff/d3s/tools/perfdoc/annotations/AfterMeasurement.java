@@ -14,22 +14,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * This annotation marks method that is called after every measurement (as set
+ * by Workload.addCall).
  *
  * @author Jakub Naplava
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AfterMeasurement
-{
-    
+public @interface AfterMeasurement {
+
 }

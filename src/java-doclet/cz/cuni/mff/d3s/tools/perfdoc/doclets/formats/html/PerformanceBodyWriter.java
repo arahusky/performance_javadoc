@@ -16,7 +16,6 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
-import com.sun.javadoc.MethodDoc;
 import com.sun.tools.doclets.formats.html.markup.HtmlAttr;
 import com.sun.tools.doclets.formats.html.markup.HtmlTag;
 import com.sun.tools.doclets.formats.html.markup.HtmlTree;
@@ -39,7 +38,6 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.HashMap;
 
 /**
  *
@@ -60,15 +58,15 @@ public class PerformanceBodyWriter {
     }
 
     /**
-     * Generates the code that represents one generator
+     * Generates the code that represents one generator.
      *
      * @param doc the MethodDoc that represents the generator
-     * @param uniqueWorkloadName
+     * @param uniqueGeneratorName
      * @param hidden whether the particular div should be hidden or not
      * @return HtmlTree that represents the generator or null if some error
      * occurred
      */
-    public HtmlTree returnPerfoDiv(Method doc, String uniqueWorkloadName, String workladFullName, boolean hidden) {
+    public HtmlTree returnPerfoDiv(Method doc, String uniqueGeneratorName, String generatorFullName, boolean hidden) {
 
         //the main HtmlTree, that will contain two subtrees (left and right), that represent the left part and right part of the performance look
         HtmlTree navList = new HtmlTree(HtmlTag.DIV);
@@ -77,13 +75,13 @@ public class PerformanceBodyWriter {
         } else {
             navList.addAttr(HtmlAttr.CLASS, "wrapper");
         }
-        navList.addAttr(HtmlAttr.ID, uniqueWorkloadName);
+        navList.addAttr(HtmlAttr.ID, uniqueGeneratorName);
 
         HtmlTree leftSide = new HtmlTree(HtmlTag.DIV);
         leftSide.addAttr(HtmlAttr.CLASS, "left");
 
         try {
-            addFormPart(leftSide, doc, uniqueWorkloadName, workladFullName);
+            addFormPart(leftSide, doc, uniqueGeneratorName, generatorFullName);
         } catch (GeneratorParameterException e) {
             String parameter = e.getMessage();
             configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.getName() + " has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
@@ -129,7 +127,7 @@ public class PerformanceBodyWriter {
         //div, where radios to choose output are
         HtmlTree outputFormat = new HtmlTree(HtmlTag.DIV);
         outputFormat.addAttr(HtmlAttr.CLASS, "radio");
-        String radiosName = uniqueWorkloadName + "_radio";
+        String radiosName = uniqueGeneratorName + "_radio";
         String radioContent = "<form id=\"" + radiosName + "\">"
                 + "<input type=\"radio\" id =\"" + radiosName + "_graph\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">"
                 + "<label for=\"" + radiosName + "_graph\"> Graph</label> "
@@ -137,7 +135,7 @@ public class PerformanceBodyWriter {
                 + "<label for=\"" + radiosName + "_table\"> Table</label> "
                 + "</form>";
         outputFormat.addContent(new RawHtml(radioContent));
-        String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueWorkloadName);
+        String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueGeneratorName);
         JavascriptCodeBox.addLocalCode(js);
         
         rightSide.addContent(outputFormat);
@@ -150,15 +148,15 @@ public class PerformanceBodyWriter {
 
     /**
      * Generates the performance code (workload description, sliders, ...,
-     * submit button) for the particular workload
+     * submit button) for the particular generator.
      *
      * @param content the content to which the code should be added
      * @param doc the MethodDoc that represents the workload
-     * @param workloadName
+     * @param generatorName
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, Method doc, String workloadName, String workloadFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException {
+    private void addFormPart(Content content, Method doc, String generatorName, String generatorFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException {
         //getting generator annotation of the doc (it was already checked by classparser that it is not null)
         Generator gen = doc.getAnnotation(Generator.class);
 
@@ -192,10 +190,10 @@ public class PerformanceBodyWriter {
 
         //telling JSSlider to begin generating JS
         JSSliderWriter.startNewGeneratorCode();
-        JSControlWriter.startNewControlButton(workloadName, workloadFullName);
+        JSControlWriter.startNewControlButton(generatorName, generatorFullName);
 
         for (int i = 2; i < param.length; i++) {
-            addParameterPerfo(param[i], content, workloadName, number);
+            addParameterPerfo(param[i], content, generatorName, number);
             number++;
         }
 
@@ -206,7 +204,7 @@ public class PerformanceBodyWriter {
         JSControlWriter.endCurrentButton();
 
         //adding submit button action to the code
-        content.addContent(JSControlWriter.returnButton(workloadName));
+        content.addContent(JSControlWriter.returnButton(generatorName));
     }
 
     /**
@@ -361,165 +359,5 @@ public class PerformanceBodyWriter {
 
         //registering this select to the control
         JSControlWriter.addEnumControl(uniqueSelectName, description);
-    }
-
-    /**
-     * Method to count the unique identifier (through all .html document), that
-     * represents the concrete method, this identifier however contatins also
-     * characters like dot or hash, which can not be used as a variable (see
-     * getUniqueInfo)
-     *
-     * @param doc the methodDoc of method, for which the unique ID will be
-     * counted
-     * @return the unique info (packageName#className#method#Params#Number)
-     */
-    public String getUniqueFullInfo(MethodDoc doc) {
-        String containingPackage = doc.containingPackage().name();
-        String className = doc.containingClass().name();
-        String methodName = doc.name();
-        String abbrParams = getAbbrParams(doc);
-
-        String fullMethodName = (containingPackage + "#" + className + "#" + methodName);
-        String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
-
-        return (fullMethodName + "#" + abbrParams + "#" + number);
-    }
-    
-    /**
-     * Method to count the unique identifier (through all .html document), that
-     * represents the concrete method, this identifier however contatins also
-     * characters like dot or hash, which can not be used as a variable (see
-     * getUniqueInfo)
-     *
-     * @param doc the methodDoc of method, for which the unique ID will be
-     * counted
-     * @return the unique info (packageName#className#method#Params#Number)
-     */
-    public String getUniqueFullInfoReflection(Method doc) {
-        String containingPackage = doc.getDeclaringClass().getPackage().getName();
-        String className = doc.getDeclaringClass().getSimpleName();
-        String methodName = doc.getName();
-        String abbrParams = getAbbrParamsReflection(doc);
-
-        String fullMethodName = (containingPackage + "#" + className + "#" + methodName);
-        String number = WorkloadBase.getNewWorkloadID(fullMethodName) + "";
-
-        return (fullMethodName + "#" + abbrParams + "#" + number);
-    }
-
-    public String getUniqueInfo(String fullMethodInfo) {
-        String[] chunks = fullMethodInfo.split("#");
-        String result = chunks[0] + "#" + chunks[1] + "#" + chunks[2] + "#" + chunks[4];
-
-        return result.replaceAll("\\.", "_").replaceAll("#", "_");
-    }
-
-    /**
-     * Gets the abbreviated form of the parameters type of given method.
-     *
-     * @param doc
-     * @return In the parameter declared order returns the begin letter of the
-     * parameters types. For example for method foo(String, int, float) the
-     * result would be "sif"
-     */
-    private String getAbbrParams(MethodDoc doc) {
-        //the following method returns parameters in the declared order (otherwise, there would be no chance to have it unique)
-        com.sun.javadoc.Parameter[] params = doc.parameters();
-        String abbrParams = "";
-
-        for (int i = 0; i < params.length; i++) {
-            switch (params[i].typeName()) {
-                case "int":
-                    abbrParams += "@int";
-                    break;
-                case "double":
-                    abbrParams += "@double";
-                    break;
-                case "float":
-                    abbrParams += "@float";
-                    break;
-                case "String":
-                    abbrParams += "@java.lang.String";
-                    break;
-                default:
-                    //enum situation
-                    abbrParams += "@" + params[i].type().toString();
-                    break;
-            }
-        }
-
-        return abbrParams;
-    }
-    
-    /**
-     * Gets the abbreviated form of the parameters type of given method.
-     *
-     * @param doc
-     * @return In the parameter declared order returns the begin letter of the
-     * parameters types. For example for method foo(String, int, float) the
-     * result would be "sif"
-     */
-    private String getAbbrParamsReflection(Method doc) {
-        //the following method returns parameters in the declared order (otherwise, there would be no chance to have it unique)
-        Parameter[] params = doc.getParameters();
-        String abbrParams = "";
-
-        for (int i = 0; i < params.length; i++) {
-            switch (params[i].getClass().getTypeName()) {
-                case "int":
-                    abbrParams += "@int";
-                    break;
-                case "double":
-                    abbrParams += "@double";
-                    break;
-                case "float":
-                    abbrParams += "@float";
-                    break;
-                case "String":
-                    abbrParams += "@java.lang.String";
-                    break;
-                default:
-                    //enum situation
-                    abbrParams += "@" + params[i].getParameterizedType().getTypeName();
-                    break;
-            }
-        }
-
-        return abbrParams;
-    }
-
-    /**
-     * inner class, that adds the ending to every workload so that the workload
-     * ID is unique
-     */
-    private static class WorkloadBase {
-
-        private static HashMap<String, Integer> map = new HashMap<>();
-
-        /**
-         * Gets a workloadName and returns the appropriate ending, so that the
-         * result workloadName is unique. The class has s static hashmap, that
-         * contains all the workloadNames, that has already been asked for. If
-         * the workload is not there yet, it adds it there (with number of use
-         * set to 0) and returns 0, otherwise gets the number of usage, add one
-         * to it and returns
-         *
-         * @param workload
-         * @return
-         */
-        public static int getNewWorkloadID(String workload) {
-
-            //the default value (when there's no such a key) is 0
-            int value = 0;
-
-            //if the key is contained, we get its value and add one to it 
-            if (map.containsKey(workload)) {
-                value = map.get(workload);
-                value++;
-            }
-
-            map.put(workload, value);
-            return value;
-        }
     }
 }

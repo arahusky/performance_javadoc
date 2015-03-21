@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js;
 
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceBodyWriter;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceNamingUtils;
 import java.io.IOException;
 
 /**
@@ -66,12 +67,12 @@ public class JSAjaxHandler {
 
     public static String returnSuccesFunctionName() {
         PerformanceBodyWriter perfWriter = new PerformanceBodyWriter();
-        return perfWriter.getUniqueInfo(generator) + "success";
+        return PerformanceNamingUtils.getUniqueInfo(generator) + "success";
     }
 
     public static String returnDivName() {
         PerformanceBodyWriter perfwWriter = new PerformanceBodyWriter();
-        return perfwWriter.getUniqueInfo(generator);
+        return PerformanceNamingUtils.getUniqueInfo(generator);
     }
 
     /**
