@@ -14,37 +14,31 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example005;
-
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import java.io.FileInputStream;
-import java.io.IOException;
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception;
 
 /**
- * 
+ * This exception associates all exceptions (such as IllegalAccessException or
+ * InstantiationException) reporting that none of the measurement could have
+ * been made properly.
+ *
  * @author Jakub Naplava
  */
-public class FileRead {
+public class MeasurementException extends Exception {
 
     /**
-     * Reads from input stream, until EOF reached.
-     *
-     * @param stream
-     * @return against DCE
+     * Creates a new instance of <code>MeasurementException</code> without
+     * detail message.
      */
-    @Workload("example005.FileGenerator#prepareStream")
-    public static int read(FileInputStream stream) {
-        int character;
-        int sum = 0;
+    public MeasurementException() {
+    }
 
-        try {
-            while ((character = stream.read()) != -1) {
-                sum += character;
-            }
-        } catch (IOException ex) {
-            System.err.println("Stream already closed");
-        }
-
-        return sum;
+    /**
+     * Constructs an instance of <code>MeasurementException</code> with the
+     * specified detail message.
+     *
+     * @param msg the detail message.
+     */
+    public MeasurementException(String msg) {
+        super(msg);
     }
 }

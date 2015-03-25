@@ -14,26 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
-
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
- * Interface for performance-measurers.
- *
- * @author Jakub Naplava
+ * This package contains classes that generate measurement code.
  */
-public interface BenchmarkRunner {
-
-    /**
-     * Runs the measurement with given BenchmarkSetting. Mutual exclusion is the
-     * responsibility of the caller.
-     *
-     * @param setting
-     *
-     * @return Statistics containing measured results. 
-     * @throws java.lang.Throwable while invoking user code, any exception may
-     * occur
-     */
-    Statistics measure(BenchmarkSetting setting) throws Throwable;
-}
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen;

@@ -17,30 +17,30 @@
 package cz.cuni.mff.d3s.tools.perfdoc.exceptions;
 
 /**
- * This exception stands for situation, when some generator has less than 2
- * parameters, or the first parameter is not Workload, or the second parameter
- * is not ServiceWorkload
+ * This is more then an exception a warning denoting that a particular method
+ * may be a generator (there exists measured method having this method in
+ * Workload annotation), but has no Generator annotation.
  *
  * @author Jakub Naplava
  */
-public class NoWorkloadException extends Exception {
+public class NoGeneratorAnnotation extends Exception {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * Creates a new instance of <code>NoWorkloadException</code> without detail
-     * message.
+     * Creates a new instance of <code>NoGeneratorAnnotation</code> without
+     * detail message.
      */
-    public NoWorkloadException() {
+    public NoGeneratorAnnotation() {
     }
 
     /**
-     * Constructs an instance of <code>NoWorkloadException</code> with the
+     * Constructs an instance of <code>NoGeneratorAnnotation</code> with the
      * specified detail message.
      *
      * @param msg the detail message.
      */
-    public NoWorkloadException(String msg) {
+    public NoGeneratorAnnotation(String msg) {
         super(msg);
     }
 }

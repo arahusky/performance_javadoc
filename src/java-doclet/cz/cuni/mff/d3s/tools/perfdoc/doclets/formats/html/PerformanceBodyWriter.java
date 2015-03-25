@@ -32,12 +32,15 @@ import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParamNumException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.GeneratorParameterException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
+import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoGeneratorAnnotation;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -107,6 +110,9 @@ public class PerformanceBodyWriter {
         } catch (ClassNotFoundException ex) {
             configuration.root.printWarning("Workload/Enum class could not be found. . Therefore no performance info will be generated.");
             return null;
+        } catch (NoGeneratorAnnotation ex) {
+            configuration.root.printWarning("Found method: '" + doc.getName() + " that has a name referenced from Workload annotation, but having no Generator annotation, thus is not considered to be generator.");
+            return null;
         }
 
         HtmlTree rightSide = new HtmlTree(HtmlTag.DIV);
@@ -147,7 +153,7 @@ public class PerformanceBodyWriter {
     }
 
     /**
-     * Generates the performance code (workload description, sliders, ...,
+     * Generates the performance code (generator description, sliders, ...,
      * submit button) for the particular generator.
      *
      * @param content the content to which the code should be added
@@ -156,12 +162,18 @@ public class PerformanceBodyWriter {
      * @throws NoSuchFieldException when the workload does not contain any
      * generator annotation
      */
-    private void addFormPart(Content content, Method doc, String generatorName, String generatorFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException {
+    private void addFormPart(Content content, Method doc, String generatorName, String generatorFullName) throws GeneratorParameterException, NoWorkloadException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException, NoGeneratorAnnotation {
         //getting generator annotation of the doc (it was already checked by classparser that it is not null)
         Generator gen = doc.getAnnotation(Generator.class);
-
+        
+        //if method does not have annotation Generator
+        if (gen == null) {
+            throw new NoGeneratorAnnotation();
+        }
+        
         //first part of the left tree is the generator description
         HtmlTree description = new HtmlTree(HtmlTag.P);
+        
         description.addContent(gen.description());
         content.addContent(description);
 

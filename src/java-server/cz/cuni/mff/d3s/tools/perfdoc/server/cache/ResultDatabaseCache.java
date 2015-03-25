@@ -238,7 +238,6 @@ public class ResultDatabaseCache implements ResultAdminCache {
         Statement stmt = null;
         ResultSet rs = null;
 
-        System.out.println("started inserting");
         try {
             stmt = conn.createStatement();
             //at first, we check, whether our data can replace any other, which means, whether our measurement quality is better for some data with same measuredMethod, generator and generatorArguments

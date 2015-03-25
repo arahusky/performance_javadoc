@@ -16,13 +16,13 @@
  */
 /**
  * <p>
- * This package contains code to show the effectivity of different approaches to inserting
- * multiple records into database.</p>
+ * This package contains code to show the effectivity of different approaches to
+ * inserting multiple records into database.</p>
  *
  * <p>
  * Note that because we're working with Derby <b>embedded</b> database, only one
  * VM can have access to the database, thus no code generation with measuring
- * code in another VM is possible (codeGenerationFlag in measurement.properties
- * must be set to false).</p>
+ * code in another VM is possible (<b>codeGenerationFlag in
+ * measurement.properties must be set to false</b>).</p>
  */
 package example006;

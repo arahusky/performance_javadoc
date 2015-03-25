@@ -9,13 +9,20 @@
  var jsonRequestData = JSON.parse(requestData); 
  var jsonRespondData = JSON.parse(respondData);
 
- //get priority of the request
+ //priority of the request
  var priority = jsonRespondData.priority;
+ 
+ var divWhereGraphShouldBePlaced = document.getElementById(graphInfo.divLocation).getElementsByClassName("right")[0].getElementsByClassName("graph")[0];
+ 
+ //width of graph
+ var width = divWhereGraphShouldBePlaced.offsetWidth * (9/10);
+ //height of graph
+ var height = width * 3/4;
 
- //if we requested results with lowest priority, we must firstly create graph
+ //if we requested results with lowest priority, we must create graph at first
  if ((jsonRequestData.priority == 1) && (graphInfo.graph == null)) {
   graphInfo.graph = new Dygraph(
-            document.getElementById(graphInfo.divLocation).getElementsByClassName("right")[0].getElementsByClassName("graph")[0], 
+            divWhereGraphShouldBePlaced, 
             jsonRespondData.data,
             {
                 ylabel: 'Elapsed time (' + jsonRespondData.units + ')',
@@ -26,8 +33,8 @@
                 drawPoints : true, 
                 pointSize : 2,
                 //height and width must be explicitly set (otherwise there are problems while changing table output to graph output)
-                height : 320,
-                width : 480,
+                height : height,
+                width : width,
                 labels: [graphInfo.xAxisLabel,"Mean","Median"],
             }
             );
@@ -37,6 +44,7 @@
  jsonRequestData.priority = priority + 1;
  var newData = JSON.stringify(jsonRequestData, null, 2);
 
+ //generating and placing table into its div
  $("#" + graphInfo.divLocation + " .right .table").html(generateTable(graphInfo.xAxisLabel, jsonRespondData.units, jsonRespondData.data)); 
 
  var graph = graphInfo.graph;

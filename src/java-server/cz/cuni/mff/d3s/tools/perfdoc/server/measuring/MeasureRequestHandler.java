@@ -20,6 +20,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,17 +35,17 @@ import org.json.JSONObject;
 
 /**
  * Handler that handles incoming measure request.
- * 
+ *
  * @author Jakub Naplava
  */
 public class MeasureRequestHandler implements HttpHandler {
 
     private final LockBase lockBase;
-    
+
     public MeasureRequestHandler(LockBase lockBase) {
         this.lockBase = lockBase;
     }
-    
+
     private static final Logger log = Logger.getLogger(MeasureRequestHandler.class.getName());
 
     @Override
@@ -63,46 +64,47 @@ public class MeasureRequestHandler implements HttpHandler {
 
         MethodMeasurer measurer = null;
         MeasureRequest measureRequest = null;
-        
+
         try (BufferedReader rd = new BufferedReader(new InputStreamReader(in, Charset.forName("UTF-8")))) {
             String requestBody = readAll(rd);
             log.log(Level.CONFIG, "The incoming message is: {0}", requestBody);
 
             //parsing incoming request
             measureRequest = new MeasureRequest(requestBody);
-            
+
             measurer = new MethodMeasurer(measureRequest, lockBase);
-            
+
             JSONObject obj = measurer.measure();
             try {
-                exchange.sendResponseHeaders(200, obj.toString().getBytes().length); 
+                exchange.sendResponseHeaders(200, obj.toString().getBytes().length);
                 responseBody.write(obj.toString().getBytes());
             } catch (IOException ex) {
                 log.log(Level.INFO, "Unable to send the results to the client", ex);
             }
         } catch (ClassNotFoundException ec) {
-            sendErrorMessage("Unable to find a testedMethod/generator class", exchange, responseBody);
-        } catch (IllegalArgumentException ex) {
-            sendErrorMessage("The bad parameters were sent to server (There might be an error in generator).", exchange, responseBody);
+            sendErrorMessage("Unable to find a measuredMethod/generator class", exchange, responseBody);
         } catch (NoSuchMethodException ex) {
             sendErrorMessage(ex.getMessage(), exchange, responseBody);
         } catch (IOException ex) {
             sendErrorMessage("There was some problem while reading some file on the server.", exchange, responseBody);
         } catch (SQLException ex) {
-             log.log(Level.SEVERE, "There was some problem when connecting to database", ex);
+            log.log(Level.SEVERE, "There was some problem when connecting to database.", ex);
+            sendErrorMessage("There was some problem when connecting to database.", exchange, responseBody);
+        } catch (MeasurementException e) {
+            sendErrorMessage(e.getMessage(), exchange, responseBody);
         } catch (Exception e) {
-            System.out.println(e);
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Unknown exception occured.", e);
+            sendErrorMessage("There was some problem on the server.", exchange, responseBody);
         } finally {
             try {
                 in.close();
-                responseBody.close();                
+                responseBody.close();
             } catch (IOException ex) {
                 //there is nothing we can do with it
                 log.log(Level.INFO, "An exception occured when trying to close comunnication with client", ex);
             }
         }
-        
+
         //results with highest priority are cached
         if (measurer != null && measureRequest != null && measureRequest.getMeasurementQuality().getPriority() == 4) {
             measurer.saveResultsAndCloseDatabaseConnection();
@@ -110,14 +112,14 @@ public class MeasureRequestHandler implements HttpHandler {
 
         log.log(Level.INFO, "Data were succesfully sent to the user ({0}).", measureRequest.getUserID());
     }
-    
+
     private void sendErrorMessage(String msg, HttpExchange exchange, OutputStream out) {
         try {
             exchange.sendResponseHeaders(500, 0);
             out.write(msg.getBytes());
             log.log(Level.INFO, msg);
         } catch (IOException ex) {
-           log.log(Level.INFO, "Unable to send the error message to the client", ex);
+            log.log(Level.INFO, "Unable to send the error message to the client", ex);
         }
     }
 

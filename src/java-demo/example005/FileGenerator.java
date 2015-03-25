@@ -22,8 +22,10 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
@@ -34,18 +36,19 @@ import java.util.Random;
  */
 public class FileGenerator {
 
+    final File file = new File("fileThatDoesNotExist.txt"); 
+    
     @Generator(description = "Prepares file stream of given file size.", genName = "File stream preparer")
     public void prepareStream(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Size of file (bytes)", min = 1, max = 100000, step = 1) int file_size
+            @ParamNum(description = "Size of file (bytes)", min = 1, max = 100000, step = 1) int fileSize
     ) throws IOException {
-        final File file = new File("fileThatDoesNotExist.txt");
         file.createNewFile();
 
         Random r = new Random();
 
-        byte[] array = new byte[file_size];
+        byte[] array = new byte[fileSize];
         r.nextBytes(array);
 
         try (FileWriter fw = new FileWriter(file)) {
@@ -60,8 +63,30 @@ public class FileGenerator {
         workload.setHooks(new MyHooks(file));
     }
 
+    @Generator(description = "Prepares file stream and array of given size to be written into it.", genName = "Write stuff generator")
+    public void prepareStreamToWrite(
+            Workload workload,
+            ServiceWorkload service,
+            @ParamNum(description = "Size of array to be written", min = 1, max = 100000, step = 1) int arraySize
+    ) throws IOException {        
+        file.createNewFile();
+
+        Random r = new Random();
+
+        byte[] array = new byte[arraySize];
+        r.nextBytes(array);
+
+        FileOutputStream stream = new FileOutputStream(file);
+        workload.addCall(null, new Object[]{stream, array});
+
+        workload.setHooks(new MyHooks(file));
+    }
+
     /**
-     * Hooks implemented as inner class.
+     * Hooks implemented as an inner class.
+     *
+     * Both method need just closing stream and deleting file, which can be done
+     * by same hook class.
      *
      * This class must be public so that we can find and run it.
      */
@@ -76,7 +101,7 @@ public class FileGenerator {
         @AfterMeasurement
         public void destroy(Object instance, Object[] objs) {
             try {
-                ((FileInputStream) objs[0]).close();
+                ((Closeable) objs[0]).close();
             } catch (IOException ex) {
                 System.err.println("Unable to close file stream.");
             }

@@ -155,7 +155,7 @@
 				<include name="**/MyLinkedList.java"/>
 				<include name="**/MyArrayListMoreOps.java"/>
 				<include name="**/GralTest.java"/>
-				<include name="**/FileRead.java"/>
+				<include name="**/FileUtils.java"/>
 				<include name="**/DatabaseInsert.java"/>
 			</fileset>
 			<doclet

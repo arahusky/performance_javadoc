@@ -21,6 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeGenerator;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.io.BufferedReader;
 import java.io.File;
@@ -40,7 +41,7 @@ public class DirectRunner extends MethodRunner {
     private static final Logger log = Logger.getLogger(DirectRunner.class.getName());
 
     @Override
-    public Statistics measure(BenchmarkSetting setting) {
+    public Statistics measure(BenchmarkSetting setting) throws Throwable {
         try {
             //generating code for measurement
             log.log(Level.FINE, "Starting to generate benchmark code.");
@@ -57,23 +58,18 @@ public class DirectRunner extends MethodRunner {
             //collecting generated results
             Statistics s = collectResults(codeGen.getDirectory());
 
-            //if may happen, that there are no use-able results, thus we try to measure one more time
+            //if no results were generated, some exception must have occured
             if (s.isEmpty()) {
-                codeRunner.run();
-                s = collectResults(codeGen.getDirectory());
-
-                if (s.isEmpty()) {
-                    log.log(Level.SEVERE, "No results were generated");
-                }
+                throw new MeasurementException("An exception occured while trying to measure results by direct call.");
             }
 
             log.log(Level.FINE, "Deleting folder containing generated code.");
             //CodeGenerator created new folder, which should be (with all its content) deleted
-            //codeGen.deleteGeneratedContent();
+            codeGen.deleteGeneratedContent();
 
             return s;
         } catch (CompileException | IOException e) {
-            return null;
+            throw new MeasurementException("An exception occured while performing most precise measuring by direct call. Check, whether server has access to write new files, and whether there is no collision due to starting new JVM.");
         } catch (InterruptedException ex) {
             log.log(Level.SEVERE, "Thread was interupted while waiting for another JVM to measure results.", ex);
             return null;
@@ -86,7 +82,7 @@ public class DirectRunner extends MethodRunner {
      * @param fileName Name of the file containing measured results
      * @return Statistics containing measured results
      */
-    private Statistics collectResults(String fileName) throws IOException {
+    private Statistics collectResults(String fileName) throws MeasurementException {
         Statistics s = new Statistics();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName + File.separator + "results.txt"))) {
@@ -96,9 +92,8 @@ public class DirectRunner extends MethodRunner {
                 s.addResult(time);
             }
         } catch (IOException e) {
-            //log.log(Level.SEVERE, "Unable to find measured results", e);
-            //throw e;
-            //TODO
+            log.log(Level.SEVERE, "Unable to find measured results file", e);
+            throw new MeasurementException("An exception occured while performing most precise measuring by direct call. Check, whether server has access to write new files, and whether there is no collision due to starting new JVM.");
         }
 
         return s;

@@ -16,13 +16,16 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.DirectRunner;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.MethodReflectionRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.DirectRunner;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.MethodReflectionRunner;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +74,9 @@ public class MethodMeasurer {
      * Performs measurement on given MeasureRequest.
      *
      * @return JSONObject that contains measured results.
+     * @throws MeasurementException
      */
-    public JSONObject measure() {
+    public JSONObject measure() throws MeasurementException {
         //requested measurement quality
         MeasurementQuality mQuality = measureRequest.getMeasurementQuality();
 
@@ -138,17 +142,49 @@ public class MethodMeasurer {
 
                 //wait until we can measure (there is no lock for our hash)
                 lockBase.waitUntilFree(measureRequest.getUserID());
-                results.add(new BenchmarkResultImpl(runner.measure(benSetting), benSetting));
+
+                try {
+                    Statistics statistics = runner.measure(benSetting);
+                    results.add(new BenchmarkResultImpl(statistics, benSetting));
+                } catch (IllegalAccessException ex) {
+                    String msg = "An IllegalAccessException occured while measuring code.";
+                    log.log(Level.SEVERE, msg, ex);
+                    throw new MeasurementException(msg);
+                } catch (IllegalArgumentException ex) {
+                    /*
+                     The only situation, when other measurements may work (not aborting whole measurement).
+                     However we must save that an exception occured.  
+                     */
+                    log.log(Level.SEVERE, "Wrong arguments were passed to measured method/generator.", ex);
+                    //null denoting corrupted measurement
+                    results.add(new BenchmarkResultImpl(null, benSetting));
+                } catch (InstantiationException ex) {
+                    String msg = "Could not istantiate generator class while trying to perform measurement.";
+                    log.log(Level.SEVERE, msg, ex);
+                    throw new MeasurementException(msg);
+                } catch (InvocationTargetException ex) {
+                    String msg = "An InvocationTargetException occured when trying to invoke generator/measured method";
+                    log.log(Level.SEVERE, msg, ex);
+                    throw new MeasurementException(msg);
+                } catch (Throwable ex) {
+                    String msg = "An unknown exception occured when trying to measure results.";
+                    log.log(Level.SEVERE, msg, ex);
+                    throw new MeasurementException(msg);
+                }
+
                 lockBase.freeLock(measureRequest.getUserID());
 
                 //the result was not found in cache
                 resultsMask.add(false);
             }
         }
-        log.log(Level.CONFIG, "Measurement succesfully done");
+
+        log.log(Level.CONFIG,
+                "Measurement succesfully done");
 
         //values, in which the measurement was performed
         double[] valuesToMeasure = valuesToMeasureList.get(cachedPriority - priority);
+
         return processBenchmarkResults(valuesToMeasure, cachedPriority);
     }
 
@@ -216,22 +252,49 @@ public class MethodMeasurer {
      * @param valuesInWhichWasMeasured
      * @return
      */
-    private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured, int priority) {
+    private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured, int priority) throws MeasurementException {
         JSONObject jsonResults = new JSONObject();
 
         List<Long> computedMeans = new ArrayList<>();
         List<Long> computedMedians = new ArrayList<>();
+
+        boolean corruptedMeasurement = true;
+
         for (BenchmarkResult br : results) {
-            computedMeans.add(br.getStatistics().computeMean());
-            computedMedians.add(br.getStatistics().computeMedian());
+            //if current measurement is not corrupted
+            if (br.getStatistics() != null) {
+                long mean = br.getStatistics().computeMean();
+
+                //there's at least one good measurement
+                if (mean != -1) {
+                    corruptedMeasurement = false;
+                }
+
+                computedMeans.add(mean);
+                computedMedians.add(br.getStatistics().computeMedian());
+            } else {
+                computedMeans.add(-1L);
+                computedMedians.add(-1L);
+            }
+        }
+
+        //if all results are corrupted, we throw an exception
+        if (corruptedMeasurement) {
+            throw new MeasurementException("Wrong arguments were passed to measured method/generator for all points, thus no results could be measured.");
         }
 
         String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
-        for (int i = 0; i < results.size(); i++) {
-            jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
+        for (int i = 0; i < computedMeans.size(); i++) {
+            if (computedMeans.get(i) != -1) {
+                jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
+            }
         }
         jsonResults.accumulate("units", units);
         jsonResults.accumulate("priority", priority);
+
+        if (corruptedMeasurement) {
+            jsonResults.accumulate("error", "Wrong arguments were passed to measured method/generator during some measurement, thus just some points were measured.");
+        }
 
         return jsonResults;
     }

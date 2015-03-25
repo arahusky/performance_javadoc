@@ -38,7 +38,7 @@ public class MethodReflectionRunner extends MethodRunner {
     private static final Logger log = Logger.getLogger(MethodReflectionRunner.class.getName());
 
     @Override
-    public Statistics measure(BenchmarkSetting setting) {
+    public Statistics measure(BenchmarkSetting setting) throws Throwable {
         int warmupTime = setting.getMeasurementQuality().getWarmupTime();
         int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
         int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
@@ -75,72 +75,62 @@ public class MethodReflectionRunner extends MethodRunner {
                 + "class Generator:{0}" + generatorInfo.getQualifiedClassName();
 
         log.log(Level.FINE, msg);
-        try {
-            //warmup
-            long warmupCyclesSpent = 0;
-            long warmupTimeSpent = 0;
-            long warmupStartTime = System.currentTimeMillis() / 1000;
 
-            while (true) {
-                warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
-                if ((warmupTimeSpent >= warmupTime) || (warmupCyclesSpent >= warmupCycles)) {
-                    break;
-                }
-                
-                workload.reset();
-                //preparing new arguments and instance for new calls
-                generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
-                                
-                Thread.yield();
+        //warmup
+        long warmupCyclesSpent = 0;
+        long warmupTimeSpent = 0;
+        long warmupStartTime = System.currentTimeMillis() / 1000;
 
-                //arguments and instance on which the call will be performed should be now prepared in workload
-                reflectionCallCycle(method, workload, null);
-                
-                warmupCyclesSpent++;
+        while (true) {
+            warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
+            if ((warmupTimeSpent >= warmupTime) || (warmupCyclesSpent >= warmupCycles)) {
+                break;
             }
 
-            //measurement
-            long measurementCyclesSpent = 0;
-            long measurementTimeSpent = 0;
-            long measurementStartTime = System.currentTimeMillis() / 1000;
+            workload.reset();
+            //preparing new arguments and instance for new calls
+            generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
 
-            while (true) {
-                measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
-                if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
-                    break;
-                }
-                
-                workload.reset();
-                //preparing new arguments and instance for new calls
-                generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
-                Thread.yield();
-                
-                //arguments and instance on which the call will be performed should be now prepared in workload
-                reflectionCallCycle(method, workload, statistics);
-                
-                measurementCyclesSpent++;
-            }
-        } catch (IllegalAccessException ex) {
-            log.log(Level.SEVERE, "MethodReflectionRunner: An IllegalAccessException occured", ex);
-            return null;
-        } catch (IllegalArgumentException ex) {
-            log.log(Level.SEVERE, "MethodReflectionRunner: Some bad arguments were passed to tested/generator method", ex);
-            return null;
-        } catch (InstantiationException ex) {
-            log.log(Level.SEVERE, "MethodReflectionRunner: Could not istantiate generator class", ex);
-            return null;
-        } catch (InvocationTargetException ex) {
-            log.log(Level.SEVERE, "MethodReflectionRunner: An InvocationTargetException occured when trying to invoke generator/tested method", ex);
-            return null;
+            Thread.yield();
+
+            //arguments and instance on which the call will be performed should be now prepared in workload
+            reflectionCallCycle(method, workload, null);
+
+            warmupCyclesSpent++;
         }
+
+        //measurement
+        long measurementCyclesSpent = 0;
+        long measurementTimeSpent = 0;
+        long measurementStartTime = System.currentTimeMillis() / 1000;
+
+        //suggesting JVM that it could run garbagge collector
+        System.gc();
         
+        while (true) {
+            measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
+            if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
+                break;
+            }
+
+            workload.reset();
+            //preparing new arguments and instance for new calls
+            generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
+            Thread.yield();
+
+            //arguments and instance on which the call will be performed should be now prepared in workload
+            reflectionCallCycle(method, workload, statistics);
+
+            measurementCyclesSpent++;
+        }
+
         log.log(Level.FINE, "Code was succesfully measured.");
         return statistics;
     }
 
     /**
      * Performs one reflective measurement cycle on given method with instances
-     * and arguments obtained from given workload. 
+     * and arguments obtained from given workload.
      *
      * @param method method, on which the measurement will be reflectively
      * performed
@@ -152,14 +142,14 @@ public class MethodReflectionRunner extends MethodRunner {
      * @throws InvocationTargetException
      */
     private void reflectionCallCycle(Method method, WorkloadImpl workload, Statistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        
+
         //arguments and instance on which the call will be performed should be now prepared in workload
         for (Object[] objs : workload.getCalls()) {
             //second item are the arguments for the tested method
             Object[] args = (Object[]) objs[1];
             //first item is the instance (possibly null for non-static methods)
             Object objectOnWhichToInvoke = objs[0];
-            
+
             long before = System.nanoTime();
             method.invoke(objectOnWhichToInvoke, args);
             long after = System.nanoTime();
@@ -168,18 +158,18 @@ public class MethodReflectionRunner extends MethodRunner {
             if (statistics != null) {
                 statistics.addResult(after - before);
             }
-            
+
             Method afterMeasurementMethod = workload.getAfterMeasurementMethod();
             if (afterMeasurementMethod != null) {
                 Object instance = workload.getInstance();
                 afterMeasurementMethod.invoke(instance, objs);
             }
         }
-        
-        Method afterBenchmarkMethod = workload.getAfterBenchmarkMethod();        
+
+        Method afterBenchmarkMethod = workload.getAfterBenchmarkMethod();
         if (afterBenchmarkMethod != null) {
-                Object instance = workload.getInstance();
-                afterBenchmarkMethod.invoke(instance, (Object[]) null);
+            Object instance = workload.getInstance();
+            afterBenchmarkMethod.invoke(instance, (Object[]) null);
         }
     }
 }

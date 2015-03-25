@@ -80,6 +80,7 @@ public class CodeRunner {
                 try {
                     while ((c = stdIn.read()) != -1) {
                         //doNothing (we do not care about what other code produces
+                        //System.out.print((char) c);
                     }
                 } catch (IOException ex) {
                     //doNothing
