@@ -29,7 +29,13 @@ public class TMethod {
 
         . $mFunction.getName() (
 
-        #foreach ($param in $mFunction.getParameterTypes())
+        #if ($mFunctionHasBlackhole)
+            cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory.getInstance()
+            #if (!($mFunctionMeasureParams))
+                        , 
+            #end            
+        #end
+        #foreach ($param in $mFunctionMeasureParams)
                 #if ($foreach.index > 0)
                             ,
                 #end

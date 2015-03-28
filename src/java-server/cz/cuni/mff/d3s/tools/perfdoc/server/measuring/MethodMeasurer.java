@@ -145,6 +145,7 @@ public class MethodMeasurer {
 
                 try {
                     Statistics statistics = runner.measure(benSetting);
+                    statistics.removeOutliers();                    
                     results.add(new BenchmarkResultImpl(statistics, benSetting));
                 } catch (IllegalAccessException ex) {
                     String msg = "An IllegalAccessException occured while measuring code.";
@@ -256,14 +257,17 @@ public class MethodMeasurer {
         JSONObject jsonResults = new JSONObject();
 
         List<Long> computedMeans = new ArrayList<>();
+        List<Long> computedStandardDeviations = new ArrayList<>();
         List<Long> computedMedians = new ArrayList<>();
+        List<Long> computetFirstQ = new ArrayList<>();
+        List<Long> computetThirdQ = new ArrayList<>();
 
         boolean corruptedMeasurement = true;
 
         for (BenchmarkResult br : results) {
             //if current measurement is not corrupted
             if (br.getStatistics() != null) {
-                long mean = br.getStatistics().computeMean();
+                long mean = br.getStatistics().getMean();
 
                 //there's at least one good measurement
                 if (mean != -1) {
@@ -271,7 +275,10 @@ public class MethodMeasurer {
                 }
 
                 computedMeans.add(mean);
-                computedMedians.add(br.getStatistics().computeMedian());
+                computedStandardDeviations.add(br.getStatistics().getStandardDeviation());
+                computedMedians.add(br.getStatistics().getMedian());
+                computetFirstQ.add(br.getStatistics().getFirstQuartile());
+                computetThirdQ.add(br.getStatistics().getThirdQuartile());
             } else {
                 computedMeans.add(-1L);
                 computedMedians.add(-1L);
@@ -284,9 +291,33 @@ public class MethodMeasurer {
         }
 
         String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
+        int divideBy = 1;
+        switch(units) {
+            case "s": divideBy = 1000 * 1000 * 1000;
+                break;
+            case "ms": divideBy = 1000 * 1000;
+                break;
+            case "µs": divideBy = 1000;
+                break;
+        }
+        
+        for (int i = 0; i<computetFirstQ.size(); i++) {
+            computetFirstQ.set(i, computetFirstQ.get(i) / divideBy);
+            computetThirdQ.set(i, computetThirdQ.get(i) / divideBy);
+            computedStandardDeviations.set(i, computedStandardDeviations.get(i) / divideBy);
+        }
+        
         for (int i = 0; i < computedMeans.size(); i++) {
             if (computedMeans.get(i) != -1) {
-                jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], computedMeans.get(i), computedMedians.get(i)});
+                long mean = computedMeans.get(i).longValue();
+                long standardDeviation = computedStandardDeviations.get(i).longValue();
+                long median = computedMedians.get(i).longValue();
+                long firstQ = computetFirstQ.get(i).longValue();
+                long thirdQ = computetThirdQ.get(i).longValue();
+                jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], 
+                    new Object[] {mean - standardDeviation,mean, mean + standardDeviation},
+                    new Object[] {firstQ,median, thirdQ}                        
+                });
             }
         }
         jsonResults.accumulate("units", units);
@@ -296,6 +327,7 @@ public class MethodMeasurer {
             jsonResults.accumulate("error", "Wrong arguments were passed to measured method/generator during some measurement, thus just some points were measured.");
         }
 
+        System.out.println(jsonResults);
         return jsonResults;
     }
 

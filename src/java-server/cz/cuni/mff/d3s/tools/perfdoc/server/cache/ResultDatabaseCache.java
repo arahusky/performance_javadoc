@@ -165,7 +165,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
         int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
         int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
-
+        
         try {
             Statement stmt = conn.createStatement();
             //we want to get results, that have same measuredMethodName, generatorName and generatorArguments and were measured at least as precisely as we need to
@@ -307,7 +307,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String measuredMethodName = benResult.getBenchmarkSetting().getMeasuredMethod().toString();
         String generatorName = benResult.getBenchmarkSetting().getGenerator().toString();
         String generatorArguments = benResult.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(true);
-        long time = benResult.getStatistics().computeMean();
+        double time = benResult.getStatistics().getMean();
         
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         MeasurementQuality mq = setting.getMeasurementQuality();

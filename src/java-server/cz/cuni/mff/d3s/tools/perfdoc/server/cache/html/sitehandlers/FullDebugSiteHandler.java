@@ -91,7 +91,7 @@ public class FullDebugSiteHandler implements SiteHandler {
             String data = item.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(false);
             measurement.add(data);
            
-            long time = item.getStatistics().computeMean();
+            double time = item.getStatistics().getMean();
             measurement.add(time);
             
             measurementsInfo.add(measurement);

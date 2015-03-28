@@ -35,6 +35,7 @@
                 //height and width must be explicitly set (otherwise there are problems while changing table output to graph output)
                 height : height,
                 width : width,
+                customBars: true,
                 labels: [graphInfo.xAxisLabel,"Mean","Median"],
             }
             );
@@ -48,6 +49,7 @@
  $("#" + graphInfo.divLocation + " .right .table").html(generateTable(graphInfo.xAxisLabel, jsonRespondData.units, jsonRespondData.data)); 
 
  var graph = graphInfo.graph;
+ console.log(jsonRespondData.data);
 
  if (priority == 1) {
         callServer(newData, graphInfo, ++priority); 
@@ -84,16 +86,25 @@
  */
 function generateTable(xAxisLabelName, units, data) {
   var res = '<table border="1" class = "resultTable">';
-  res += '<thead><tr><th>' + xAxisLabelName + '</th><th>Elapsed time mean (' + units + ')</th><th>Elapsed time median (' + units + ')</th></tr></thead><tbody>';
+  res += '<thead><tr>';
+  res += '<th>' + xAxisLabelName + '</th>';
+  res += '<th>Elapsed time mean (' + units + ')</th>';
+  res += '<th>Std. deviation</th>';
+  res += '<th>Q1, Q2, Q3 (' + units + ')</th>';
+  res += '</tr></thead><tbody>';
 
   for (i = 0; i < data.length; i++) {
     var measuredPoint = data[i][0];
-    var mean = data[i][1];
-    var median = data[i][2];
+    var mean = data[i][1][1];
+    var stdDeviation = mean - data[i][1][0];
+    var q1 = data[i][2][0];
+    var median = data[i][2][1];
+    var q3 = data[i][2][2];
     res += "<tr>";
     res += "<td>" + measuredPoint + "</td>";
     res += "<td>" + mean + "</td>";
-    res += "<td>" + median + "</td>";
+    res += "<td>" + stdDeviation + "</td>";
+    res += "<td> " + q1 + "," + median + "," + q3 + "</td>";
     res += "</tr>"
   }
 

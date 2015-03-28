@@ -75,7 +75,7 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertNotNull(list);
         Assert.assertEquals(3, list.size());
         
-        Assert.assertEquals(benResult1.getStatistics().computeMean(), list.get(0).getStatistics().computeMean());
+        Assert.assertEquals(benResult1.getStatistics().getMean(), list.get(0).getStatistics().getMean());
         Assert.assertEquals(benResult1.getBenchmarkSetting().getMeasuredMethod(), list.get(0).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(benResult1.getBenchmarkSetting().getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
        
@@ -95,12 +95,12 @@ public class ResultDatabaseCacheForWebTest {
          
         Assert.assertEquals(benResult1.getBenchmarkSetting().getMeasurementQuality(), list.get(0).getBenchmarkSetting().getMeasurementQuality());
         
-        Assert.assertEquals(benResult2.getStatistics().computeMean(), list.get(1).getStatistics().computeMean());
+        Assert.assertEquals(benResult2.getStatistics().getMean(), list.get(1).getStatistics().getMean());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getMeasuredMethod(), list.get(1).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getGenerator(), list.get(1).getBenchmarkSetting().getGenerator());
         Assert.assertEquals(benResult2.getBenchmarkSetting().getMeasurementQuality(), list.get(1).getBenchmarkSetting().getMeasurementQuality());
         
-        Assert.assertEquals(benResult3.getStatistics().computeMean(), list.get(2).getStatistics().computeMean());
+        Assert.assertEquals(benResult3.getStatistics().getMean(), list.get(2).getStatistics().getMean());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getMeasuredMethod(), list.get(2).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getGenerator(), list.get(2).getBenchmarkSetting().getGenerator());
         Assert.assertEquals(benResult3.getBenchmarkSetting().getMeasurementQuality(), list.get(2).getBenchmarkSetting().getMeasurementQuality());
@@ -178,15 +178,15 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertEquals(benSet1.getMeasuredMethod(), list.get(0).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(benSet1.getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
         
-        Assert.assertEquals(statistics1.computeMean(), list.get(1).getStatistics().computeMean());
+        Assert.assertEquals(statistics1.getMean(), list.get(1).getStatistics().getMean());
         Assert.assertEquals(measuredMethod1, list.get(1).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(generator1, list.get(1).getBenchmarkSetting().getGenerator());
         
-        Assert.assertEquals(statistics2.computeMean(), list.get(2).getStatistics().computeMean());
+        Assert.assertEquals(statistics2.getMean(), list.get(2).getStatistics().getMean());
         Assert.assertEquals(measuredMethod1, list.get(2).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(generator1, list.get(2).getBenchmarkSetting().getGenerator());
         
-        Assert.assertEquals(statistics3.computeMean(), list.get(3).getStatistics().computeMean());
+        Assert.assertEquals(statistics3.getMean(), list.get(3).getStatistics().getMean());
         Assert.assertEquals(measuredMethod1, list.get(3).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(generator1, list.get(3).getBenchmarkSetting().getGenerator());
     }

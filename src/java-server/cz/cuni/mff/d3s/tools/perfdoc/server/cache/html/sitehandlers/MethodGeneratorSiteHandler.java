@@ -150,7 +150,7 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
                     pomList.add(datum);
                 }
 
-                long time = resultItem.getStatistics().computeMean();
+                double time = resultItem.getStatistics().getMean();
                 pomList.add(time);
                 
                 list.add(pomList);

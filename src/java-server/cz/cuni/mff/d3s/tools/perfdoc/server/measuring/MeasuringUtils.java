@@ -17,10 +17,12 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
+import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -236,16 +238,16 @@ public class MeasuringUtils {
         //pointer to units array showing actual unit
         int index = 3;
 
-        long min = Long.MAX_VALUE;
+        double min = Double.MAX_VALUE;
 
         //computing minValue
-        for (long d : first) {
+        for (double d : first) {
             if (d < min) {
                 min = d;
             }
         }
         
-        for (long d : second) {
+        for (double d : second) {
             if (d < min) {
                 min = d;
             }
@@ -272,5 +274,31 @@ public class MeasuringUtils {
         }
 
         return units[index];
+    }
+    
+    /**
+     * Checks whether first parameter of the method is Blackhole.
+     * 
+     * @return 
+     */
+    public static boolean hasMeasuredMethodBlackhole(Method method) {
+        if (method.getParameterCount() == 0) {
+            return false;
+        }
+        
+        return method.getParameterTypes()[0].equals(Blackhole.class);
+    }
+    
+    public static Object[] pushBlackholeToBegin(Object[] args) {
+        Blackhole bh = BlackholeFactory.getInstance();
+        
+        Object[] newArgs = new Object[args.length + 1];
+        newArgs[0] = bh;
+        
+        for (int i = 0; i<args.length; i++) {
+            newArgs[i+1] = args[i];
+        }
+        
+        return newArgs;
     }
 }

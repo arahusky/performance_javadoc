@@ -25,19 +25,7 @@ import org.junit.Test;
  * @author Jakub Naplava
  */
 public class StatisticsTest {
-        
-    @Test
-    public void testSimpleCompute() throws SecurityException, NoSuchMethodException {
-        Statistics s = new Statistics();
-        
-        s.addResult(10);
-        s.addResult(12);
-        s.addResult(14);
-        s.addResult(16);
-        
-        Assert.assertEquals(13, s.computeMean());
-    }
-    
+       
     @Test
     public void testToString() throws NoSuchMethodException
     {

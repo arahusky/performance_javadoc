@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import java.util.ArrayList;
@@ -28,69 +27,81 @@ import org.junit.Test;
  * @author Jakub Naplava
  */
 public class MeasuringUtilsTest {
-    
+
     //the delta used for double comparison
-    private static final double delta = 0.00001;    
-    
+    private static final double delta = 0.00001;
+
     @Test
     public void getValuesToMeasureZeroResultsShallReturnNoResult() {
         double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 0);
-        
+
         Assert.assertArrayEquals(new double[0], res, delta);
     }
-    
+
     @Test
     public void getValuesToMeasureMoreResultsThanAvailableShallReturnAllValues() {
         double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 100);
-        Assert.assertArrayEquals(new double[]{0.,1.,2.,3.,4.,5.,6.,7.,8.,9.}, res, delta);
+        Assert.assertArrayEquals(new double[]{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}, res, delta);
     }
-    
+
     @Test
     public void getValuesToMeasureThreeResultsShallReturnMinMaxAndHalf() {
-        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 3);        
-        Assert.assertArrayEquals(new double[]{0.0,4.0,9.0}, res, delta);
-        
-        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 3);        
-        Assert.assertArrayEquals(new double[]{0.0,5.0,10.0}, res, delta);
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 3);
+        Assert.assertArrayEquals(new double[]{0.0, 4.0, 9.0}, res, delta);
+
+        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 3);
+        Assert.assertArrayEquals(new double[]{0.0, 5.0, 10.0}, res, delta);
     }
-    
+
     @Test
     public void testGetValuesInWhichToMeasureMoreResults() {
-        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 6);        
-        Assert.assertArrayEquals(new double[]{0.0,2.0, 4.0, 6.0, 7.0,9.0}, res, delta);
-        
-        res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 5);        
-        Assert.assertArrayEquals(new double[]{0.0,2.0,4.0,6.0,9.0}, res, delta);
-        
-        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 5);        
-        Assert.assertArrayEquals(new double[]{0.0,2.0,5.0,7.0,10.0}, res, delta);
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 6);
+        Assert.assertArrayEquals(new double[]{0.0, 2.0, 4.0, 6.0, 7.0, 9.0}, res, delta);
+
+        res = MeasuringUtils.getValuesToMeasure("0 to 9", 1, 5);
+        Assert.assertArrayEquals(new double[]{0.0, 2.0, 4.0, 6.0, 9.0}, res, delta);
+
+        res = MeasuringUtils.getValuesToMeasure("0 to 10", 1, 5);
+        Assert.assertArrayEquals(new double[]{0.0, 2.0, 5.0, 7.0, 10.0}, res, delta);
     }
-    
+
     @Test
     public void testGetValuesInWhichToMeasureMoreResultsBinaryBadStep() {
-        double[] res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 6);        
-        Assert.assertArrayEquals(new double[]{0.0,0.2, 0.5, 0.7, 0.8, 1.0}, res, delta);
-        
-        res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 7);        
-        Assert.assertArrayEquals(new double[]{0.0,0.2, 0.3, 0.5, 0.7, 0.8, 1.0}, res, delta);
+        double[] res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 6);
+        Assert.assertArrayEquals(new double[]{0.0, 0.2, 0.5, 0.7, 0.8, 1.0}, res, delta);
+
+        res = MeasuringUtils.getValuesToMeasure("0 to 1", 0.1, 7);
+        Assert.assertArrayEquals(new double[]{0.0, 0.2, 0.3, 0.5, 0.7, 0.8, 1.0}, res, delta);
     }
-    
+
     @Test
     public void testConvertUnitsNoConversion() {
-        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L,10000L,20000L}),Arrays.asList(new Long[]{1000L,10000L,20000L})));
+        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L, 10000L, 20000L}), Arrays.asList(new Long[]{1000L, 10000L, 20000L})));
     }
-    
+
     @Test
     public void testConvertUnitsOneConversion() {
-        List<Long> list = Arrays.asList(new Long[]{10000L,20000L,30000L});                
-        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list, new ArrayList<Long> (list)));
-        Assert.assertArrayEquals(new Object[]{10L,20L,30L}, list.toArray());
+        List<Long> list = Arrays.asList(new Long[]{10000L, 20000L, 30000L});
+        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list, new ArrayList<>(list)));
+        Assert.assertArrayEquals(new Object[]{10L, 20L, 30L}, list.toArray());
     }
-    
+
     @Test
     public void testConvertUnitsMultipleConversions() {
-        List<Long> list = Arrays.asList(new Long[]{10000121L,20000922L,30009893L});                
-        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<Long> (list)));
-        Assert.assertArrayEquals(new Object[]{10L,20L,30L}, list.toArray());
+        List<Long> list = Arrays.asList(new Long[]{10000000L, 20000000L, 30000000L});
+        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<>(list)));
+        Assert.assertArrayEquals(new Object[]{10L, 20L, 30L}, list.toArray());
+    }
+
+    @Test
+    public void testPushBlackholeToBegin() {
+        Object[] args = new Object[0];
+
+        args = MeasuringUtils.pushBlackholeToBegin(args);
+        Assert.assertArrayEquals(new Object[]{BlackholeFactory.getInstance()}, args);
+        
+        args = new Object[] { 1, 2D, "hello"};
+        args = MeasuringUtils.pushBlackholeToBegin(args);
+        Assert.assertArrayEquals(new Object[]{BlackholeFactory.getInstance(), 1, 2D, "hello"}, args);
     }
 }

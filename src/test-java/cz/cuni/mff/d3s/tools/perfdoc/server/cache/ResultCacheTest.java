@@ -70,21 +70,21 @@ public class ResultCacheTest {
         Assert.assertEquals(measuredMethod1.toString(), rs.getString("measured_method"));
         Assert.assertEquals(generator1.toString(), rs.getString("generator"));
         Assert.assertEquals("[arg1]", rs.getString("generator_arguments"));
-        Assert.assertEquals(statistics1.computeMean(), rs.getLong("average"));
+        Assert.assertEquals(statistics1.getMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor2(ResultSet rs) throws SQLException {
         Assert.assertEquals(measuredMethod2.toString(), rs.getString("measured_method"));
         Assert.assertEquals(generator2.toString(), rs.getString("generator"));
         Assert.assertEquals("[1,2.0]", rs.getString("generator_arguments"));
-        Assert.assertEquals(statistics2.computeMean(), rs.getLong("average"));
+        Assert.assertEquals(statistics2.getMean(), rs.getLong("average"));
     }
 
     private void checkResultSetFor3(ResultSet rs) throws SQLException {
         Assert.assertEquals(measuredMethod3.toString(), rs.getString("measured_method"));
         Assert.assertEquals(generator3.toString(), rs.getString("generator"));
         Assert.assertEquals("[2.0]", rs.getString("generator_arguments"));
-        Assert.assertEquals(statistics3.computeMean(), rs.getLong("average"));
+        Assert.assertEquals(statistics3.getMean(), rs.getLong("average"));
     }
 
     @Test

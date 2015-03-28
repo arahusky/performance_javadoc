@@ -21,6 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.ClassParser;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasuringUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArguments;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import java.io.File;
@@ -28,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,14 +133,27 @@ public class CodeGenerator {
     private void makeAndCompileMethodCode(BenchmarkSetting setting) throws CompileException, IOException {
 
         MethodReflectionInfo mrInfo = (MethodReflectionInfo) setting.getMeasuredMethod();
-        Method testedMethod = mrInfo.getMethod();
+        Method measuredMethod = mrInfo.getMethod();
 
         VelocityContext context = new VelocityContext();
 
-        context.put("mFunction", testedMethod);
-        context.put("mFunctionIsStatic", Modifier.isStatic(testedMethod.getModifiers()));
+        context.put("mFunction", measuredMethod);
+        context.put("mFunctionIsStatic", Modifier.isStatic(measuredMethod.getModifiers()));
         context.put("mClass", mrInfo.getContainingClass().getName());
-        context.put("mFunctionIsNotVoid", !(testedMethod.getReturnType().equals(Void.TYPE)));
+        context.put("mFunctionIsNotVoid", !(measuredMethod.getReturnType().equals(Void.TYPE)));
+                
+        boolean hasMeasuredMethodFirstParamBlackhole = MeasuringUtils.hasMeasuredMethodBlackhole(measuredMethod);
+        context.put("mFunctionHasBlackhole", hasMeasuredMethodFirstParamBlackhole);
+        
+        Class<?>[] measureParams = null;        
+        //if the measured method has first parameter Blackhole, we must remove this parameter from parameters that generator prepares, because it is the parameter that is prepared by harness
+        if (hasMeasuredMethodFirstParamBlackhole) {
+            Class<?>[] realParams = measuredMethod.getParameterTypes();
+            measureParams = Arrays.copyOfRange(measuredMethod.getParameterTypes(), 1, realParams.length);
+        } else {
+            measureParams = measuredMethod.getParameterTypes();
+        }        
+        context.put("mFunctionMeasureParams", measureParams);
 
         writeCode(context, templateMethodName);
 

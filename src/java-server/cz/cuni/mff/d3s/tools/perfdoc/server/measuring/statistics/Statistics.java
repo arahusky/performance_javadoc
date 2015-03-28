@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  *
@@ -31,7 +30,7 @@ public final class Statistics {
 
     private static final Logger log = Logger.getLogger(Statistics.class.getName());
 
-    private final List<Long> measurementResults = new ArrayList<>();
+    private List<Long> measurementResults = new ArrayList<>();    
 
     public Statistics() {
         log.log(Level.CONFIG, "New instance of Statistics created.");
@@ -58,31 +57,31 @@ public final class Statistics {
 
     public void addResult(long result) {
         measurementResults.add(result);
+        
     }
 
-    public long computeMean() {
-        if (measurementResults.isEmpty()) {
-            return -1;
-        }
-        
-        DescriptiveStatistics stats = new DescriptiveStatistics();
-        for (Long l : measurementResults) {
-            stats.addValue(l);
-        }
-        
-        return (long) stats.getMean();
+    public long getMean() {        
+        return (long) StatisticsUtils.getMean(measurementResults);
     }
     
-    public long computeMedian() {
-        if (measurementResults.isEmpty()) {
-            return -1;
-        }
-
-        DescriptiveStatistics stats = new DescriptiveStatistics();
-        for (Long l : measurementResults) {
-            stats.addValue(l);
-        }
-        return (long) stats.getPercentile(50);
+    public long getMedian() {
+        return (long) StatisticsUtils.getMedian(measurementResults);
+    }
+    
+    public long getStandardDeviation() {
+        return (long) StatisticsUtils.getStandardDeviation(measurementResults);
+    }
+    
+    public long getFirstQuartile() {
+        return (long) StatisticsUtils.getFirstQuartile(measurementResults);
+    }
+    
+    public long getThirdQuartile() {
+        return (long) StatisticsUtils.getThirdQuartile(measurementResults);
+    }
+    
+    public void removeOutliers() {
+        this.measurementResults = StatisticsUtils.excludeOutliers(measurementResults);
     }
 
     public int getNumberOfMeasurements() {
@@ -101,6 +100,7 @@ public final class Statistics {
     public Long[] getValues() {
         return measurementResults.toArray(new Long[measurementResults.size()]);
     }
+    
 
     /**
      * *

@@ -17,6 +17,7 @@
 package example001;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
+import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -37,50 +38,52 @@ public class MyArrayListMoreOps extends ArrayList {
     @SuppressWarnings("unchecked")
     public void sort() {
         Collections.sort(this);
-        
-        //TODO possibly return sorted collection or use Blackhole! 
     }
 
     /**
      * Performs operations upon the collection
      *
+     * The benchmarking harness supports two ways to deal with dead code
+     * elimination.
+     *
+     * The first one is explicit using of Blackhole class, which must be defined
+     * as the first parameter of the measured method and is prepared by
+     * benchmarking harness. This Blackhole can be then used to consume values
+     * (from operations having no side effect). This way is showed by this
+     * method.
+     *
+     * The second way is to change return type to (for example) int. Assuming
+     * that adding up integers is relatively cheap operation (compared to other
+     * operations used in method), we sum up hash values of objects returned
+     * from methods having no side effect, and then return counted value.
+     *
+     * @param bh Blackhole to consume not-returnable values
      * @param additions Number of additions
      * @param removals Number of removals
      * @param searches Number of searches
      * @param iterations Number of iterations
-     * @return Hash generated against DCE. The goal of returning integer is to
-     * disallow optimizer to optimize our code as a code, which does nothing
-     * (Dead code elimination). Assuming that adding up integers is relatively
-     * cheap operation (compared to other operations used in method), we sum up
-     * hash values of objects stored in list and the computed value return.
      */
     @SuppressWarnings("unchecked")
     @Workload("example001.MyAListGenerator#prepareDataMultiple")
-    public int doMultiple(int additions, int removals, int searches, int iterations) {
-
-        int countedHash = 0;
+    public void doMultiple(Blackhole bh, int additions, int removals, int searches, int iterations) {
 
         for (int i = 0; i < additions; i++) {
             this.add(i);
         }
 
         for (int i = 0; i < searches; i++) {
-            this.contains(i);
+            bh.consume(this.contains(i));
         }
 
         for (int i = 0; i < iterations; i++) {
             Iterator it = iterator();
-            Object o;
             while (it.hasNext()) {
-                o = it.next();
-                countedHash += System.identityHashCode(o);
+                bh.consume(it.next());
             }
         }
 
         for (int i = 0; i < removals; i++) {
             this.remove(i);
         }
-
-        return countedHash;
     }
 }

@@ -25,6 +25,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception;
  */
 public class MeasurementException extends Exception {
 
+    private static final long serialVersionUID = 1L;
+    
     /**
      * Creates a new instance of <code>MeasurementException</code> without
      * detail message.

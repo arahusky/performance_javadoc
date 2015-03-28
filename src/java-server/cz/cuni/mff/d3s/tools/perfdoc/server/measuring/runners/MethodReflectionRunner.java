@@ -16,9 +16,12 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners;
 
+import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasuringUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
@@ -36,6 +39,12 @@ import java.util.logging.Logger;
 public class MethodReflectionRunner extends MethodRunner {
 
     private static final Logger log = Logger.getLogger(MethodReflectionRunner.class.getName());
+    
+    //measured method
+    private Method method;
+    
+    //indicator, whether first parameter of measured method is Blackhole
+    private boolean hasFirstParamBlackhole;
 
     @Override
     public Statistics measure(BenchmarkSetting setting) throws Throwable {
@@ -64,10 +73,12 @@ public class MethodReflectionRunner extends MethodRunner {
             return null;
         }
 
-        Method method = ((MethodReflectionInfo) methodInfo).getMethod();
+        this.method = ((MethodReflectionInfo) methodInfo).getMethod();
         Method generator = ((MethodReflectionInfo) generatorInfo).getMethod();
         Class<?> generatorClass = ((MethodReflectionInfo) generatorInfo).getContainingClass();
 
+        hasFirstParamBlackhole = MeasuringUtils.hasMeasuredMethodBlackhole(method);
+        
         Statistics statistics = new Statistics();
 
         String msg = "Starting to measure..." + ", tested Method:{0}" + methodInfo.getMethodName()
@@ -94,7 +105,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Thread.yield();
 
             //arguments and instance on which the call will be performed should be now prepared in workload
-            reflectionCallCycle(method, workload, null);
+            reflectionCallCycle(workload, null);
 
             warmupCyclesSpent++;
         }
@@ -119,7 +130,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Thread.yield();
 
             //arguments and instance on which the call will be performed should be now prepared in workload
-            reflectionCallCycle(method, workload, statistics);
+            reflectionCallCycle(workload, statistics);
 
             measurementCyclesSpent++;
         }
@@ -141,7 +152,7 @@ public class MethodReflectionRunner extends MethodRunner {
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
      */
-    private void reflectionCallCycle(Method method, WorkloadImpl workload, Statistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void reflectionCallCycle(WorkloadImpl workload, Statistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         //arguments and instance on which the call will be performed should be now prepared in workload
         for (Object[] objs : workload.getCalls()) {
@@ -149,7 +160,12 @@ public class MethodReflectionRunner extends MethodRunner {
             Object[] args = (Object[]) objs[1];
             //first item is the instance (possibly null for non-static methods)
             Object objectOnWhichToInvoke = objs[0];
-
+            
+            //if the first parameter of the measured method is Blackhole, we need to push new instance of it to the beggining of arguments
+            if (hasFirstParamBlackhole) {
+                args = MeasuringUtils.pushBlackholeToBegin(args);
+            }
+            
             long before = System.nanoTime();
             method.invoke(objectOnWhichToInvoke, args);
             long after = System.nanoTime();

@@ -182,7 +182,7 @@ public class DetailedSiteHandler implements SiteHandler {
         
         list.add(data[rangeValue]);
 
-        long time = resultItem.getStatistics().computeMean();
+        double time = resultItem.getStatistics().getMean();
         list.add(time);
         
         MeasurementQuality mq = resultItem.getBenchmarkSetting().getMeasurementQuality();
