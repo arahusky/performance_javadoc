@@ -21,9 +21,14 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.CacheRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import com.sun.net.httpserver.HttpServer;
+import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,8 +38,11 @@ public class HttpMeasureServer {
 
     private static final Logger log = Logger.getLogger(HttpMeasureServer.class.getName());
 
-    //port, on which the server runs (may be changed by command-line arguments)
-    private static int port = 4040;
+    //port, on which the server runs 
+    private static int port;
+
+    //file storing server properties
+    private static String serverConfigurationFileLocation = "config/server.properties";
 
     //flag whether to empty tables (may be changed by command-line arguments)
     private static boolean emptyTable = false;
@@ -43,11 +51,13 @@ public class HttpMeasureServer {
      * The main method, which starts the measuring server.
      *
      * @param args the command line arguments
+     * @throws java.io.IOException when the server could not been started on
+     * given port number
      */
     public static void main(String[] args) throws IOException {
 
-        //process command-line arguments and if any error occured, return
-        if (!processArgs(args)) {
+        if (!processArgs(args) || !loadConfigurationFileAndConfigure()) {
+            printUsage();
             return;
         }
 
@@ -69,14 +79,14 @@ public class HttpMeasureServer {
 
         try {
             ResultAdminCache res = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
-           
+
             //empty tables if requested
             if (emptyTable) {
-                res.empty();                
+                res.empty();
             }
-            
+
             res.start();
-            
+
             Velocity.init();
         } catch (ClassNotFoundException ex) {
             log.log(Level.SEVERE, "Could not find the database driver", ex);
@@ -117,6 +127,15 @@ public class HttpMeasureServer {
                     }
 
                     break;
+                case "-configuration":
+                    if (i >= args.length - 1) {
+                        System.out.println("Expected configuration file location, but end of arguments found");
+                        return false;
+                    }
+
+                    serverConfigurationFileLocation = args[++i];
+
+                    break;
                 default:
                     System.out.println("Unexpected argument: " + args[i]);
                     return false;
@@ -125,10 +144,52 @@ public class HttpMeasureServer {
 
         return true;
     }
-    
+
+    /**
+     * Loads configuration file and sets properties saved in it.
+     *
+     * @return false if anything went wrong
+     */
+    private static boolean loadConfigurationFileAndConfigure() {
+        Properties serverProperties = new Properties();
+
+        try (InputStream input = new FileInputStream(serverConfigurationFileLocation)) {
+            serverProperties.load(input);
+            //if port was not set by command-line arguments
+            if (port == 0) {
+                try {
+                    port = Integer.parseInt(serverProperties.getProperty("port"));
+                } catch (NumberFormatException e) {
+                    System.out.println("Given port number is not a number.");
+                    return false;
+                }
+            }
+
+            String databaseUrl = serverProperties.getProperty("databaseUrlString");
+            ResultDatabaseCache.setUrl(databaseUrl);
+
+        } catch (IOException ex) {
+            log.log(Level.WARNING, "Unable to find configuration file for server. Try to specify -configuration argument.", ex);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Prints usage of the program to the standard application output.
+     */
+    private static void printUsage() {
+        System.out.println("Supported arguments:");
+        System.out.println(" -configuration <fileLocation>      Specifies the path of file, where the configuration info is located.");
+        System.out.println(" -empty                             Flag to empty all caches.");
+        System.out.println(" -port <portNumber>                 Sets the number of port, on which the server runs (listens).");
+    }
+
     /**
      * Returns number of port, on which the server runs.
-     * @return 
+     *
+     * @return
      */
     public static int getPort() {
         return port;

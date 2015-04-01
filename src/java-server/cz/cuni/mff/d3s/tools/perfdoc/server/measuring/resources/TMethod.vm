@@ -31,7 +31,7 @@ public class TMethod {
 
         #if ($mFunctionHasBlackhole)
             cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory.getInstance()
-            #if (!($mFunctionMeasureParams))
+            #if (!($mFunctionMeasureParams) || ($mFunctionMeasureParams.size() > 0))
                         , 
             #end            
         #end

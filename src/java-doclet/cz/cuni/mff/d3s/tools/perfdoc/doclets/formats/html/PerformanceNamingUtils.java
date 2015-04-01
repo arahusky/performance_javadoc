@@ -18,7 +18,6 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
 import com.sun.javadoc.MethodDoc;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.HashMap;
 
 /**
@@ -125,11 +124,11 @@ public class PerformanceNamingUtils {
      */
     private static String getAbbrParamsReflection(Method doc) {
         //the following method returns parameters in the declared order (otherwise, there would be no chance to have it unique)
-        Parameter[] params = doc.getParameters();
+        Class<?>[] parameterTypes = doc.getParameterTypes();
         String abbrParams = "";
 
-        for (int i = 0; i < params.length; i++) {
-            switch (params[i].getClass().getTypeName()) {
+        for (int i = 0; i < parameterTypes.length; i++) {
+            switch (parameterTypes[i].getSimpleName()) {
                 case "int":
                     abbrParams += "@int";
                     break;
@@ -144,7 +143,7 @@ public class PerformanceNamingUtils {
                     break;
                 default:
                     //enum situation
-                    abbrParams += "@" + params[i].getParameterizedType().getTypeName();
+                    abbrParams += "@" + parameterTypes[i].getName();
                     break;
             }
         }

@@ -282,7 +282,7 @@ public class MeasuringUtils {
      * @return 
      */
     public static boolean hasMeasuredMethodBlackhole(Method method) {
-        if (method.getParameterCount() == 0) {
+        if (method.getParameterTypes().length == 0) {
             return false;
         }
         

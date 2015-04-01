@@ -30,5 +30,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Workload {
 
+    //name of the workload generator in format: packageName.className#methodName
     String value();
 }

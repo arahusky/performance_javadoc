@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.annotations;
 
 import com.sun.javadoc.AnnotationDesc;
 import com.sun.javadoc.AnnotationDesc.ElementValuePair;
+import java.lang.annotation.Annotation;
 
 /**
  * Class, that should make it easier to work with AnnotationDesc
@@ -84,5 +85,15 @@ public class AnnotationParser {
 
         //default value of axis is true
         return true;
+    }
+    
+    public static ParamNum getParamNum(Annotation[] annotations) {
+        for (Annotation a : annotations) {
+            if (a.annotationType().getName().equals(ParamNum.class.getName())) {
+                return (ParamNum) a;
+            }
+        }
+        
+        return null;
     }
 }

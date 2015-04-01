@@ -22,6 +22,7 @@ import com.sun.tools.doclets.formats.html.markup.HtmlTree;
 import com.sun.tools.doclets.formats.html.markup.RawHtml;
 import com.sun.tools.doclets.internal.toolkit.Content;
 import com.sun.tools.doclets.internal.toolkit.util.DocletConstants;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
@@ -35,12 +36,10 @@ import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoEnumValueException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoGeneratorAnnotation;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.NoWorkloadException;
 import cz.cuni.mff.d3s.tools.perfdoc.exceptions.UnsupportedParameterException;
+import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -87,23 +86,20 @@ public class PerformanceBodyWriter {
             addFormPart(leftSide, doc, uniqueGeneratorName, generatorFullName);
         } catch (GeneratorParameterException e) {
             String parameter = e.getMessage();
-            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.getName() + " has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
+            configuration.root.printWarning("The parameter '" + parameter + "' in generator '" + doc.getName() + "' has no annotation and is not Workload or ServiceWorkload. Therefore no performance info will be generated.");
             return null;
         } catch (NoWorkloadException | NumberFormatException ex) {
             configuration.root.printWarning(ex.getMessage());
             return null;
         } catch (UnsupportedParameterException ex) {
-            String parameter = ex.getMessage().split("-")[0];
-            String type = ex.getMessage().split("-")[1];
-            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.getName() + " is of unsupported type " + type + ". Therefore no performance info will be generated.");
+            String parameterTypeName = ex.getMessage();
+            configuration.root.printWarning("There is some parameter in generator '" + doc.getName() + "' of unsupported type '" + parameterTypeName +  "'. Therefore no performance info will be generated.");
             return null;
         } catch (GeneratorParamNumException ex) {
-            String parameter = ex.getMessage();
-            configuration.root.printWarning("The parameter \"" + parameter + "\" in generator " + doc.getName() + " has number type, but lacks any ParamNum acnnotation. Therefore no performance info will be generated.");
+            configuration.root.printWarning("Some of the generator '" + doc.getName() + "' parameters is of number type, but lacks any ParamNum acnnotation. Therefore no performance info will be generated.");
             return null;
         } catch (NoEnumValueException ex) {
-            String parameter = ex.getMessage();
-            configuration.root.printWarning("The enum parameter \"" + parameter + "\" in generator " + doc.getName() + " has got no possible value defined. Therefore no performance info will be generated.");
+            configuration.root.printWarning("Some enum parameter of generator '" + doc.getName() + "' has got no possible value defined. Therefore no performance info will be generated.");
             return null;
         } catch (IOException ex) {
             configuration.root.printWarning(ex.getMessage());
@@ -183,17 +179,18 @@ public class PerformanceBodyWriter {
         configurationTree.addContent(new RawHtml("<b>Configuration:</b>"));
         content.addContent(configurationTree);
 
-        Parameter[] param = doc.getParameters();
+        Class<?>[] paramTypes = doc.getParameterTypes();
+        int numberOfParameters = paramTypes.length;      
 
-        if (param.length < 2) {
+        if (numberOfParameters < 2) {
             throw new NoWorkloadException("Workload " + doc.getName() + " has not enough arguments (less then 2). Therefore no performance info will be generated.");
         }
 
-        if (!param[0].getType().getName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")) {
+        if (!paramTypes[0].getName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload")) {
             throw new NoWorkloadException("Workload " + doc.getName() + " does not contain Workload variable as the first parameter. Therefore no performance info will be generated.");
         }
 
-        if (!param[1].getType().getName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload")) {
+        if (!paramTypes[1].getName().equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload")) {
             throw new NoWorkloadException("Workload " + doc.getName() + " does not contain ServiceWorkload variable as the second parameter. Therefore no performance info will be generated.");
         }
 
@@ -204,8 +201,8 @@ public class PerformanceBodyWriter {
         JSSliderWriter.startNewGeneratorCode();
         JSControlWriter.startNewControlButton(generatorName, generatorFullName);
 
-        for (int i = 2; i < param.length; i++) {
-            addParameterPerfo(param[i], content, generatorName, number);
+        for (int i = 2; i < numberOfParameters; i++) {
+            addParameterPerfo(doc, i, content, generatorName, number);
             number++;
         }
 
@@ -223,8 +220,8 @@ public class PerformanceBodyWriter {
      * Method that gets the parameter and content, and to the content adds the
      * appropriate element allowing user to select the value
      *
-     * @param p the parameter of generator, whose performance part we are
-     * maintaining
+     * @param method method, which parameter we want to add
+     * @param numberOfParam the position of parameter in method parameters
      * @param content the content to that the performance will be added
      * @param doc the methodDoc representing the method to that this parameter
      * belongs
@@ -232,13 +229,13 @@ public class PerformanceBodyWriter {
      * @throws GeneratorArgumentException when the param has no annotation and
      * is also not a Workload or ServiceWorkload
      */
-    private void addParameterPerfo(Parameter param, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException {
-        Annotation[] annotations = param.getAnnotations();
-
-        if (annotations.length == 0) {
-            String type = param.getType().getName();
-            if (!(type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload") || type.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload"))) {
-                throw new GeneratorParameterException(param.getName());
+    private void addParameterPerfo(Method method, int numberOfParam, Content content, String workloadName, int number) throws GeneratorParameterException, UnsupportedParameterException, NumberFormatException, GeneratorParamNumException, NoEnumValueException, IOException, ClassNotFoundException {
+        Annotation[] annotations = method.getParameterAnnotations()[numberOfParam];
+        String parameterTypeName = method.getParameterTypes()[numberOfParam].getName();
+        
+        if (annotations.length == 0) {            
+            if (!(parameterTypeName.equals(ServiceWorkload.class.getName()) || parameterTypeName.equals("cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload"))) {
+                throw new GeneratorParameterException();
             }
         }
 
@@ -247,36 +244,35 @@ public class PerformanceBodyWriter {
         for (Annotation annot : annotations) {
             switch (annot.annotationType().getName()) {
                 case "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc":
-                    ParamDesc pd = param.getAnnotation(ParamDesc.class);
+                    ParamDesc pd = (ParamDesc) annot;
                     description = pd.value();
                     break;
                 case "cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum":
-                    ParamNum pn = param.getAnnotation(ParamNum.class);
+                    ParamNum pn = (ParamNum) annot;
                     description = pn.description();
                     break;
                 //we do not forbid user to have there another annotations 
             }
         }
 
-        //TODO possible simple name needed
         //according the type of the parameter we call appropriate method
-        switch (param.getType().getName()) {
+        switch (parameterTypeName) {
             case "int":
             case "float":
             case "double":
-                addParameterNum(param, description, content, workloadName, number);
+                addParameterNum(annotations, description, content, workloadName, number);
                 break;
-            case "String":
+            case "java.lang.String":
                 addParameterString(description, content, workloadName, number);
                 break;
             default:
-                Object[] enumValues = ClassParser.findEnums(param.getType().getName());
+                Object[] enumValues = ClassParser.findEnums(parameterTypeName);
 
                 //if it is not enum, or the enum has no possible values
                 if (enumValues == null) {
-                    throw new UnsupportedParameterException(param.getName() + "-" + param.getName());
+                    throw new UnsupportedParameterException(parameterTypeName);
                 } else if (enumValues.length == 0) {
-                    throw new NoEnumValueException(param.getName());
+                    throw new NoEnumValueException();
                 } else {
                     addParameterEnum(enumValues, description, content, workloadName, number);
                 }
@@ -298,11 +294,11 @@ public class PerformanceBodyWriter {
      * @throws GeneratorParamNumException if there is no ParamNum annotation
      * associated with this parameter
      */
-    private void addParameterNum(Parameter param, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException, IOException {
+    private void addParameterNum(Annotation[] annotations, String description, Content content, String workloadName, int number) throws NumberFormatException, GeneratorParamNumException, IOException {
        
-        ParamNum paramNum = param.getAnnotation(ParamNum.class);
+        ParamNum paramNum = AnnotationParser.getParamNum(annotations);
         if (paramNum == null) {
-            throw new GeneratorParamNumException(param.getName());
+            throw new GeneratorParamNumException();
         }
 
         double min = paramNum.min();

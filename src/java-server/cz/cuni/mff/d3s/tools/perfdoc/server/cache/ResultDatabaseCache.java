@@ -42,7 +42,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
     private static final Logger log = Logger.getLogger(ResultDatabaseCache.class.getName());
 
     private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-    public static final String JDBC_URL = "jdbc:derby:database/cacheDB;create=true";
+    public static String JDBC_URL = "jdbc:derby:database/cacheDB;create=true";
 
     protected Connection conn;
 
@@ -50,6 +50,10 @@ public class ResultDatabaseCache implements ResultAdminCache {
         this.conn = createConnection(connection_url);
     }
 
+    public static void setUrl(String url) {
+        ResultDatabaseCache.JDBC_URL = url;
+    }
+    
     @Override
     public void start() throws ClassNotFoundException, SQLException {
         try {

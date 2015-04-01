@@ -30,13 +30,18 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ParamNum {
 
+    //description of the parameter
     String description();
 
+    //minimal value of the parameter
     double min();
 
+    //maximal value of the parameter
     double max();
 
+    //minimal distance between two numbers of the parameter
     double step() default 1;
 
+    //whether we can decide to measure against this parameter
     boolean axis() default true;
 }
