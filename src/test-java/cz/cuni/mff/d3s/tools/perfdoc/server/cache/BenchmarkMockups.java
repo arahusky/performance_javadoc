@@ -23,6 +23,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArguments;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
@@ -63,10 +64,10 @@ public class BenchmarkMockups {
     public static final BenchmarkSettingImpl benSet3 = new BenchmarkSettingImpl(measuredMethod3, generator3, generatorArguments3, measurementQuality3);
     public static final BenchmarkSettingImpl benSet4 = new BenchmarkSettingImpl(measuredMethod4, generator4, generatorArguments4, measurementQuality4);
 
-    public static final Statistics statistics1 = new Statistics("{1}");
-    public static final Statistics statistics2 = new Statistics("{10,12,10,8,55,1}");
-    public static final Statistics statistics3 = new Statistics("{1,2,3,4,5,6,7,8,9,10}");
-    public static final Statistics statistics4 = new Statistics("{0,10,12,13,10,15}");
+    public static final Statistics statistics1 = new MeasurementStatistics("{1}");
+    public static final Statistics statistics2 = new MeasurementStatistics("{10,12,10,8,55,1}");
+    public static final Statistics statistics3 = new MeasurementStatistics("{1,2,3,4,5,6,7,8,9,10}");
+    public static final Statistics statistics4 = new MeasurementStatistics("{0,10,12,13,10,15}");
 
     public static final BenchmarkResult benResult1 = new BenchmarkResultImpl(statistics1, benSet1);
     public static final BenchmarkResult benResult2 = new BenchmarkResultImpl(statistics2, benSet2);

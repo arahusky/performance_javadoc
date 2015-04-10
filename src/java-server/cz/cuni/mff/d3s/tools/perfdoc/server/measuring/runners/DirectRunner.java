@@ -22,6 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeGenerator;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,7 +42,7 @@ public class DirectRunner extends MethodRunner {
     private static final Logger log = Logger.getLogger(DirectRunner.class.getName());
 
     @Override
-    public Statistics measure(BenchmarkSetting setting) throws Throwable {
+    public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {
         try {
             //generating code for measurement
             log.log(Level.FINE, "Starting to generate benchmark code.");
@@ -56,7 +57,7 @@ public class DirectRunner extends MethodRunner {
             log.log(Level.FINE, "Benchmark code running done.");
 
             //collecting generated results
-            Statistics s = collectResults(codeGen.getDirectory());
+            MeasurementStatistics s = collectResults(codeGen.getDirectory());
 
             //if no results were generated, some exception must have occured
             if (s.isEmpty()) {
@@ -82,8 +83,8 @@ public class DirectRunner extends MethodRunner {
      * @param fileName Name of the file containing measured results
      * @return Statistics containing measured results
      */
-    private Statistics collectResults(String fileName) throws MeasurementException {
-        Statistics s = new Statistics();
+    private MeasurementStatistics collectResults(String fileName) throws MeasurementException {
+        MeasurementStatistics s = new MeasurementStatistics();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName + File.separator + "results.txt"))) {
             String line;

@@ -110,8 +110,9 @@ public class MethodInfo {
 
     /**
      * @return String representation in format:
-     * package.className#methodName#@param1&param2&...&paramN This format is
-     * used for storing method in database.
+     * package.className#methodName#@param1&param2&...&paramN
+     * 
+     * This format is used for storing method in database.
      */
     @Override
     public String toString() {

@@ -9,7 +9,7 @@
 	<property name="demo.src.dir" location="${src.dir}/java-demo" />
 	<property name="server.src.dir" location="${src.dir}/java-server" />
 	<property name="test.src.dir" location="${src.dir}/test-java" />
-	<property name="annot.src.dir" location="${src.dir}/java-shared" />
+	<property name="perftools.src.dir" location="${src.dir}/java-shared" />
 	
 	<!-- build directories -->
 	<property name="build.dir" location="out" />
@@ -38,25 +38,30 @@
 	<property name="junit.jar" location="lib/junit-4.11.jar"/>
 	<property name="hamcrest.jar" location="lib/hamcrest-all-1.3.jar"/>	
 
-	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar" description="Main target: compiles everything and creates JAR file for server.">
+	<!-- generated jar files -->
+	<property name="jars.build.dir" location="${build.dir}/jars" />
+	<property name="server.jar" location="${jars.build.dir}/server.jar"/>
+	<property name="doclet.jar" location="${jars.build.dir}/doclet.jar"/>
+
+	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar,create-doclet-jar" description="Main target: compiles everything and creates JAR file for server.">
 	</target>	
 
-	<target name="compile-annot" description="Compile the annotations.">
+	<target name="compile-perftools" description="Compile the performance tools (annotations + workloads).">
 		<mkdir dir="${server.build.dir}" />
 		<mkdir dir="${doclet.build.dir}" />
-		<javac srcdir="${annot.src.dir}" destdir="${doclet.build.dir}"
+		<javac srcdir="${perftools.src.dir}" destdir="${doclet.build.dir}"
 				debug="true"
 				includeantruntime="false">
 			<compilerarg value="-Xlint:all"/>
 		</javac>
-		<javac srcdir="${annot.src.dir}" destdir="${server.build.dir}"
+		<javac srcdir="${perftools.src.dir}" destdir="${server.build.dir}"
 				debug="true"
 				includeantruntime="false">
 			<compilerarg value="-Xlint:all"/>
 		</javac>
 	</target>
 
-	<target name="compile-doclet" depends="compile-annot" description="Compile the PerfDoc doclet.">
+	<target name="compile-doclet" depends="compile-perftools" description="Compile the PerfDoc doclet.">
 		<javac srcdir="${doclet.src.dir}" destdir="${doclet.build.dir}"
 				debug="true"
 				includeantruntime="false">
@@ -84,7 +89,7 @@
 		</javac>
 	</target>
 
-	<target name="compile-server" depends="compile-annot" description="Compile the server.">
+	<target name="compile-server" depends="compile-perftools" description="Compile the server.">
 		
 		<javac srcdir="${server.src.dir}" destdir="${server.build.dir}"
 				debug="true"
@@ -119,10 +124,17 @@
 		<javadoc
 				destdir="${javadoc.build.dir}"
 				author="true"
-				windowtitle="${ant.project.name}">
+				windowtitle="${ant.project.name}"
+				additionalparam="-Xdoclint:none">
 			<packageset
-				dir="${doclet.src.dir}"
+				dir="${server.src.dir}"
 				defaultexcludes="yes" />
+			<classpath>
+				<pathelement path="${server.jar}"/>
+				<pathelement path="${velocity.jar}"/>
+				<pathelement path="${math.jar}"/>
+				<pathelement path="${json.parser.jar}"/>
+			</classpath>
 		</javadoc>
 		<echo message="Copying extra files..." />
 		<copy todir="${javadoc.build.dir}">
@@ -131,7 +143,7 @@
 	</target>	
 	
 	<target name="create-server-jar" depends="compile-server" description="Creates JAR file for server.">
-		<jar destfile="server.jar" basedir="${server.build.dir}">
+		<jar destfile="${server.jar}" basedir="${server.build.dir}">
             <manifest>
                 <attribute name="Main-Class" value="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer" />
                 <attribute name="Class-Path" 
@@ -142,7 +154,7 @@
 	</target>
 
 	<target name="create-doclet-jar" depends="compile-doclet" description="Creates JAR file for doclet.">
-		<jar destfile="doclet.jar" basedir="${doclet.build.dir}">
+		<jar destfile="${doclet.jar}" basedir="${doclet.build.dir}">
         </jar>
 	</target>
 
@@ -232,9 +244,9 @@
 	<target name="clean" description="Remove all the generated files.">
 		<delete dir="${build.dir}/demo" />
 		<delete dir="${build.dir}/classes" />
+		<delete dir="${jars.build.dir}" />
 		<delete dir="database" />		
 		<delete dir="test" />
-		<delete file="derby.log" />
-		<delete file="server.jar" />		
+		<delete file="derby.log" />	
 	</target>
 </project>

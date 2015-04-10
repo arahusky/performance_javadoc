@@ -14,22 +14,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
-
 /**
- * Interface for classes that represent one measured point.
- *
- * @author Jakub Naplava
+ * This package contains classes that work with measured results. Theirs purpose
+ * is to represent them in the statistics way, which means that they must be
+ * able to return characteristics like mean or median of the measured results.
  */
-public interface Statistics {
-
-    public long getMean();
-
-    public long getMedian();
-
-    public long getStandardDeviation();
-
-    public long getFirstQuartile();
-
-    public long getThirdQuartile();
-}
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;

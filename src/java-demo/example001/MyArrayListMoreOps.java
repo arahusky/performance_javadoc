@@ -36,7 +36,7 @@ public class MyArrayListMoreOps extends ArrayList {
      */
     @Workload("example001.MyAListGenerator#prepareDataSort")
     @SuppressWarnings("unchecked")
-    public void sort(Blackhole bh) {
+    public void sort() {
         Collections.sort(this);
     }
 

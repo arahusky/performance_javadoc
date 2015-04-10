@@ -23,6 +23,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasuringUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.lang.reflect.InvocationTargetException;
@@ -47,7 +48,7 @@ public class MethodReflectionRunner extends MethodRunner {
     private boolean hasFirstParamBlackhole;
 
     @Override
-    public Statistics measure(BenchmarkSetting setting) throws Throwable {
+    public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {
         int warmupTime = setting.getMeasurementQuality().getWarmupTime();
         int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
         int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
@@ -79,7 +80,7 @@ public class MethodReflectionRunner extends MethodRunner {
 
         hasFirstParamBlackhole = MeasuringUtils.hasMeasuredMethodBlackhole(method);
         
-        Statistics statistics = new Statistics();
+        MeasurementStatistics statistics = new MeasurementStatistics();
 
         String msg = "Starting to measure..." + ", tested Method:{0}" + methodInfo.getMethodName()
                 + "generator:{0}" + generatorInfo.getMethodName()
@@ -152,7 +153,7 @@ public class MethodReflectionRunner extends MethodRunner {
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
      */
-    private void reflectionCallCycle(WorkloadImpl workload, Statistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void reflectionCallCycle(WorkloadImpl workload, MeasurementStatistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         //arguments and instance on which the call will be performed should be now prepared in workload
         for (Object[] objs : workload.getCalls()) {

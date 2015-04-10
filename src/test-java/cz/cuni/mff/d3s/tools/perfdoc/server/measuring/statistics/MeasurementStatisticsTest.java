@@ -24,12 +24,12 @@ import org.junit.Test;
  *
  * @author Jakub Naplava
  */
-public class StatisticsTest {
+public class MeasurementStatisticsTest {
        
     @Test
     public void testToString() throws NoSuchMethodException
     {
-        Statistics s = new Statistics();
+        MeasurementStatistics s = new MeasurementStatistics();
         
         Assert.assertEquals("{}", s.toString());
         
@@ -43,7 +43,7 @@ public class StatisticsTest {
     @Test
     public void testGetValues() throws NoSuchMethodException
     {
-        Statistics s = new Statistics();  
+        MeasurementStatistics s = new MeasurementStatistics();  
         
         Assert.assertArrayEquals(new Long[0], s.getValues());
         
@@ -56,23 +56,23 @@ public class StatisticsTest {
     
     @Test
     public void testNewStatisticsFromToString() {
-        Statistics s = new Statistics();     
+        MeasurementStatistics s = new MeasurementStatistics();     
         s.addResult(10);
         s.addResult(12);
         s.addResult(14);
         String toStringStatistics = s.toString();
-        Statistics second = new Statistics(toStringStatistics);
+        Statistics second = new MeasurementStatistics(toStringStatistics);
         Assert.assertEquals("{10,12,14}", second.toString());
     }
     
     @Test
     public void testEquals() {
-        Statistics s1 = new Statistics();
-        Statistics s2 = new Statistics("{1,2,3,4,5}");
-        Statistics s3 = new Statistics("{1,2,3,4}");
-        Statistics s4 = new Statistics("{1,2,3,4,5}");
+        Statistics s1 = new MeasurementStatistics();
+        Statistics s2 = new MeasurementStatistics("{1,2,3,4,5}");
+        Statistics s3 = new MeasurementStatistics("{1,2,3,4}");
+        Statistics s4 = new MeasurementStatistics("{1,2,3,4,5}");
         
-        Assert.assertEquals(s1, new Statistics());
+        Assert.assertEquals(s1, new MeasurementStatistics());
         Assert.assertEquals(s2, s4);
         Assert.assertFalse(s3.equals(s4));
     }

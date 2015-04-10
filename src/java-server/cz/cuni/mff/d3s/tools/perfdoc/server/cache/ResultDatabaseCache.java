@@ -20,6 +20,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResultImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -110,7 +111,11 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " measured_method VARCHAR(500),"
                     + " generator VARCHAR(500),"
                     + " generator_arguments VARCHAR(300),"
-                    + " average BIGINT,"
+                    + " mean BIGINT,"
+                    + " median BIGINT,"
+                    + " deviation BIGINT,"
+                    + " firstQuartile BIGINT,"
+                    + " thirdQuartile BIGINT,"
                     + " idQuality INTEGER,"
                     + " FOREIGN KEY (idQuality) REFERENCES measurement_quality(idQuality)"
                     + ")";
@@ -203,7 +208,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
     }
 
     private Statistics returnStatisticsFromResultsSet(ResultSet rs) throws SQLException {
-        Statistics statistics = new Statistics();
+        MeasurementStatistics statistics = new MeasurementStatistics();
         statistics.addResult(rs.getLong("time"));
 
         while (rs.next()) {
@@ -311,8 +316,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String measuredMethodName = benResult.getBenchmarkSetting().getMeasuredMethod().toString();
         String generatorName = benResult.getBenchmarkSetting().getGenerator().toString();
         String generatorArguments = benResult.getBenchmarkSetting().getGeneratorArguments().getValuesDBFormat(true);
-        double time = benResult.getStatistics().getMean();
-        
+                
         BenchmarkSetting setting = benResult.getBenchmarkSetting();
         MeasurementQuality mq = setting.getMeasurementQuality();
         
@@ -322,14 +326,11 @@ public class ResultDatabaseCache implements ResultAdminCache {
         
         //inserting record into measurement_information
         int idQuality = getIDQualityForGivenRecord(mq);
-        String queryInsertInfo = "INSERT INTO measurement_information (measured_method, generator, generator_arguments, average, idQuality) "
-                + "VALUES ('" + measuredMethodName + "', '" + generatorName + "', '" + generatorArguments + "', " + time + ", " + idQuality + ")";
-        log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
-        stmt.executeUpdate(queryInsertInfo);
-        
+        insertMeasurementMain(measuredMethodName, generatorName, generatorArguments,benResult.getStatistics(), idQuality);
+       
         //and all times into measurement_detailed
         int id = getIDForGivenRecord(measuredMethodName, generatorName, generatorArguments);
-        insertDetailedResults(id, benResult.getStatistics().getValues());
+        insertDetailedResults(id, ((MeasurementStatistics) benResult.getStatistics()).getValues());
         closeStatement(stmt);
     }
 
@@ -464,6 +465,39 @@ public class ResultDatabaseCache implements ResultAdminCache {
         conn.setAutoCommit(true);
 
         closeStatement(preparedStmt);
+    }
+    
+    private void insertMeasurementMain(String measuredMethodName, String generatorName, String generatorArguments, Statistics statistics, int idQuality) throws SQLException {
+        Statement stmt = conn.createStatement();
+        
+        long mean = statistics.getMean();
+        long median = statistics.getMedian();
+        long deviation = statistics.getStandardDeviation();
+        long firstQuartile = statistics.getFirstQuartile();
+        long thirdQuartile = statistics.getThirdQuartile();
+        
+        String queryInsertInfo = "INSERT INTO measurement_information "
+                + "(measured_method,"
+                + " generator,"
+                + " generator_arguments,"
+                + " mean,"
+                + " median,"
+                + " deviation,"
+                + " firstQuartile,"
+                + " thirdQuartile,"
+                + " idQuality) "
+                + "VALUES ('" + measuredMethodName + "',"
+                + " '" + generatorName + "',"
+                + " '" + generatorArguments + "',"
+                + mean + ","
+                + median + ","
+                + deviation + ","
+                + firstQuartile + ","
+                + thirdQuartile + ","
+                + " " + idQuality + ")";
+        log.log(Level.CONFIG, "Inserting new data into database. Script for measurement_information:  {0}", queryInsertInfo);
+        
+        stmt.executeUpdate(queryInsertInfo);
     }
 
     private static void printSQLException(SQLException e) {

@@ -24,7 +24,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.BasicStatistics;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -37,7 +37,7 @@ import java.util.logging.Logger;
 
 /**
  * Implementation of ResultCacheForWeb.
- * 
+ *
  * @author Jakub Naplava
  */
 public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements ResultCacheForWeb {
@@ -52,7 +52,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
      * {@inheritDoc}
      */
     @Override
-     public List<BenchmarkResult> getMainTableResults() {
+    public List<BenchmarkResult> getMainTableResults() {
         List<BenchmarkResult> list = new ArrayList<>();
 
         try {
@@ -64,10 +64,11 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 String generator = rs.getString("generator");
                 String data = rs.getString("generator_arguments");
                 int idQuality = rs.getInt("idQuality");
-                long time = rs.getLong("average");
-                
+
                 BenchmarkSetting bs = new BenchmarkSettingImpl(new MethodInfo(methodName), new MethodInfo(generator), new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality));
-                BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"), bs);
+                
+                BasicStatistics basicStat = getBasicStatisticsFromResultSet(rs);
+                BenchmarkResult item = new BenchmarkResultImpl(basicStat, bs);
                 list.add(item);
             }
             return list;
@@ -112,7 +113,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             String query = "SELECT DISTINCT measured_method "
                     + "FROM measurement_information "
                     + "WHERE measured_method LIKE ?";
-            
+
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, className + "#%");
             ResultSet rs = stmt.executeQuery();
@@ -159,7 +160,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         }
     }
 
-@Override
+    @Override
     public List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator) {
         List<BenchmarkResult> list = new ArrayList<>();
 
@@ -167,7 +168,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             String query = "SELECT * "
                     + "FROM measurement_information "
                     + "WHERE (measured_method = ? AND generator = ?)";
-             //it is very important to use PreparedStatement here to avoid any kind of SQL injection
+            //it is very important to use PreparedStatement here to avoid any kind of SQL injection
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, testedMethod.toString());
             stmt.setString(2, generator.toString());
@@ -176,11 +177,11 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             while (rs.next()) {
                 String data = rs.getString("generator_arguments");
                 int idQuality = rs.getInt("idQuality");
-                long time = rs.getLong("average");
-
-                BenchmarkResult item = new BenchmarkResultImpl(new Statistics("{" + time + "}"),
-                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality)));
+                BasicStatistics bs = getBasicStatisticsFromResultSet(rs);
                 
+                BenchmarkResult item = new BenchmarkResultImpl(bs,
+                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality)));
+
                 list.add(item);
             }
             return list;
@@ -201,7 +202,7 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             while (rs.next()) {
                 int id = rs.getInt("id");
                 long time = rs.getLong("time");
-                list.add(new Object[] {id, time});
+                list.add(new Object[]{id, time});
             }
             return list;
         } catch (SQLException e) {
@@ -209,24 +210,24 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             return null;
         }
     }
-    
+
     private MeasurementQuality getMeasureQualityFromID(int idQuality) throws SQLException {
         String query = "SELECT * FROM measurement_quality "
                 + "WHERE idQuality=" + idQuality;
-        
+
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery(query);
-        
+
         if (!rs.next()) {
             return null;
         }
-        
+
         int priority = rs.getInt("priority");
         int warmupTime = rs.getInt("warmup_time");
         int warmupCycles = rs.getInt("warmup_cycles");
         int measurementTime = rs.getInt("measurement_time");
         int measurementCycles = rs.getInt("measurement_cycles");
-        
+
         return new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, priority);
     }
 
@@ -245,15 +246,25 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
                 int warmupTime = rs.getInt("warmup_time");
                 int warmupCycles = rs.getInt("warmup_cycles");
                 int priority = rs.getInt("priority");
-                
+
                 MeasurementQuality mq = new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, 0);
-                    
-                list.add(new Object[] {idQuality, mq});
+
+                list.add(new Object[]{idQuality, mq});
             }
             return list;
         } catch (SQLException e) {
             log.log(Level.INFO, "Unable to retrieve results from database", e);
             return null;
         }
+    }
+
+    private BasicStatistics getBasicStatisticsFromResultSet(ResultSet rs) throws SQLException {
+        long mean = rs.getLong("mean");
+        long median = rs.getLong("median");
+        long deviation = rs.getLong("deviation");
+        long firstQuartile = rs.getLong("firstQuartile");
+        long thirdQuartile = rs.getLong("mean");
+        
+        return new BasicStatistics(mean, median, deviation, firstQuartile, thirdQuartile);
     }
 }

@@ -27,6 +27,8 @@ public class TGenerator {
                     ($param.getCanonicalName()) 
                         #if ($gParameterType[$foreach.index].isEnum())
                         $gParameterType[$foreach.index].getName() . $gArgument[$foreach.index]
+                        #elseif ($gParameterType[$foreach.index].getName().equals("java.lang.String"))
+                            "$gArgument[$foreach.index]"
                         #else
                         $gArgument[$foreach.index]
                         #end

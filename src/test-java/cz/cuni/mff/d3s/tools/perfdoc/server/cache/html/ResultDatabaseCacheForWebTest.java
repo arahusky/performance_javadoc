@@ -174,7 +174,6 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertNotNull(list);
         Assert.assertEquals(4, list.size());
 
-        Assert.assertEquals(benResult1.getStatistics(), list.get(0).getStatistics());
         Assert.assertEquals(benSet1.getMeasuredMethod(), list.get(0).getBenchmarkSetting().getMeasuredMethod());
         Assert.assertEquals(benSet1.getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
         

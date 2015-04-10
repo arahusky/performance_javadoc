@@ -22,7 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.DirectRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.MethodReflectionRunner;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkloadImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.lang.reflect.InvocationTargetException;
@@ -144,7 +144,7 @@ public class MethodMeasurer {
                 lockBase.waitUntilFree(measureRequest.getUserID());
 
                 try {
-                    Statistics statistics = runner.measure(benSetting);
+                    MeasurementStatistics statistics = runner.measure(benSetting);
                     statistics.removeOutliers();                    
                     results.add(new BenchmarkResultImpl(statistics, benSetting));
                 } catch (IllegalAccessException ex) {

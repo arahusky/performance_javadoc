@@ -177,7 +177,6 @@ public class CodeGenerator {
         context.put("gFunctionIsStatic", Modifier.isStatic(generator.getModifiers()));
         context.put("gClass", mrInfo.getContainingClass().getName());
 
-        //TODO if enum - need to prefix with full name + dot
         context.put("gParameterType", generator.getParameterTypes());
         
         context.put("gArgument", setting.getGeneratorArguments().getValues());

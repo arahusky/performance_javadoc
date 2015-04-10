@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
@@ -35,5 +36,5 @@ public interface BenchmarkRunner {
      * @throws java.lang.Throwable while invoking user code, any exception may
      * occur
      */
-    Statistics measure(BenchmarkSetting setting) throws Throwable;
+    MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable;
 }

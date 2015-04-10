@@ -17,13 +17,13 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationUtils;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer.getPort;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -131,7 +131,9 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
         for (int i = 0; i < genParametersText.length; i++) {
             list.add(genParametersText[i] + " (" + generator.getParams().get(i + 2) + ")");
         }
-        list.add("time (ns)");
+        list.add("mean (ns)");
+        list.add("std. deviation (ns)");
+        list.add("Q1, Q2, Q3 (ns)");
         
         return list;
     }
@@ -150,8 +152,13 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
                     pomList.add(datum);
                 }
 
-                double time = resultItem.getStatistics().getMean();
-                pomList.add(time);
+                Statistics stat = resultItem.getStatistics();
+                
+                pomList.add(stat.getMean());
+                pomList.add(stat.getStandardDeviation());
+                
+                String quartiles = stat.getFirstQuartile() + ", " + stat.getMedian() + ", " + stat.getThirdQuartile();
+                pomList.add(quartiles);
                 
                 list.add(pomList);
             }

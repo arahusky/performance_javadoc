@@ -17,7 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;
 
 import com.sun.net.httpserver.HttpExchange;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.workers.AnnotationUtils;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
