@@ -224,9 +224,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
 
         int priority = rs.getInt("priority");
         int warmupTime = rs.getInt("warmup_time");
-        int warmupCycles = rs.getInt("warmup_cycles");
+        int warmupCycles = rs.getInt("warmup_measurements");
         int measurementTime = rs.getInt("measurement_time");
-        int measurementCycles = rs.getInt("measurement_cycles");
+        int measurementCycles = rs.getInt("measurement_count");
 
         return new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, priority);
     }
@@ -242,9 +242,9 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             while (rs.next()) {
                 int idQuality = rs.getInt("idQuality");
                 int measurementTime = rs.getInt("measurement_time");
-                int measurementCycles = rs.getInt("measurement_cycles");
+                int measurementCycles = rs.getInt("measurement_count");
                 int warmupTime = rs.getInt("warmup_time");
-                int warmupCycles = rs.getInt("warmup_cycles");
+                int warmupCycles = rs.getInt("warmup_measurements");
                 int priority = rs.getInt("priority");
 
                 MeasurementQuality mq = new MeasurementQuality(priority, warmupTime, warmupCycles, measurementTime, measurementCycles, 0);

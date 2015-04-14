@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ReflectionConcurrentMapCache;
@@ -90,7 +91,15 @@ public class ClassParser {
 
             if (cl == null) {
                 URL[] urls = findClassPaths();
+                
+                System.out.println("------");
+                for (URL u : urls) {
+                    System.out.println(u.getPath());
+                }
+                
                 cl = new URLClassLoader(urls);
+                
+                
                 clazz = cl.loadClass(className);
                 refCache.addClass(className, clazz);
                 log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
@@ -142,12 +151,16 @@ public class ClassParser {
      */
     private static List<String> prepareClassPaths() {
 
+        String fileContainingClassPaths = "Class_classPath.txt";
+        String configurationDirectory = HttpMeasureServer.getConfigurationDirectory();
+        
         List<String> classPaths = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("config/Class_classPath.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(configurationDirectory + fileContainingClassPaths))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 classPaths.add(line);
+                System.out.println(line);
             }
         } catch (FileNotFoundException ex) {
             log.log(Level.SEVERE, "File containing class paths was not found.", ex);

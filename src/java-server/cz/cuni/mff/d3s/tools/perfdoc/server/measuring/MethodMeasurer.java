@@ -206,7 +206,7 @@ public class MethodMeasurer {
 
         //starting with priority 4 down to priority
         for (int i = 4; i >= priority; i--) {
-            MeasurementQuality mq = new MeasurementQuality(priority);
+            MeasurementQuality mq = new MeasurementQuality(i);
 
             //for all valuesToMeasure
             for (double val : valuesToMeasure.get(i - priority)) {

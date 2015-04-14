@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,10 +40,11 @@ public class MeasurementConfiguration {
     private static final Logger log = Logger.getLogger(MeasurementConfiguration.class.getName());
 
     //path to the configuration file
-    private static final String configurationFileLocation = "config/measure.properties";
+    private static final String configurationFileName = "measure.properties";
 
+    //TODO rename 
     //path to the default configuration file
-    private static final String defConfigurationFileLocation = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/default_measure.properties";
+    private static final String defConfigurationFileLocation = "cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/default_measure.properties";
 
     //properties containing user-measurement configuration  
     private static final Properties measurementProperties = new Properties();
@@ -60,9 +62,10 @@ public class MeasurementConfiguration {
     /**
      * Loads property files into program
      */
-    private static void loadProperties() {
-
-        try (InputStream input = new FileInputStream(configurationFileLocation)) {
+    private static void loadProperties() {        
+        String configurationFolder = HttpMeasureServer.getConfigurationDirectory();
+        
+        try (InputStream input = new FileInputStream(configurationFolder + configurationFileName)) {
             measurementProperties.load(input);
         } catch (IOException ex) {
             log.log(Level.WARNING, "Unable to find configuration file for measurement. The default values will be used.", ex);
@@ -102,23 +105,23 @@ public class MeasurementConfiguration {
     }
 
     /**
-     * Returns number of cycles determining maximal number of cycles used for
+     * Returns number of measurements determining maximal number of measurements used for
      * warmup measuring of one point.
      *
-     * @param priority priority for which we want to get number of warmup-cycles
+     * @param priority priority for which we want to get number of warmup-measurements
      * @return
      */
-    public static int getNumberOfWarmupCycles(int priority) {
+    public static int getNumberOfWarmupMeasurements(int priority) {
 
         switch (priority) {
             case 1:
-                return getIntProperty("priorityOneNumberOfCyclesWarmup");
+                return getIntProperty("priorityOneNumberOfMeasurementsWarmup");
             case 2:
-                return getIntProperty("priorityTwoNumberOfCyclesWarmup");
+                return getIntProperty("priorityTwoNumberOfMeasurementsWarmup");
             case 3:
-                return getIntProperty("priorityThreeNumberOfCyclesWarmup");
+                return getIntProperty("priorityThreeNumberOfMeasurementsWarmup");
             case 4:
-                return getIntProperty("priorityFourNumberOfCyclesWarmup");
+                return getIntProperty("priorityFourNumberOfMeasurementsWarmup");
             default:
                 return -1;
         }
@@ -148,23 +151,23 @@ public class MeasurementConfiguration {
     }
 
     /**
-     * Returns number of cycles determining maximal number of cycles used for
+     * Returns number of measurements determining maximal number of measurements used for
      * measuring of one point.
      *
-     * @param priority priority for which we want to get number of cycles
+     * @param priority priority for which we want to get number of measurements
      * @return
      */
-    public static int getNumberOfMeasurementCycles(int priority) {
+    public static int getNumberOfMeasurementMeasurements(int priority) {
 
         switch (priority) {
             case 1:
-                return getIntProperty("priorityOneNumberOfCyclesMeasurement");
+                return getIntProperty("priorityOneNumberOfMeasurements");
             case 2:
-                return getIntProperty("priorityTwoNumberOfCyclesMeasurement");
+                return getIntProperty("priorityTwoNumberOfMeasurements");
             case 3:
-                return getIntProperty("priorityThreeNumberOfCyclesMeasurement");
+                return getIntProperty("priorityThreeNumberOfMeasurements");
             case 4:
-                return getIntProperty("priorityFourNumberOfCyclesMeasurement");
+                return getIntProperty("priorityFourNumberOfMeasurements");
             default:
                 return -1;
         }

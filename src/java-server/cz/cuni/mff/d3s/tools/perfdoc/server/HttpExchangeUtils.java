@@ -17,7 +17,10 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import com.sun.net.httpserver.HttpExchange;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.logging.Level;
@@ -34,7 +37,7 @@ public class HttpExchangeUtils {
 
     private static final Logger log = Logger.getLogger(HttpExchangeUtils.class.getName());
 
-    public static final String templatesFolder = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/cache/html/resources/";
+    public static final String templatesFolder = "/cz/cuni/mff/d3s/tools/perfdoc/server/cache/html/resources/";
 
     /**
      * Merges template with context, then sends given message to the client with
@@ -46,10 +49,12 @@ public class HttpExchangeUtils {
      */
     public static void mergeTemplateAndSentPositiveResponseAndClose(HttpExchange exchange, String templateName, VelocityContext context) {
 
-        String templateLocation = templatesFolder + templateName + ".vm";
+        InputStream template = HttpExchangeUtils.class.getResourceAsStream(templatesFolder + templateName + ".vm");
+        InputStreamReader input = new InputStreamReader(template);
 
         StringWriter w = new StringWriter();
-        Velocity.mergeTemplate(templateLocation, "UTF-8", context, w);
+        Velocity.evaluate(context, w, "", input);
+        //Velocity.mergeTemplate(templateLocation, "UTF-8", context, w);
         byte[] message = w.getBuffer().toString().getBytes();
 
         try {

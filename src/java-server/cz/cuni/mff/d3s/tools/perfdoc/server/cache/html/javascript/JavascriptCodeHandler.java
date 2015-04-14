@@ -26,7 +26,9 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
+import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils.templatesFolder;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.SiteHandler;
+import java.io.InputStreamReader;
 
 /**
  * Class that returns requested javascript files.
@@ -38,13 +40,13 @@ public class JavascriptCodeHandler implements SiteHandler {
     private static final Logger log = Logger.getLogger(JavascriptCodeHandler.class.getName());
 
     //folder containing the javascript files
-    private static final String defaultFolder = "lib/js";
+    private static final String defaultFolder = "/cz/cuni/mff/d3s/tools/perfdoc/server/cache/js/resources/";
 
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         String fileName = exchange.getRequestURI().getQuery();
-
-        try (InputStream input = new FileInputStream(defaultFolder + "/" + fileName)) {
+        
+        try (InputStream input = HttpExchangeUtils.class.getResourceAsStream(defaultFolder + fileName)) {
 
             //sending succesfull headers with length set 0, which means that arbitrary amount of data may be sent
             exchange.sendResponseHeaders(200, 0);

@@ -36,11 +36,11 @@ public class MeasurementQuality {
 
     private final int warmupTime;
 
-    private final int numberOfWarmupCycles;
+    private final int numberOfWarmupMeasurements;
 
     private final int measurementTime;
 
-    private final int numberOfMeasurementsCycles;
+    private final int numberOfMeasurements;
 
     //TODO possibly not here
     private final int numberOfPoints;
@@ -48,18 +48,18 @@ public class MeasurementQuality {
     public MeasurementQuality(int priority) {
         this.priority = priority;
         this.warmupTime = MeasurementConfiguration.getWarmupTime(priority);
-        this.numberOfWarmupCycles = MeasurementConfiguration.getNumberOfWarmupCycles(priority);
+        this.numberOfWarmupMeasurements = MeasurementConfiguration.getNumberOfWarmupMeasurements(priority);
         this.measurementTime = MeasurementConfiguration.getMeasurementTime(priority);
-        this.numberOfMeasurementsCycles = MeasurementConfiguration.getNumberOfMeasurementCycles(priority);
+        this.numberOfMeasurements = MeasurementConfiguration.getNumberOfMeasurementMeasurements(priority);
         this.numberOfPoints = MeasurementConfiguration.getNumberOfPoints(priority);
     }
 
     public MeasurementQuality(int priority, int warmupTime, int numberOfWarmupCycles, int measurementTime, int numberOfMeasurementsCycles, int numberOfPoints) {
         this.priority = priority;
         this.warmupTime = warmupTime;
-        this.numberOfWarmupCycles = numberOfWarmupCycles;
+        this.numberOfWarmupMeasurements = numberOfWarmupCycles;
         this.measurementTime = measurementTime;
-        this.numberOfMeasurementsCycles = numberOfMeasurementsCycles;
+        this.numberOfMeasurements = numberOfMeasurementsCycles;
         this.numberOfPoints = numberOfPoints;
     }
 
@@ -71,16 +71,16 @@ public class MeasurementQuality {
         return warmupTime;
     }
 
-    public int getNumberOfWarmupCycles() {
-        return numberOfWarmupCycles;
+    public int getNumberOfWarmupMeasurements() {
+        return numberOfWarmupMeasurements;
     }
 
     public int getMeasurementTime() {
         return measurementTime;
     }
 
-    public int getNumberOfMeasurementsCycles() {
-        return numberOfMeasurementsCycles;
+    public int getNumberOfMeasurements() {
+        return numberOfMeasurements;
     }
 
     public int getNumberOfPoints() {
@@ -92,9 +92,9 @@ public class MeasurementQuality {
         int hash = 7;
         hash = 67 * hash + this.priority;
         hash = 67 * hash + this.warmupTime;
-        hash = 67 * hash + this.numberOfWarmupCycles;
+        hash = 67 * hash + this.numberOfWarmupMeasurements;
         hash = 67 * hash + this.measurementTime;
-        hash = 67 * hash + this.numberOfMeasurementsCycles;
+        hash = 67 * hash + this.numberOfMeasurements;
         hash = 67 * hash + this.numberOfPoints;
         return hash;
     }
@@ -114,13 +114,13 @@ public class MeasurementQuality {
         if (this.warmupTime != other.warmupTime) {
             return false;
         }
-        if (this.numberOfWarmupCycles != other.numberOfWarmupCycles) {
+        if (this.numberOfWarmupMeasurements != other.numberOfWarmupMeasurements) {
             return false;
         }
         if (this.measurementTime != other.measurementTime) {
             return false;
         }
-        if (this.numberOfMeasurementsCycles != other.numberOfMeasurementsCycles) {
+        if (this.numberOfMeasurements != other.numberOfMeasurements) {
             return false;
         }
         

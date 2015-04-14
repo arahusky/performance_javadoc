@@ -40,7 +40,7 @@ public class MeasurementConfigurationTest {
         }
         
         for (int i = 1; i<=numberOfPriorities; i++) {
-            int t = MeasurementConfiguration.getNumberOfMeasurementCycles(i);
+            int t = MeasurementConfiguration.getNumberOfMeasurementMeasurements(i);
             Assert.assertNotSame(-1, t);
         }
         
@@ -50,7 +50,7 @@ public class MeasurementConfigurationTest {
         }
         
         for (int i = 1; i<=numberOfPriorities; i++) {
-            int t = MeasurementConfiguration.getNumberOfWarmupCycles(i);
+            int t = MeasurementConfiguration.getNumberOfWarmupMeasurements(i);
             Assert.assertNotSame(-1, t);
         }
         

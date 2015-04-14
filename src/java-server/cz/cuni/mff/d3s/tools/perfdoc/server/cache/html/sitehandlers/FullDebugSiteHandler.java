@@ -110,9 +110,9 @@ public class FullDebugSiteHandler implements SiteHandler {
         List<String> theadsQuality = new ArrayList<>();
         theadsQuality.add("idQuality");
         theadsQuality.add("warmupTime");
-        theadsQuality.add("warmupCycles");
+        theadsQuality.add("warmupMeasurements");
         theadsQuality.add("measurementTime");
-        theadsQuality.add("measurementCycles");
+        theadsQuality.add("measurementCount");
         theadsQuality.add("priority");
         context.put("theadsQuality",theadsQuality);
 
@@ -125,9 +125,9 @@ public class FullDebugSiteHandler implements SiteHandler {
             
             MeasurementQuality mq = (MeasurementQuality) item[1];
             measurement.add(mq.getWarmupTime());
-            measurement.add(mq.getNumberOfWarmupCycles());
+            measurement.add(mq.getNumberOfWarmupMeasurements());
             measurement.add(mq.getMeasurementTime());
-            measurement.add(mq.getNumberOfMeasurementsCycles());
+            measurement.add(mq.getNumberOfMeasurements());
             measurement.add(mq.getPriority());
             
             measurementsQuality.add(measurement);            

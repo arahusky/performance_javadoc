@@ -92,12 +92,12 @@ public class ResultDatabaseCache implements ResultAdminCache {
             String query = "CREATE TABLE measurement_quality ("
                     + " idQuality INTEGER PRIMARY KEY NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),"
                     + " warmup_time INTEGER,"
-                    + " warmup_cycles INTEGER,"
+                    + " warmup_measurements INTEGER,"
                     + " measurement_time INTEGER,"
-                    + " measurement_cycles INTEGER,"
+                    + " measurement_count INTEGER,"
                     + " priority INTEGER,"
                     + " number_uses INTEGER DEFAULT 0,"
-                    + "UNIQUE (warmup_time, warmup_cycles, measurement_time, measurement_cycles)"
+                    + "UNIQUE (warmup_time, warmup_measurements, measurement_time, measurement_count)"
                     + ")";
             conn.createStatement().execute(query);
             log.log(Level.INFO, "New table \"measurement_quality\" was created");
@@ -171,9 +171,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
         String generatorArguments = setting.getGeneratorArguments().getValuesDBFormat(true);
 
         int warmupTime = setting.getMeasurementQuality().getWarmupTime();
-        int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
+        int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupMeasurements();
         int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
-        int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
+        int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurements();
         
         try {
             Statement stmt = conn.createStatement();
@@ -186,10 +186,13 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " AND generator='" + generatorName + "'"
                     + " AND generator_arguments='" + generatorArguments + "'"
                     + " AND warmup_time>=" + warmupTime
-                    + " AND warmup_cycles>=" + warmupCycles
+                    + " AND warmup_measurements>=" + warmupCycles
                     + " AND measurement_time>=" + measurementTime
-                    + " AND measurement_cycles>=" + measurementCycles
+                    + " AND measurement_count>=" + measurementCycles
                     + ")";
+            
+            log.log(Level.CONFIG, "Searching for the data in database. Query:  {0}", query);
+            
             ResultSet rs = stmt.executeQuery(query);
             if (!rs.next()) {
                 //if there is no row in the table containing the measured method with the data
@@ -240,9 +243,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
 
         MeasurementQuality mQuality = setting.getMeasurementQuality();
         int warmupTime = mQuality.getWarmupTime();
-        int warmupCycles = mQuality.getNumberOfWarmupCycles();
+        int warmupCycles = mQuality.getNumberOfWarmupMeasurements();
         int measurementTime = mQuality.getMeasurementTime();
-        int measurementCycles = mQuality.getNumberOfMeasurementsCycles();
+        int measurementCycles = mQuality.getNumberOfMeasurements();
 
         Statement stmt = null;
         ResultSet rs = null;
@@ -258,9 +261,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + "' AND generator='" + generatorName
                     + "' AND generator_arguments='" + data + "'"
                     + " AND warmup_time<=" + warmupTime
-                    + " AND warmup_cycles<=" + warmupCycles
+                    + " AND warmup_measurements<=" + warmupCycles
                     + " AND measurement_time<=" + measurementTime
-                    + " AND measurement_cycles<=" + measurementCycles
+                    + " AND measurement_count<=" + measurementCycles
                     + ")";
 
             rs = stmt.executeQuery(query);
@@ -375,9 +378,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
                 + " FROM measurement_quality"
                 + " WHERE ("
                 + " warmup_time=" + mq.getWarmupTime()
-                + " AND warmup_cycles=" + mq.getNumberOfWarmupCycles()
+                + " AND warmup_measurements=" + mq.getNumberOfWarmupMeasurements()
                 + " AND measurement_time=" + mq.getMeasurementTime()
-                + " AND measurement_cycles=" + mq.getNumberOfMeasurementsCycles()
+                + " AND measurement_count=" + mq.getNumberOfMeasurements()
                 + ")";
         ResultSet rs = stmt.executeQuery(query);
 
@@ -411,9 +414,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
                 + " SET number_uses = number_uses + 1"
                 + " WHERE ("
                 + " warmup_time=" + mq.getWarmupTime()
-                + " AND warmup_cycles=" + mq.getNumberOfWarmupCycles()
+                + " AND warmup_measurements=" + mq.getNumberOfWarmupMeasurements()
                 + " AND measurement_time=" + mq.getMeasurementTime()
-                + " AND measurement_cycles=" + mq.getNumberOfMeasurementsCycles()
+                + " AND measurement_count=" + mq.getNumberOfMeasurements()
                 + ")";
 
         if (stmt.executeUpdate(queryUpdateQuality) > 0) {
@@ -421,9 +424,9 @@ public class ResultDatabaseCache implements ResultAdminCache {
         }
 
         try {
-            String queryInsertNew = "INSERT INTO measurement_quality (warmup_time,warmup_cycles,measurement_time,measurement_cycles,priority,number_uses)"
-                    + "VALUES (" + mq.getWarmupTime() + " , " + mq.getNumberOfWarmupCycles() + " , "
-                    + mq.getMeasurementTime() + " , " + mq.getNumberOfMeasurementsCycles() + " , "
+            String queryInsertNew = "INSERT INTO measurement_quality (warmup_time,warmup_measurements,measurement_time,measurement_count,priority,number_uses)"
+                    + "VALUES (" + mq.getWarmupTime() + " , " + mq.getNumberOfWarmupMeasurements() + " , "
+                    + mq.getMeasurementTime() + " , " + mq.getNumberOfMeasurements() + " , "
                     + mq.getPriority() + " , " + "1"
                     + ")";
 

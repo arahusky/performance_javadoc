@@ -18,9 +18,9 @@ public class TMeasurement {
     private static int PRIORITY = $priority;
 
     //note that the WARMUP_TIME and MEASUREMENT_TIME are in seconds
-    private static int WARMUP_CYCLES = $warmupCycles;
+    private static int WARMUP_MEASUREMENTS = $warmupCycles;
     private static int WARMUP_TIME = $warmupTime;
-    private static int MEASUREMENT_CYCLES = $measurementCycles;
+    private static int MEASUREMENT_COUNT = $measurementCycles;
     private static int MEASUREMENT_TIME = $measurementTime;
 
     public static void main(String[] argv) 
@@ -40,13 +40,13 @@ public class TMeasurement {
         TGenerator tGen = new TGenerator();
         
         //warmup
-        int warmupCyclesSpent = 0;
+        int warmupMeasurementsDone = 0;
         long warmupTimeSpent = 0;
         long warmupStartTime = System.currentTimeMillis() / 1000;
 
         while(true) {
             warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
-            if ((warmupTimeSpent > WARMUP_TIME) || (warmupCyclesSpent > WARMUP_CYCLES)) {
+            if ((warmupTimeSpent > WARMUP_TIME) || (warmupMeasurementsDone > WARMUP_MEASUREMENTS)) {
                 break;
             }
 
@@ -55,20 +55,18 @@ public class TMeasurement {
             
             tGen.call(workloadImpl, serviceImpl);       
 
-            measure(workloadImpl, null);
-            
-            warmupCyclesSpent++;
+            warmupMeasurementsDone += measure(workloadImpl, null);
         }
 
         //measurement
         List<Long> times = new ArrayList<>();
 
-        long measurementCyclesSpent = 0;
+        long measurementsDone = 0;
         long measurementTimeSpent = 0;
         long measurementStartTime = System.currentTimeMillis() / 1000;
         while (true) {
             measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
-            if ((measurementTimeSpent > MEASUREMENT_TIME) || (measurementCyclesSpent > MEASUREMENT_CYCLES)) {
+            if ((measurementTimeSpent > MEASUREMENT_TIME) || (measurementsDone > MEASUREMENT_COUNT)) {
                 break;
             }
 
@@ -77,9 +75,7 @@ public class TMeasurement {
             
             tGen.call(workloadImpl, serviceImpl);
 
-            measure(workloadImpl, times);
-    
-            measurementCyclesSpent++;
+            measurementsDone += measure(workloadImpl, times);
         }
 
         File file = new File(directoryWhereToSaveResults + "results.txt");
@@ -98,8 +94,10 @@ public class TMeasurement {
      * @param workloadImpl instance containing prepared arguments and instances to call workload
      * @param times if warming-up then null, otherwise instance, in which the
      * method execution time will be saved.
+     * @return number of measurements done during this call
      */
-    private void measure(WorkloadImpl workloadImpl, List<Long> times) throws Throwable {
+    private int measure(WorkloadImpl workloadImpl, List<Long> times) throws Throwable {
+        int measurementsCount = 0;        
         for (Object[] objs : workloadImpl.getCalls()) {
                 Object[] args = (Object[]) objs[1];
                 Object objectOnWhichToInvoke = objs[0];
@@ -126,6 +124,8 @@ public class TMeasurement {
                     Object instance = workloadImpl.getInstance();
                     afterMeasurementMethod.invoke(instance, objs);
                 }
+
+                measurementsCount++;
             }
 
             Method afterBenchmarkMethod = workloadImpl.getAfterBenchmarkMethod();        
@@ -133,5 +133,7 @@ public class TMeasurement {
                 Object instance = workloadImpl.getInstance();
                 afterBenchmarkMethod.invoke(instance, (Object[]) null);
             }
+
+            return measurementsCount;
     }
 }

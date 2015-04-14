@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
@@ -27,8 +28,12 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,17 +57,20 @@ public class CodeGenerator {
 
     private static final Logger log = Logger.getLogger(CodeGenerator.class.getName());
 
+    /**
+     * The root of all directories mentioned below is the root of the packages
+     * (e.g. jar folder or out/classes), which can be obtained using
+     * HttpMeasureServer.getApplicationRootDir().
+     */
+    
     //directory, where templates are stored
-    private static final String templateDir = "src/java-server/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/";
+    private static final String templateDir = "/cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/";
 
     //directory, where directories containing java source files, arised by transforming templates, are stored
-    private static final String javaDestinationDir = "out/measuring/code_generation/";
+    private static String javaDestinationDir = "./";
 
     //directory, where directories, containing compiled source files are stored
-    private static final String compiledClassDestinationDir = "out/measuring/code_generation/";
-
-    //root directory for workloads (Workload, WorkloadImpl, ServiceWorkload, ServiceWorkloadImpl)
-    public static final String workloadsRootDir = "out/classes/java-server";
+    private static String compiledClassDestinationDir = "./";
 
     //name of template containing measured method call
     private static final String templateMethodName = "TMethod";
@@ -75,12 +83,17 @@ public class CodeGenerator {
 
     private final BenchmarkSetting setting;
 
-    //name of directory, where the current (current BenchmarkSetting) generated code will be placed
-    private final String directoryName;    
+    //name of directory, where the (for current BenchmarkSetting) generated code will be placed
+    private final String directoryName;
 
     public CodeGenerator(BenchmarkSetting setting) {
         this.setting = setting;
         this.directoryName = getDirectoryName();
+    }
+
+    public static void setGeneratedCodeDirectory(String directory) {
+        javaDestinationDir = directory;
+        compiledClassDestinationDir = directory;
     }
 
     /**
@@ -118,12 +131,13 @@ public class CodeGenerator {
             throw ex;
         }
 
-        //location of the template to be transformed
-        String template = templateDir + templateName + ".vm";
-
+        //template to be transformed
+        InputStream template = getClass().getResourceAsStream(templateDir + templateName + ".vm");
+        InputStreamReader input = new InputStreamReader(template);
+        
         //try with-resources block handles closing (flushing)
         try (FileWriter fw = new FileWriter(new File(saveToLocation))) {
-            Velocity.mergeTemplate(template, "UTF-8", vc, fw);
+            Velocity.evaluate(vc, fw, "", input);
         } catch (IOException ex) {
             log.log(Level.SEVERE, "An error occurred while trying to save java source into a file " + saveToLocation, ex);
             throw ex;
@@ -141,18 +155,18 @@ public class CodeGenerator {
         context.put("mFunctionIsStatic", Modifier.isStatic(measuredMethod.getModifiers()));
         context.put("mClass", mrInfo.getContainingClass().getName());
         context.put("mFunctionIsNotVoid", !(measuredMethod.getReturnType().equals(Void.TYPE)));
-                
+
         boolean hasMeasuredMethodFirstParamBlackhole = MeasuringUtils.hasMeasuredMethodBlackhole(measuredMethod);
         context.put("mFunctionHasBlackhole", hasMeasuredMethodFirstParamBlackhole);
-        
-        Class<?>[] measureParams = null;        
+
+        Class<?>[] measureParams = null;
         //if the measured method has first parameter Blackhole, we must remove this parameter from parameters that generator prepares, because it is the parameter that is prepared by harness
         if (hasMeasuredMethodFirstParamBlackhole) {
             Class<?>[] realParams = measuredMethod.getParameterTypes();
             measureParams = Arrays.copyOfRange(measuredMethod.getParameterTypes(), 1, realParams.length);
         } else {
             measureParams = measuredMethod.getParameterTypes();
-        }        
+        }
         context.put("mFunctionMeasureParams", measureParams);
 
         writeCode(context, templateMethodName);
@@ -178,10 +192,9 @@ public class CodeGenerator {
         context.put("gClass", mrInfo.getContainingClass().getName());
 
         context.put("gParameterType", generator.getParameterTypes());
-        
+
         context.put("gArgument", setting.getGeneratorArguments().getValues());
-        
-        
+
         writeCode(context, templateGeneratorName);
 
         String javaSourceName = javaDestinationDir + directoryName + "/" + templateGeneratorName + ".java";
@@ -203,12 +216,12 @@ public class CodeGenerator {
 
         context.put("priority", measurementQuality.getPriority());
         context.put("warmupTime", measurementQuality.getWarmupTime());
-        context.put("warmupCycles", measurementQuality.getNumberOfWarmupCycles());
-        context.put("measurementCycles", measurementQuality.getNumberOfMeasurementsCycles());
+        context.put("warmupCycles", measurementQuality.getNumberOfWarmupMeasurements());
+        context.put("measurementCycles", measurementQuality.getNumberOfMeasurements());
         context.put("measurementTime", measurementQuality.getMeasurementTime());
-        
+
         String pathToMainDir = System.getProperty("user.dir");
-        String pathToDir = pathToMainDir + File.separator 
+        String pathToDir = pathToMainDir + File.separator
                 + getDirectory().replaceAll("/", Matcher.quoteReplacement(File.separator)) + File.separator;
         context.put("directoryWhereToSaveResults", StringEscapeUtils.escapeJava(pathToDir));
 
@@ -234,7 +247,7 @@ public class CodeGenerator {
      */
     private static List<String> getCompilationClassPaths() {
         List<String> classPaths = ClassParser.getClassPaths();
-        classPaths.add(workloadsRootDir);
+        classPaths.add(HttpMeasureServer.getApplicationRootDir());
 
         return classPaths;
     }
@@ -252,7 +265,7 @@ public class CodeGenerator {
         MethodInfo generator = setting.getGenerator();
         MethodArguments generatorArgs = setting.getGeneratorArguments();
 
-        return ("measurement_method" + method.hashCode()+ "generator" + generator.hashCode()+ "args" + generatorArgs.hashCode());
+        return ("measurement_method" + method.hashCode() + "generator" + generator.hashCode() + "args" + generatorArgs.hashCode());
     }
 
     /**
@@ -277,10 +290,10 @@ public class CodeGenerator {
     public String getDirectory() {
         return compiledClassDestinationDir + directoryName;
     }
-    
+
     /**
      * Deletes all content, that was created for CodeGeneration.
-     * 
+     *
      * Namely the folder, where all generated content is placed.
      */
     public void deleteGeneratedContent() {

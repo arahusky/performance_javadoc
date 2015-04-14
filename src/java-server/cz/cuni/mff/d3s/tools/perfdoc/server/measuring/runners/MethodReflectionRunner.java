@@ -50,9 +50,9 @@ public class MethodReflectionRunner extends MethodRunner {
     @Override
     public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {
         int warmupTime = setting.getMeasurementQuality().getWarmupTime();
-        int warmupCycles = setting.getMeasurementQuality().getNumberOfWarmupCycles();
+        int warmupMeasurements = setting.getMeasurementQuality().getNumberOfWarmupMeasurements();
         int measurementTime = setting.getMeasurementQuality().getMeasurementTime();
-        int measurementCycles = setting.getMeasurementQuality().getNumberOfMeasurementsCycles();
+        int measurements = setting.getMeasurementQuality().getNumberOfMeasurements();
 
         //the 0-th item in parameters should be the WorkloadImpl instance
         Object workloadCandidate = setting.getGeneratorArguments().getValues()[0];
@@ -89,13 +89,13 @@ public class MethodReflectionRunner extends MethodRunner {
         log.log(Level.FINE, msg);
 
         //warmup
-        long warmupCyclesSpent = 0;
+        long warmupMeasurementsDone = 0;
         long warmupTimeSpent = 0;
         long warmupStartTime = System.currentTimeMillis() / 1000;
 
         while (true) {
             warmupTimeSpent = (System.currentTimeMillis() / 1000) - warmupStartTime;
-            if ((warmupTimeSpent >= warmupTime) || (warmupCyclesSpent >= warmupCycles)) {
+            if ((warmupTimeSpent >= warmupTime) || (warmupMeasurementsDone >= warmupMeasurements)) {
                 break;
             }
 
@@ -106,9 +106,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Thread.yield();
 
             //arguments and instance on which the call will be performed should be now prepared in workload
-            reflectionCallCycle(workload, null);
-
-            warmupCyclesSpent++;
+            warmupMeasurementsDone += reflectionCallCycle(workload, null);
         }
 
         //measurement
@@ -121,7 +119,7 @@ public class MethodReflectionRunner extends MethodRunner {
         
         while (true) {
             measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
-            if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurementCycles)) {
+            if ((measurementTimeSpent >= measurementTime) || (measurementCyclesSpent >= measurements)) {
                 break;
             }
 
@@ -131,9 +129,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Thread.yield();
 
             //arguments and instance on which the call will be performed should be now prepared in workload
-            reflectionCallCycle(workload, statistics);
-
-            measurementCyclesSpent++;
+            measurementCyclesSpent += reflectionCallCycle(workload, statistics);
         }
 
         log.log(Level.FINE, "Code was succesfully measured.");
@@ -152,9 +148,13 @@ public class MethodReflectionRunner extends MethodRunner {
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
+     * 
+     * @return number of measurements done during this call
      */
-    private void reflectionCallCycle(WorkloadImpl workload, MeasurementStatistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private int reflectionCallCycle(WorkloadImpl workload, MeasurementStatistics statistics) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
+        int measurementsCount = 0;
+        
         //arguments and instance on which the call will be performed should be now prepared in workload
         for (Object[] objs : workload.getCalls()) {
             //second item are the arguments for the tested method
@@ -181,6 +181,8 @@ public class MethodReflectionRunner extends MethodRunner {
                 Object instance = workload.getInstance();
                 afterMeasurementMethod.invoke(instance, objs);
             }
+            
+            measurementsCount++;
         }
 
         Method afterBenchmarkMethod = workload.getAfterBenchmarkMethod();
@@ -188,5 +190,7 @@ public class MethodReflectionRunner extends MethodRunner {
             Object instance = workload.getInstance();
             afterBenchmarkMethod.invoke(instance, (Object[]) null);
         }
+        
+        return measurementsCount;
     }
 }

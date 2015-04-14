@@ -148,8 +148,8 @@ public class ResultCacheTest {
 
         //creating second BenchmarkResult, that have exactly same methodName, worloadName, workloadArguments and Statistics, but have better measurement quality
         MeasurementQuality mqSecond = new MeasurementQuality(measurementQuality2.getPriority() + 1,
-                measurementQuality2.getWarmupTime() + 1, measurementQuality2.getNumberOfWarmupCycles() + 1, 
-                measurementQuality2.getMeasurementTime() + 1, measurementQuality2.getNumberOfMeasurementsCycles() + 1,
+                measurementQuality2.getWarmupTime() + 1, measurementQuality2.getNumberOfWarmupMeasurements() + 1, 
+                measurementQuality2.getMeasurementTime() + 1, measurementQuality2.getNumberOfMeasurements() + 1,
                 measurementQuality2.getNumberOfPoints());
         BenchmarkSetting bsSecond = new BenchmarkSettingImpl(measuredMethod2, generator2, generatorArguments2, mqSecond);
         BenchmarkResult brSecond = new BenchmarkResultImpl(statistics2, bsSecond);
@@ -166,9 +166,9 @@ public class ResultCacheTest {
 
         Assert.assertTrue(rsQuality.next());
         Assert.assertEquals(mqSecond.getWarmupTime() , rsQuality.getInt("warmup_time"));
-        Assert.assertEquals(mqSecond.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(mqSecond.getNumberOfWarmupMeasurements(), rsQuality.getInt("warmup_measurements"));
         Assert.assertEquals(mqSecond.getMeasurementTime(), rsQuality.getInt("measurement_time"));
-        Assert.assertEquals(mqSecond.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertEquals(mqSecond.getNumberOfMeasurements(), rsQuality.getInt("measurement_count"));
         Assert.assertFalse(rsQuality.next());
     }
     
@@ -199,9 +199,9 @@ public class ResultCacheTest {
 
         Assert.assertTrue(rsQuality.next());
         Assert.assertEquals(measurementQuality1.getWarmupTime() , rsQuality.getInt("warmup_time"));
-        Assert.assertEquals(measurementQuality1.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(measurementQuality1.getNumberOfWarmupMeasurements(), rsQuality.getInt("warmup_measurements"));
         Assert.assertEquals(measurementQuality1.getMeasurementTime(), rsQuality.getInt("measurement_time"));
-        Assert.assertEquals(measurementQuality1.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertEquals(measurementQuality1.getNumberOfMeasurements(), rsQuality.getInt("measurement_count"));
         Assert.assertEquals(2, rsQuality.getInt("number_uses"));
         Assert.assertFalse(rsQuality.next());
         
@@ -213,9 +213,10 @@ public class ResultCacheTest {
                
         //creating BenchmarkResult, that have exactly same methodName, worloadName, workloadArguments and Statistics, but have worse measurement quality
         MeasurementQuality mqFirst = new MeasurementQuality(measurementQuality1.getPriority() + 1,
-                measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupCycles() + 1, 
-                measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurementsCycles() + 1,
+                measurementQuality1.getWarmupTime() + 1, measurementQuality1.getNumberOfWarmupMeasurements()+ 1, 
+                measurementQuality1.getMeasurementTime() + 1, measurementQuality1.getNumberOfMeasurements()+ 1,
                 measurementQuality1.getNumberOfPoints());
+        
         BenchmarkSetting bsFirst = new BenchmarkSettingImpl(measuredMethod1, generator1, generatorArguments1, mqFirst);
         BenchmarkResult brFirst = new BenchmarkResultImpl(statistics1, bsFirst);
 
@@ -233,9 +234,9 @@ public class ResultCacheTest {
 
         Assert.assertTrue(rsQuality.next());
         Assert.assertEquals(mqFirst.getWarmupTime() , rsQuality.getInt("warmup_time"));
-        Assert.assertEquals(mqFirst.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(mqFirst.getNumberOfWarmupMeasurements(), rsQuality.getInt("warmup_measurements"));
         Assert.assertEquals(mqFirst.getMeasurementTime(), rsQuality.getInt("measurement_time"));
-        Assert.assertEquals(mqFirst.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertEquals(mqFirst.getNumberOfMeasurements(), rsQuality.getInt("measurement_count"));
         
         Assert.assertTrue(rs.next());
         
@@ -246,9 +247,9 @@ public class ResultCacheTest {
 
         Assert.assertTrue(rsQuality.next());
         Assert.assertEquals(measurementQuality1.getWarmupTime() , rsQuality.getInt("warmup_time"));
-        Assert.assertEquals(measurementQuality1.getNumberOfWarmupCycles() , rsQuality.getInt("warmup_cycles"));
+        Assert.assertEquals(measurementQuality1.getNumberOfWarmupMeasurements() , rsQuality.getInt("warmup_measurements"));
         Assert.assertEquals(measurementQuality1.getMeasurementTime(), rsQuality.getInt("measurement_time"));
-        Assert.assertEquals(measurementQuality1.getNumberOfMeasurementsCycles(), rsQuality.getInt("measurement_cycles"));
+        Assert.assertEquals(measurementQuality1.getNumberOfMeasurements(), rsQuality.getInt("measurement_count"));
         
         Assert.assertFalse(rs.next());
     }
@@ -281,7 +282,23 @@ public class ResultCacheTest {
         Assert.assertEquals(benResult1.getStatistics(), br1.getStatistics());
 
     }
-
+    
+    @Test
+    public void testGetResultsWithHigherQualityShouldNotReturnRecordWithLowerOne() {
+        res.insertResult(benResult1);
+                
+        BenchmarkSetting bsWithHigherQuality = new BenchmarkSettingImpl(
+                measuredMethod1, generator1, generatorArguments1, 
+                new MeasurementQuality(
+                        measurementQuality1.getPriority(), measurementQuality1.getWarmupTime(),
+                        measurementQuality1.getNumberOfWarmupMeasurements() + 1, measurementQuality1.getMeasurementTime(),
+                        measurementQuality1.getNumberOfMeasurements() + 1, measurementQuality1.getNumberOfPoints()));
+        
+        BenchmarkResult br = res.getResult(bsWithHigherQuality);
+        
+        Assert.assertNull(br);
+    }
+    
     @Test
     public void testGetResultComplex() {
         res.insertResult(benResult1);

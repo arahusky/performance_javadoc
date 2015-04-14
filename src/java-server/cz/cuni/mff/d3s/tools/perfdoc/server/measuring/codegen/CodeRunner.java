@@ -16,6 +16,7 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.ClassParser;
 import java.io.File;
 import java.io.IOException;
@@ -65,12 +66,12 @@ public class CodeRunner {
         String classpath = getClassPath();
 
         ProcessBuilder processBuilder = new ProcessBuilder(path, "-cp", classpath, measurementClassName);
-      
+
         Process process = processBuilder.start();
-        
+
         //output the process must be processed (otherwise process never ends - deadlock)
         final InputStream stdIn = process.getInputStream();
-                
+
         //reading stdIn must be done in separate thread (otherwise, when there's no input, but just errors, deadlock occurs)
         new Thread(new Runnable() {
 
@@ -87,7 +88,7 @@ public class CodeRunner {
                 }
             }
         }).start();
-        
+
         //catching error messages
         InputStream in = process.getErrorStream();
         StringBuilder errorMsg = new StringBuilder();
@@ -99,7 +100,7 @@ public class CodeRunner {
         if (errorMsg.length() != 0) {
             log.log(Level.SEVERE, "An error occured when trying to run new JVM to run a measurement", errorMsg.toString());
         }
-        
+
         process.waitFor();
     }
 
@@ -107,8 +108,9 @@ public class CodeRunner {
      * Returns class paths that are used for call of the new JVM.
      *
      * Main class to be run is saved in 'measurementDirPath', then all workload
-     * with their implementations are in 'CodeGenerator.workloadsRootDir' and
-     * other classes, that may be needed are obtained from ClassParser.
+     * with their implementations are in the compiled server classes
+     * (HttpMeasureServer.getApplicationRootDir()) and other classes, that may
+     * be needed are obtained from ClassParser.
      *
      * @return String that may be used as an argument for -cp
      */
@@ -117,7 +119,7 @@ public class CodeRunner {
 
         StringBuilder classPathBuilder = new StringBuilder(measurementDirPath);
 
-        classPathBuilder.append(File.pathSeparator + CodeGenerator.workloadsRootDir);
+        classPathBuilder.append(File.pathSeparator + HttpMeasureServer.getApplicationRootDir());
 
         for (String classPath : workloadPaths) {
             classPathBuilder.append(File.pathSeparator + classPath);

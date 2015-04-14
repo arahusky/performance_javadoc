@@ -187,9 +187,9 @@ public class DetailedSiteHandler implements SiteHandler {
         
         MeasurementQuality mq = resultItem.getBenchmarkSetting().getMeasurementQuality();
         int warmupTime = mq.getWarmupTime();
-        int warmupCycles = mq.getNumberOfWarmupCycles();
+        int warmupCycles = mq.getNumberOfWarmupMeasurements();
         int measurementTime = mq.getMeasurementTime();
-        int measurementCycles = mq.getNumberOfMeasurementsCycles();
+        int measurementCycles = mq.getNumberOfMeasurements();
         
         list.add(warmupTime);
         list.add(warmupCycles);

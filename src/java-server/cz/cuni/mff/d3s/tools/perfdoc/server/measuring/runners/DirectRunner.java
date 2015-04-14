@@ -23,7 +23,6 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.CompileException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

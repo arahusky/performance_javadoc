@@ -80,16 +80,16 @@ public class ResultDatabaseCacheForWebTest {
         Assert.assertEquals(benResult1.getBenchmarkSetting().getGenerator(), list.get(0).getBenchmarkSetting().getGenerator());
        
         System.out.println("MeasureTime:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getMeasurementTime());
-        System.out.println("Num meaurements:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfMeasurementsCycles());
+        System.out.println("Num meaurements:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfMeasurements());
         System.out.println("warmupTime:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getWarmupTime());
-        System.out.println("Num warmup:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfWarmupCycles());
+        System.out.println("Num warmup:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfWarmupMeasurements());
         System.out.println("Priority:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getPriority());
         System.out.println("Num points:" + benResult1.getBenchmarkSetting().getMeasurementQuality().getNumberOfPoints());
         
          System.out.println("MeasureTime:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getMeasurementTime());
-         System.out.println("Num meaurements:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getNumberOfMeasurementsCycles());
+         System.out.println("Num meaurements:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getNumberOfMeasurements());
          System.out.println("warmupTime:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getWarmupTime());
-         System.out.println("Num warmup:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getNumberOfWarmupCycles());
+         System.out.println("Num warmup:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getNumberOfWarmupMeasurements());
         System.out.println("Priority:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getPriority());
         System.out.println("Num points:" + list.get(0).getBenchmarkSetting().getMeasurementQuality().getNumberOfPoints());
          
