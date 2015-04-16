@@ -35,6 +35,10 @@
   padding-right: 10px;
 }
 
+.graphOptions {
+  padding-right: 10%;
+}
+
 .ui-slider {
   margin-left: 10px;
   margin-right: 10px;

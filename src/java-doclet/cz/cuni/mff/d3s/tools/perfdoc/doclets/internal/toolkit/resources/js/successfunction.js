@@ -21,8 +21,22 @@
 
  //if we requested results with lowest priority, we must create graph at first
  if ((jsonRequestData.priority == 1) && (graphInfo.graph == null)) {
+ 
+ //div, where the canvas with graph will be shown
+ var divForGraph = document.createElement('div');
+ divForGraph.setAttribute('class', 'graphImage');
+ 
+ //div for options to manipulate with graph 
+ var divForGraphOptions = document.createElement('div');
+ divForGraphOptions.setAttribute('class', 'graphOptions');
+ divForGraphOptions.setAttribute('align', 'right');
+
+  $("#" + graphInfo.divLocation + " .right .graph").empty();
+  $("#" + graphInfo.divLocation + " .right .graph").append(divForGraph);
+  $("#" + graphInfo.divLocation + " .right .graph").append(divForGraphOptions);
+
   graphInfo.graph = new Dygraph(
-            divWhereGraphShouldBePlaced, 
+            divForGraph, 
             jsonRespondData.data,
             {
                 ylabel: 'Elapsed time (' + jsonRespondData.units + ')',
@@ -39,6 +53,50 @@
                 labels: [graphInfo.xAxisLabel,"Mean","Median"],
             }
             );
+
+    //checkbox to switch off/on the mean line
+    var checkbox1 = document.createElement('input');
+    checkbox1.type = "checkbox";
+    checkbox1.setAttribute('checked', 'true');
+    //the id of the "mean" checkbox is generated from the "main" div ant the suffix mean
+    var checkbox1ID = graphInfo.divLocation + "mean";
+    checkbox1.setAttribute('id', checkbox1ID);
+
+    //checkbox to switch off/on the median line
+    var checkbox2 = document.createElement('input');
+    checkbox2.type = "checkbox";
+    checkbox2.setAttribute('checked', 'true');
+    //the id of the "median" checkbox is generated from the "main" div ant the suffix median
+    var checkbox2ID = graphInfo.divLocation + "median";
+    checkbox2.setAttribute('id', checkbox2ID);
+    
+    checkbox1.onclick=function() {
+        if (graph.visibility()[0] == true) {
+          graph.setVisibility(0,false); 
+        } else {
+          graph.setVisibility(0,true); }
+    }
+
+    checkbox2.onclick=function() {
+        if (graph.visibility()[1] == true) {
+          graph.setVisibility(1,false); 
+        } else {
+          graph.setVisibility(1,true); }
+    }
+
+    //label for mean-checkbox
+    var meanLabel = document.createElement("label");
+    meanLabel.setAttribute("for", checkbox1ID);
+    meanLabel.appendChild(document.createTextNode("Mean"));
+    divForGraphOptions.appendChild(meanLabel);    
+    divForGraphOptions.appendChild(checkbox1);
+
+    //label for median-checkbox
+    var medianLabel = document.createElement("label");
+    medianLabel.setAttribute("for", checkbox2ID);
+    medianLabel.appendChild(document.createTextNode("Median"));
+    divForGraphOptions.appendChild(medianLabel);
+    divForGraphOptions.appendChild(checkbox2);
  }
 
   //setting priority to respondData.priority + 1
@@ -49,7 +107,6 @@
  $("#" + graphInfo.divLocation + " .right .table").html(generateTable(graphInfo.xAxisLabel, jsonRespondData.units, jsonRespondData.data)); 
 
  var graph = graphInfo.graph;
- console.log(jsonRespondData.data);
 
  if (priority == 1) {
         callServer(newData, graphInfo, ++priority); 

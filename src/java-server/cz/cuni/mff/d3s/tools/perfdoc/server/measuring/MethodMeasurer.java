@@ -180,8 +180,7 @@ public class MethodMeasurer {
             }
         }
 
-        log.log(Level.CONFIG,
-                "Measurement succesfully done");
+        log.log(Level.CONFIG, "Measurement succesfully done");
 
         //values, in which the measurement was performed
         double[] valuesToMeasure = valuesToMeasureList.get(cachedPriority - priority);
