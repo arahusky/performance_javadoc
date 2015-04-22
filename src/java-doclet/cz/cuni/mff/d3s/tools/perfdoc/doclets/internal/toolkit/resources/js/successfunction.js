@@ -97,6 +97,9 @@
     medianLabel.appendChild(document.createTextNode("Median"));
     divForGraphOptions.appendChild(medianLabel);
     divForGraphOptions.appendChild(checkbox2);
+
+
+    generateRadios(graphInfo.graph, graphInfo.divLocation, divWhereGraphShouldBePlaced);
  }
 
   //setting priority to respondData.priority + 1
@@ -168,4 +171,47 @@ function generateTable(xAxisLabelName, units, data) {
   res += '</tbody></table>';
 
   return res;
+}
+
+
+/**
+ * Generates radio buttons to switch between graph and tabular results.
+ * @param {Object} graph instance of graph
+ * @param {string} divString name of div, where should the graph be generated
+ * @param {Object} divElement DOM element representing div of graph area
+ */
+function generateRadios(graph, divString, divElement) {
+    var radiosName = divString + "_radios";
+    var graphOptionID = radiosName + "Graph";
+    var tableOptionID = radiosName + "Table";
+
+    //if there is no content in the div
+    if( $("#" + divString + " .right .radio").text().length == 0)  {
+    var code = '<form id="' + radiosName +'"> <input type="radio" id ="' + graphOptionID + '" name="' + radiosName + '" value="graph" checked="checked">'
+                + '<label for="'+ graphOptionID + '"> Graph</label>'
+                + '<input type="radio" id ="' + tableOptionID + '" name="' + radiosName + '" value="table" >'
+                + '<label for="' + tableOptionID + '"> Table</label>'
+                + '</form>';
+
+    $("#" + divString + " .right .radio").html(code);
+    }
+
+    $("#" + radiosName).click(function() {
+       var value = $('input:radio[name="' + radiosName + '"]:checked').val();
+       if (value == 'graph') {
+          $("#" + divString + " .right .graph").show();
+          $("#" + divString + " .right .table").hide();
+
+          //new width
+          var width = divElement.offsetWidth * (9/10);
+          //height of graph
+          var height = width * 3/4;
+          //we need to resize the graph (otherwise he may not be visible)
+          graph.resize(width, height);
+       } else {
+          $("#" + divString + " .right .graph").hide();
+          $("#" + divString + " .right .table").show();
+       }
+
+    });
 }

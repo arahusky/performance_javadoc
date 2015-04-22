@@ -126,19 +126,4 @@ public class JSAjaxHandler {
     public static void setTestedMethod(String testedMethod) {
         JSAjaxHandler.testedMethod = testedMethod;
     }
-
-    public static String getCodeForRadioOutput(String radioFormName, String divName) {
-        return "$('#" + radioFormName + "')"
-                + ".change(function() {"
-                + " value = $('input:radio[name=" + radioFormName + "]:checked').val();"
-                + " if (value == 'graph') {"
-                + " $(\"#" + divName + " .right .graph\").show();"
-                + " $(\"#" + divName + " .right .table\").hide();"
-                + "} else {"
-                + " $(\"#" + divName + " .right .graph\").hide();"
-                + " $(\"#" + divName + " .right .table\").show();"
-                + "}"
-                + "});"
-                ;
-    }
 }

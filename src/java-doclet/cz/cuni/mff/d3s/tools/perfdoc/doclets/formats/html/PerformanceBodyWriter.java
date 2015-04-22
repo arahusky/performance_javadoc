@@ -129,16 +129,7 @@ public class PerformanceBodyWriter {
         //div, where radios to choose output are
         HtmlTree outputFormat = new HtmlTree(HtmlTag.DIV);
         outputFormat.addAttr(HtmlAttr.CLASS, "radio");
-        String radiosName = uniqueGeneratorName + "_radio";
-        String radioContent = "<form id=\"" + radiosName + "\">"
-                + "<input type=\"radio\" id =\"" + radiosName + "_graph\" name = \"" + radiosName + "\" value=\"graph\" checked=\"checked\">"
-                + "<label for=\"" + radiosName + "_graph\"> Graph</label> "
-                + "<input type=\"radio\" id =\"" + radiosName + "_table\" name=\"" + radiosName + "\" value=\"table\">"
-                + "<label for=\"" + radiosName + "_table\"> Table</label> "
-                + "</form>";
-        outputFormat.addContent(new RawHtml(radioContent));
-        String js = JSAjaxHandler.getCodeForRadioOutput(radiosName, uniqueGeneratorName);
-        JavascriptCodeBox.addLocalCode(js);
+        outputFormat.addContent(new RawHtml("<div></div>"));
         
         rightSide.addContent(outputFormat);
         
