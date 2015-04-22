@@ -117,13 +117,13 @@ public class PerformanceBodyWriter {
         //div, where the graph will be shown
         HtmlTree graph = new HtmlTree(HtmlTag.DIV);
         graph.addAttr(HtmlAttr.CLASS, "graph");
-        graph.addContent("Here will be the image + checkbox to choose the values");
+        graph.addContent("Graph containing measured results.");
         rightSide.addContent(graph); 
         
         //div, where the table with results will be shown
         HtmlTree table = new HtmlTree(HtmlTag.DIV);
         table.addAttr(HtmlAttr.CLASS, "table hidden");
-        table.addContent("Here will be the table + checkbox to choose the values");
+        table.addContent("Table containing measured results.");
         rightSide.addContent(table); 
         
         //div, where radios to choose output are

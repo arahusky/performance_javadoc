@@ -9,6 +9,10 @@
 
   <script>$(document).ready(function()  { 
           $("#myTable").tablesorter(); } );
+
+    function detailedWindow(id) {
+      window.open("single?id=" + id, "_blank", "toolbar=yes, scrollbars=yes, width=650, height=600");
+    }
   </script>
 </head>
 
@@ -57,7 +61,11 @@
       #foreach ($measurement in $measurements)
       <tr>
         #foreach ($value in $measurement)
-          <td>$value</td>
+            #if (!$foreach.last)
+               <td align="center">$value</td>
+            #else
+                <td align="center"><button onclick="detailedWindow($value)">Link</button></td>
+            #end
         #end
       </tr>
       #end

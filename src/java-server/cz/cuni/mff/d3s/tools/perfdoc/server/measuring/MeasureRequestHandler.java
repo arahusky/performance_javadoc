@@ -21,6 +21,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,6 +92,8 @@ public class MeasureRequestHandler implements HttpHandler {
             log.log(Level.SEVERE, "There was some problem when connecting to database.", ex);
             sendErrorMessage("There was some problem when connecting to database.", exchange, responseBody);
         } catch (MeasurementException e) {
+            sendErrorMessage(e.getMessage(), exchange, responseBody);
+        } catch (PropertiesBadFormatException e) {
             sendErrorMessage(e.getMessage(), exchange, responseBody);
         } catch (Exception e) {
             log.log(Level.SEVERE, "Unknown exception occured.", e);

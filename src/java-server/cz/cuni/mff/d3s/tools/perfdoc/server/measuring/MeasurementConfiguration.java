@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,15 +43,8 @@ public class MeasurementConfiguration {
     //path to the configuration file
     private static final String configurationFileName = "measure.properties";
 
-    //TODO rename 
-    //path to the default configuration file
-    private static final String defConfigurationFileLocation = "cz/cuni/mff/d3s/tools/perfdoc/server/measuring/resources/default_measure.properties";
-
     //properties containing user-measurement configuration  
     private static final Properties measurementProperties = new Properties();
-
-    //properties containing default values  
-    private static final Properties defMeasurementProperties = new Properties();
 
     //public variable telling other classes, how many priorities does server handle
     public static final int numberOfPriorities = 4;
@@ -70,15 +64,9 @@ public class MeasurementConfiguration {
         } catch (IOException ex) {
             log.log(Level.WARNING, "Unable to find configuration file for measurement. The default values will be used.", ex);
         }
-
-        try (InputStream input = new FileInputStream(defConfigurationFileLocation)) {
-            defMeasurementProperties.load(input);
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Unable to find default measurement properties. Program will probably wont work properly.", e);
-        }
     }
 
-    public static boolean getCodeGenerationFlag() {
+    public static boolean getCodeGenerationFlag() throws PropertiesBadFormatException {
         return getBoolProperty("useCodeGeneration");
     }
 
@@ -88,8 +76,9 @@ public class MeasurementConfiguration {
      *
      * @param priority priority for which we want to get number of points
      * @return
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public static int getNumberOfPoints(int priority) {
+    public static int getNumberOfPoints(int priority) throws PropertiesBadFormatException {
         switch (priority) {
             case 1:
                 return getIntProperty("priorityOneNumberOfPoints");
@@ -100,7 +89,7 @@ public class MeasurementConfiguration {
             case 4:
                 return getIntProperty("priorityFourNumberOfPoints");
             default:
-                return -1;
+                throw new IllegalArgumentException();
         }
     }
 
@@ -110,8 +99,9 @@ public class MeasurementConfiguration {
      *
      * @param priority priority for which we want to get number of warmup-measurements
      * @return
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public static int getNumberOfWarmupMeasurements(int priority) {
+    public static int getNumberOfWarmupMeasurements(int priority) throws PropertiesBadFormatException {
 
         switch (priority) {
             case 1:
@@ -123,7 +113,7 @@ public class MeasurementConfiguration {
             case 4:
                 return getIntProperty("priorityFourNumberOfMeasurementsWarmup");
             default:
-                return -1;
+                throw new IllegalArgumentException();
         }
     }
 
@@ -133,8 +123,9 @@ public class MeasurementConfiguration {
      *
      * @param priority priority for which we want to get warmup-time
      * @return
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public static int getWarmupTime(int priority) {
+    public static int getWarmupTime(int priority) throws PropertiesBadFormatException {
 
         switch (priority) {
             case 1:
@@ -146,7 +137,7 @@ public class MeasurementConfiguration {
             case 4:
                 return getIntProperty("priorityFourElapsedTimeWarmup");
             default:
-                return -1;
+                throw new IllegalArgumentException();
         }
     }
 
@@ -156,8 +147,9 @@ public class MeasurementConfiguration {
      *
      * @param priority priority for which we want to get number of measurements
      * @return
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public static int getNumberOfMeasurementMeasurements(int priority) {
+    public static int getNumberOfMeasurementMeasurements(int priority) throws PropertiesBadFormatException {
 
         switch (priority) {
             case 1:
@@ -169,7 +161,7 @@ public class MeasurementConfiguration {
             case 4:
                 return getIntProperty("priorityFourNumberOfMeasurements");
             default:
-                return -1;
+                throw new IllegalArgumentException();
         }
     }
 
@@ -179,8 +171,9 @@ public class MeasurementConfiguration {
      *
      * @param priority priority for which we want to get time
      * @return
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public static int getMeasurementTime(int priority) {
+    public static int getMeasurementTime(int priority) throws PropertiesBadFormatException {
 
         switch (priority) {
             case 1:
@@ -192,58 +185,36 @@ public class MeasurementConfiguration {
             case 4:
                 return getIntProperty("priorityFourElapsedTimeMeasurement");
             default:
-                return -1;
+                throw new IllegalArgumentException();
         }
     }
 
-    private static int getIntProperty(String propertyName) {
+    private static int getIntProperty(String propertyName) throws PropertiesBadFormatException {
 
         String propertyValue = measurementProperties.getProperty(propertyName);
         //if such a property does not exist or has a value of -1, we use default property value
         if (propertyValue == null || propertyValue.equals("-1")) {
-            return getDefaultIntProperty(propertyName);
+            return -1;
         }
 
         try {
             int value = Integer.parseInt(propertyValue);
             return value;
         } catch (NumberFormatException e) {
-            log.log(Level.WARNING, "The measurement properties file contains non-integer value. Using default one.", e);
-            return getDefaultIntProperty(propertyName);
+            log.log(Level.WARNING, "The measurement properties file contains non-integer value.", e);
+            throw new PropertiesBadFormatException("Bad value of " + propertyName);
         }
     }
 
-    private static boolean getBoolProperty(String propertyName) {
+    private static boolean getBoolProperty(String propertyName) throws PropertiesBadFormatException {
 
         String propertyValue = measurementProperties.getProperty(propertyName);
         //if such a property does not exist or has a value of -1, we use default property value
         if (propertyValue == null || propertyValue.equals("-1")) {
-            return getDefaultBoolProperty(propertyName);
+            throw new PropertiesBadFormatException("Bad value of " + propertyName);
         }
 
         boolean value = Boolean.parseBoolean(propertyValue);
-        return value;
-
-    }
-
-    private static int getDefaultIntProperty(String propertyName) {
-        String defPropertyName = "def" + propertyName;
-        String defPropertyValue = defMeasurementProperties.getProperty(defPropertyName);
-
-        try {
-            int value = Integer.parseInt(defPropertyValue);
-            return value;
-        } catch (NumberFormatException e) {
-            log.log(Level.SEVERE, "The default measurement properties file contains non-integer value.", e);
-            return -1;
-        }
-    }
-
-    private static boolean getDefaultBoolProperty(String propertyName) {
-        String defPropertyName = "def" + propertyName;
-        String defPropertyValue = defMeasurementProperties.getProperty(defPropertyName);
-
-        boolean value = Boolean.parseBoolean(defPropertyValue);
         return value;
     }
 }

@@ -56,7 +56,7 @@ public class FileGenerator {
                 fw.write(b);
             }
         }
-
+        
         FileInputStream stream = new FileInputStream(file);
         workload.addCall(null, stream);
 

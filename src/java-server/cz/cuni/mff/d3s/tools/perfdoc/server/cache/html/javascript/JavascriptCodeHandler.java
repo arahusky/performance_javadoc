@@ -18,7 +18,6 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.javascript;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,9 +25,7 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
-import static cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils.templatesFolder;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.SiteHandler;
-import java.io.InputStreamReader;
 
 /**
  * Class that returns requested javascript files.

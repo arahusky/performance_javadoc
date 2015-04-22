@@ -58,23 +58,4 @@ public class JavascriptLoader {
             throw new IOException("File" + jsFolderLocation + DirectoryManager.URL_FILE_SEPARATOR + jsFileName + "was not found.");
         }
     }
-
-    //TODO test me
-    static String removeCommentsAndNewLines(String str) throws IOException {
-        StringReader reader = new StringReader(str);
-
-        int letter = reader.read();
-
-        //skipping whitespaces
-        while (Character.isWhitespace((char) letter)) {
-            letter = reader.read();
-        }
-
-        if (((char) letter) == '/') {
-            letter = reader.read();
-            //if (letter == '')
-        }
-
-        return null;
-    }
 }

@@ -24,20 +24,21 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
-import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 import com.sun.javadoc.*;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
+import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import static cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriter.configuration;
+import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.taglets.*;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.util.*;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -358,7 +359,7 @@ public class HtmlDocletWriter extends HtmlDocWriter {
         //we go through each annotation
         for (AnnotationDesc annotDesc : annotations) {
             //if the annotation type is workload 
-            if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload".equals(annotDesc.annotationType().toString())) {
+            if (Workload.class.getName().equals(annotDesc.annotationType().toString())) {
                 list.add(AnnotationParser.getAnnotationValueString(annotDesc, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload.value()"));
             } else if ("cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads".equals(annotDesc.annotationType().toString())) {
                 String pom = AnnotationParser.getAnnotationValueString(annotDesc, "cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads.value()");

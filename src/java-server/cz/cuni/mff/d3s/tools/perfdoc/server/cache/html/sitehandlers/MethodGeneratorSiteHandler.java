@@ -21,8 +21,8 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.BenchmarkResultDB;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -134,6 +134,7 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
         list.add("mean (ns)");
         list.add("std. deviation (ns)");
         list.add("Q1, Q2, Q3 (ns)");
+        list.add("Detailed results");
         
         return list;
     }
@@ -141,10 +142,10 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
     private List<List<Object>> getMeasurements(MethodInfo testedMethod, MethodInfo generator, ResultCacheForWeb res) throws ClassNotFoundException, IOException, NoSuchMethodException {
         
         List<List<Object>> list = new ArrayList<>();
-        Collection<BenchmarkResult> benchmarkResults = res.getResults(testedMethod, generator);
+        Collection<BenchmarkResultDB> benchmarkResults = res.getResults(testedMethod, generator);
 
         if (benchmarkResults != null) {
-            for (BenchmarkResult resultItem : benchmarkResults) {
+            for (BenchmarkResultDB resultItem : benchmarkResults) {
                 List<Object> pomList = new ArrayList<>();
                 
                 Object[] data = resultItem.getBenchmarkSetting().getGeneratorArguments().getValues();
@@ -159,6 +160,9 @@ public class MethodGeneratorSiteHandler implements SiteHandler {
                 
                 String quartiles = stat.getFirstQuartile() + ", " + stat.getMedian() + ", " + stat.getThirdQuartile();
                 pomList.add(quartiles);
+                
+                int idOfMeasurement = resultItem.getIDMeasurement();
+                pomList.add(idOfMeasurement);
                 
                 list.add(pomList);
             }

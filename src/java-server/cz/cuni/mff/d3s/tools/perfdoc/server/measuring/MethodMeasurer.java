@@ -20,6 +20,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.LockBase;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.MeasurementException;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.DirectRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners.MethodReflectionRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
@@ -75,8 +76,9 @@ public class MethodMeasurer {
      *
      * @return JSONObject that contains measured results.
      * @throws MeasurementException
+     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
-    public JSONObject measure() throws MeasurementException {
+    public JSONObject measure() throws MeasurementException, PropertiesBadFormatException {
         //requested measurement quality
         MeasurementQuality mQuality = measureRequest.getMeasurementQuality();
 
@@ -196,7 +198,7 @@ public class MethodMeasurer {
      * @return priority priority of found results, 0 if no better or equal
      * found.
      */
-    private int checkWhetherCannotGiveBetterResults(List<double[]> valuesToMeasure) {
+    private int checkWhetherCannotGiveBetterResults(List<double[]> valuesToMeasure) throws PropertiesBadFormatException {
         int priority = measureRequest.getMeasurementQuality().getPriority();
         List<BenchmarkResult> list = new ArrayList<>();
 

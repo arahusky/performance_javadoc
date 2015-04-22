@@ -25,6 +25,8 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSettingImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodArgumentsImpl;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.BasicStatistics;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -161,8 +163,8 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
     }
 
     @Override
-    public List<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator) {
-        List<BenchmarkResult> list = new ArrayList<>();
+    public List<BenchmarkResultDB> getResults(MethodInfo testedMethod, MethodInfo generator) {
+        List<BenchmarkResultDB> list = new ArrayList<>();
 
         try {
             String query = "SELECT * "
@@ -175,12 +177,13 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
+                int id = rs.getInt("id");
                 String data = rs.getString("generator_arguments");
                 int idQuality = rs.getInt("idQuality");
                 BasicStatistics bs = getBasicStatisticsFromResultSet(rs);
                 
-                BenchmarkResult item = new BenchmarkResultImpl(bs,
-                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality)));
+                BenchmarkResultDB item = new BenchmarkResultDBImpl(bs,
+                        new BenchmarkSettingImpl(testedMethod, generator, new MethodArgumentsImpl(data), getMeasureQualityFromID(idQuality)), id);
 
                 list.add(item);
             }
@@ -266,5 +269,34 @@ public class ResultDatabaseCacheForWeb extends ResultDatabaseCache implements Re
         long thirdQuartile = rs.getLong("mean");
         
         return new BasicStatistics(mean, median, deviation, firstQuartile, thirdQuartile);
+    }
+
+    @Override
+    public Statistics getResults(int id) {
+        try {
+            Statement stmt = conn.createStatement();
+            String query = "SELECT * FROM "
+                        + " (SELECT * FROM measurement_information"
+                        + "     WHERE id = " + id + ") AS info"
+                        + " INNER JOIN measurement_detailed AS detailed"
+                        + " ON (info.id = detailed.id)"
+                        ;
+            ResultSet rs = stmt.executeQuery(query);
+            return getStatisticsFromResultsSet(rs);
+        } catch (SQLException e) {
+            log.log(Level.INFO, "Unable to retrieve results from database", e);
+            return null;
+        }
+    }
+    
+    private Statistics getStatisticsFromResultsSet(ResultSet rs) throws SQLException {
+        MeasurementStatistics statistics = new MeasurementStatistics();
+        
+        while (rs.next()) {
+            long time = rs.getLong("time");
+            statistics.addResult(time);
+        }
+
+        return statistics;
     }
 }

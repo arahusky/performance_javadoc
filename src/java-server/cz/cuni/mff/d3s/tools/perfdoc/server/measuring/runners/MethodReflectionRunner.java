@@ -16,15 +16,12 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.runners;
 
-import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BlackholeFactory;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasuringUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MethodRunner;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.WorkloadImpl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

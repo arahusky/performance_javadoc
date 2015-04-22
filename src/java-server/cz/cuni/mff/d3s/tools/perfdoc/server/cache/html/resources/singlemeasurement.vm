@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Single point measurement results</title>
+
+  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <script src="js?dygraph-combined.js"></script>
+
+  <script>$(document).ready(function()  { 
+        var data = [ 
+                    #foreach ($res in $results)
+                      #if ($foreach.index > 0)
+                       ,
+                      #end
+                      $res
+                    #end
+                    ];        
+                
+        $("textarea").val(data.join("; "));
+
+        var graphdata = [];
+
+        for (i = 0; i < data.length; i++) { 
+            graphdata.push([i, data[i]]);
+        }
+
+        var g = new Dygraph(document.getElementById("graph"), graphdata,
+                          {
+                          ylabel: "Elapsed time (ns)",
+                          xlabel: "Measurement count",
+                          drawPoints: true,
+                          strokeWidth: 0,
+                          pointSize: 2,
+                          //maxNumberWidth: 10,
+                          labels: ['id', 'Time (ns)']
+});
+        
+
+        });
+  </script>
+</head>
+
+<body>
+    <div id ="graph">
+        
+    </div>
+
+    <div>
+        <p>Results in a text form:</p>
+        <textarea rows="5" cols="50" readonly>
+            
+       </textarea>
+    </div>
+</body>
+
+</html>

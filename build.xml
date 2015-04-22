@@ -50,7 +50,7 @@
 	<property name="server.jar" location="${jars.build.dir}/server.jar"/>
 	<property name="doclet.jar" location="${jars.build.dir}/doclet.jar"/>
 
-	<target name="main" depends="compile-doclet,compile-demo,compile-server,create-server-jar,create-doclet-jar" description="Main target: compiles everything and creates JAR file for server.">
+	<target name="main" depends="compile-doclet,compile-demo,compile-server,refdoc,create-server-jar,create-doclet-jar" description="Main target: compiles everything, creates documentation of the project and JAR files for doclet and server.">
 	</target>	
 
 	<target name="compile-perftools" description="Compile the performance tools (annotations + workloads).">
@@ -96,8 +96,7 @@
 		</javac>
 	</target>
 
-	<target name="compile-server" depends="compile-perftools" description="Compile the server.">
-		
+	<target name="compile-server" depends="compile-perftools" description="Compile the server.">		
 		<javac srcdir="${server.src.dir}" destdir="${server.build.dir}"
 				debug="true"
 				includeantruntime="false">
@@ -128,7 +127,7 @@
 		</javac>
 	</target>
 			
-	<target name="refdoc" description="Build JavaDoc documentation of the project.">
+	<target name="refdoc" description="Build Javadoc documentation of the project.">
 		<mkdir dir="${javadoc.build.dir}" />
 		<echo message="Running JavaDoc..." />
 		<javadoc
@@ -198,7 +197,7 @@
 		</javadoc>
 	</target>
 
-	<target name="run-server" depends="compile-server" description="Run server.">
+	<target name="run-server" depends="compile-server,compile-demo" description="Run server.">
  		<java fork="true" classname="cz.cuni.mff.d3s.tools.perfdoc.server.HttpMeasureServer">
  			<jvmarg value="-Djava.util.logging.config.file=config/logging.properties" />
  			<classpath>

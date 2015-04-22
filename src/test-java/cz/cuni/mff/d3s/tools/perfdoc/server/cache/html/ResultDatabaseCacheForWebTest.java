@@ -169,7 +169,7 @@ public class ResultDatabaseCacheForWebTest {
         res.insertResult(new BenchmarkResultImpl(statistics2, benSet6));
         res.insertResult(new BenchmarkResultImpl(statistics3, benSet7));
 
-        List<BenchmarkResult> list = res.getResults(measuredMethod1, generator1);
+        List<BenchmarkResultDB> list = res.getResults(measuredMethod1, generator1);
 
         Assert.assertNotNull(list);
         Assert.assertEquals(4, list.size());

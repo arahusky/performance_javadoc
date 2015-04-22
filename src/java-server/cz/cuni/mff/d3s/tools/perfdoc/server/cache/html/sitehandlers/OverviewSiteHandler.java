@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import org.apache.velocity.VelocityContext;
 
 /**
- * Site handler, that shows all classes, that have any measured method
+ * Site handler, that shows all classes, that have any measured method.
  *
  * @author Jakub Naplava
  */

@@ -17,6 +17,7 @@
 
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ public class MeasurementConfigurationTest {
      * Tests, whether all measure properties are properly defined.
      */
     @Test
-    public void testWhetherEveryPropertyIsCorrectlyDefined() {
+    public void testWhetherEveryPropertyIsCorrectlyDefined() throws PropertiesBadFormatException {
         
         int numberOfPriorities = MeasurementConfiguration.numberOfPriorities;
         

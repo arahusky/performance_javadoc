@@ -21,7 +21,9 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultAdminCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultDatabaseCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.CacheRequestHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasureRequestHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.codegen.CodeGenerator;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -70,6 +72,13 @@ public class HttpMeasureServer {
         } catch (UnsupportedEncodingException ex) {
             //should never happen, but to be sure, log the error
             log.log(Level.SEVERE, "An error occured while decoding current application root directory.", ex);
+        }
+        
+        try{
+            checkConfiguration();
+        } catch (PropertiesBadFormatException ex) {
+            log.log(Level.SEVERE, ex.getMessage(), ex);
+            return;
         }
 
         //the port on which the server will run
@@ -230,5 +239,17 @@ public class HttpMeasureServer {
      */
     public static String getApplicationRootDir() {
         return applicationRootDir;
+    }
+
+    /**
+     * Before the start of the server check, whether everything is properly set. 
+     * 
+     * Namely looks, whether all property files are in a good format.
+     * @throws PropertiesBadFormatException 
+     */
+    private static void checkConfiguration() throws PropertiesBadFormatException {
+        for (int priority = 1; priority<=4; priority++) {
+            new MeasurementQuality(priority);
+        }
     }
 }

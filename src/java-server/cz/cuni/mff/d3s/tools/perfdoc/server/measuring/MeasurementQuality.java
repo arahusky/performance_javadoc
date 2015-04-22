@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
+
 /**
  * This class binds together information about measurement quality for one
  * measure request.
@@ -45,7 +47,7 @@ public class MeasurementQuality {
     //TODO possibly not here
     private final int numberOfPoints;
 
-    public MeasurementQuality(int priority) {
+    public MeasurementQuality(int priority) throws PropertiesBadFormatException {
         this.priority = priority;
         this.warmupTime = MeasurementConfiguration.getWarmupTime(priority);
         this.numberOfWarmupMeasurements = MeasurementConfiguration.getNumberOfWarmupMeasurements(priority);

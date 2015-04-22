@@ -25,6 +25,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.FullDebugSit
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.MethodGeneratorSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.MethodSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.OverviewSiteHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.SingleResultSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.SiteHandler;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -68,6 +69,9 @@ public class CacheRequestHandler implements HttpHandler {
                 break;
             case "/cache/detailed":
                 handler = new DetailedSiteHandler();
+                break;
+            case "/cache/single":
+                handler = new SingleResultSiteHandler();
                 break;
             case "/cache/full":
                 handler = new FullDebugSiteHandler();

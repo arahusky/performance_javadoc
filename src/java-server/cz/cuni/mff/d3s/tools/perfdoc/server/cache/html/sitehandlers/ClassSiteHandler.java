@@ -51,6 +51,8 @@ public class ClassSiteHandler implements SiteHandler {
             Collection<MethodInfo> testedMethods = res.getDistinctClassMethods(className);
             if (testedMethods == null) {
                 HttpExchangeUtils.sentErrorHeaderAndClose(exchange, "Sorry, but there was an error when trying to connect to database..", 500, log);
+                log.log(Level.INFO, "Data were succesfully sent to the user.");
+                return;
             }
             
             VelocityContext context = new VelocityContext();

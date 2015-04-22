@@ -19,6 +19,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.ResultCache;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.util.Collection;
 
 /**
@@ -47,14 +48,14 @@ public interface ResultCacheForWeb extends ResultCache {
     Collection<Object[]> getQualityResults();
 
     /**
-     * Returns faked BenchmarkResults (with the Statistics containing only
+     * Returns faked BenchmarkResultsDb (with the Statistics containing only
      * computed results) for given testedMethod and generator
      *
      * @param testedMethod
      * @param generator
      * @return BenchmarkResult if found, otherwise null
      */
-    Collection<BenchmarkResult> getResults(MethodInfo testedMethod, MethodInfo generator);
+    Collection<BenchmarkResultDB> getResults(MethodInfo testedMethod, MethodInfo generator);
 
     /**
      * Returns all methods, that have already been measured and have some result
@@ -84,4 +85,11 @@ public interface ResultCacheForWeb extends ResultCache {
      * was an error, then null
      */
     Collection<MethodInfo> getDistinctGenerators(MethodInfo methodName);
+    
+    /**
+     * Returns Statistics for record with given ID.
+     * @param id
+     * @return Statistics if found, otherwise null
+     */
+    Statistics getResults(int id);
 }

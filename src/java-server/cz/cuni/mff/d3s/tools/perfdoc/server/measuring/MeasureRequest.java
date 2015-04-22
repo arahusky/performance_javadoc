@@ -18,6 +18,7 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class MeasureRequest {
      * @throws IOException when the configuration file containing classpath can
      * not be handled
      */
-    public MeasureRequest(String JSONRequest) throws ClassNotFoundException, IOException, NoSuchMethodException {
+    public MeasureRequest(String JSONRequest) throws ClassNotFoundException, IOException, NoSuchMethodException, PropertiesBadFormatException {
         JSONObject obj = new JSONObject(JSONRequest);
 
         String measuredMethodName = obj.getString("testedMethod");

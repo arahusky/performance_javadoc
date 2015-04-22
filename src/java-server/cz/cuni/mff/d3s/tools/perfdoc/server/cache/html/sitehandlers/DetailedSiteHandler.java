@@ -21,6 +21,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodInfo;
 import cz.cuni.mff.d3s.tools.perfdoc.server.MethodReflectionInfo;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.BenchmarkResultDB;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkResult;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
@@ -151,10 +152,10 @@ public class DetailedSiteHandler implements SiteHandler {
         double min = Double.parseDouble(parameters.split(",")[range].split("_to_")[0]);
         double max = Double.parseDouble(parameters.split(",")[range].split("_to_")[1]);
         
-        Collection<BenchmarkResult> benchmarkResults = res.getResults(testedMethod, generator);
+        Collection<BenchmarkResultDB> benchmarkResults = res.getResults(testedMethod, generator);
         
         if (benchmarkResults != null) {
-            for (BenchmarkResult item : benchmarkResults) {
+            for (BenchmarkResultDB item : benchmarkResults) {
                 list.add(getRowIfPass(normalizedParameters, item, min, max, range));
             }
         }
@@ -162,7 +163,7 @@ public class DetailedSiteHandler implements SiteHandler {
         return list;
     }
 
-    List<Object> getRowIfPass(String[] normalizedData, BenchmarkResult resultItem, double min, double max, int rangeValue) {
+    List<Object> getRowIfPass(String[] normalizedData, BenchmarkResultDB resultItem, double min, double max, int rangeValue) {
         List<Object> list = new ArrayList<>();
         
         Object[] data = resultItem.getBenchmarkSetting().getGeneratorArguments().getValues();
