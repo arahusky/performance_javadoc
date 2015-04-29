@@ -14,27 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example001;
-
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads;
-import java.util.LinkedList;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.resourceCodeHandler;
 
 /**
- * The extension of LinkedList\<T\> to provide performance measuring for its
- * contains method.
+ * This enum describes all possible resource type handled by
+ * ResourceCodeHandler.
  *
  * @author Jakub Naplava
  */
-public class MyLinkedList<T> extends LinkedList<T> {
+public enum ResourceType {
 
-    private static final long serialVersionUID = 1L;
-
-    @Workloads({
-        @Workload("example001.MyLListGenerator#prepareDataBad"),
-        @Workload("example001.MyLListGenerator#prepareDataGood")})
-    @Override
-    public boolean contains(Object o) {
-        return super.contains(o);
-    }
+    JS, CSS
 }

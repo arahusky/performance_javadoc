@@ -29,7 +29,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
  */
 public class GeneratorMockup {
 
-    @Generator(description = "Some desc", genName = "Some genName")
+    @Generator(description = "Some desc", name = "Some genName")
     public void generate(
             Workload workload,
             ServiceWorkload service,

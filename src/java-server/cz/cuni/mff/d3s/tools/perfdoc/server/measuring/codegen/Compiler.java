@@ -97,10 +97,6 @@ public class Compiler {
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, defaultLocale, defaultCharset);
         Iterable<String> options = getOptions(classPaths);
         
-        /*TODO check nejak moc tam toho je
-        for (String s : options) {
-            System.out.println(s);
-        }*/
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(Arrays.asList(sourcePath));
         Writer defaultToStdErr = null;
         Iterable<String> noAnnotationClasses = null;

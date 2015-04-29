@@ -38,7 +38,7 @@ public class FileGenerator {
 
     final File file = new File("fileThatDoesNotExist.txt"); 
     
-    @Generator(description = "Prepares file stream of given file size.", genName = "File stream preparer")
+    @Generator(description = "Prepares file stream of given file size.", name = "File stream preparer")
     public void prepareStream(
             Workload workload,
             ServiceWorkload service,
@@ -63,7 +63,7 @@ public class FileGenerator {
         workload.setHooks(new MyHooks(file));
     }
 
-    @Generator(description = "Prepares file stream and array of given size to be written into it.", genName = "Write stuff generator")
+    @Generator(description = "Prepares file stream and array of given size to be written into it.", name = "Write stuff generator")
     public void prepareStreamToWrite(
             Workload workload,
             ServiceWorkload service,

@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
+ * This class contains additional methods one finds useful when inspecting
+ * performance of ArrayList\<T\>.
  *
  * @author Jakub Naplava
  */

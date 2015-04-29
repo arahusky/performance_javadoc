@@ -23,7 +23,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 import java.util.Collection;
 
 /**
- * Interface, that extends ResultCache with methods for site handlers
+ * Interface, that extends ResultCache with methods for site handlers.
  *
  * @author Jakub Naplava
  */

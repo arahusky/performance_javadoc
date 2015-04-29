@@ -50,7 +50,8 @@
                 height : height,
                 width : width,
                 customBars: true,
-                labels: [graphInfo.xAxisLabel,"Mean","Median"],
+                legend: 'always',
+                labels: [graphInfo.xAxisLabel,"Mean","Median"]
             }
             );
 
@@ -110,6 +111,7 @@
  $("#" + graphInfo.divLocation + " .right .table").html(generateTable(graphInfo.xAxisLabel, jsonRespondData.units, jsonRespondData.data)); 
 
  var graph = graphInfo.graph;
+ graph.updateOptions( { 'yAxisLabelWidth': getWidthYLabel(jsonRespondData.data)} );
 
  if (priority == 1) {
         callServer(newData, graphInfo, ++priority); 
@@ -214,4 +216,30 @@ function generateRadios(graph, divString, divElement) {
        }
 
     });
+}
+
+
+/**
+ * Computes the width of y-axis label (so that it does not interfere with values)
+ * @param {Object} values in format from the server ([[point, [.,.,.], [.,.,.]], ...])
+ */
+function getWidthYLabel(values) {
+  var realValues = [];
+
+  for (var i = 0; i<values.length; i++) {
+      //value of mean + standardDeviation
+      realValues.push(values[i][1][2]);
+      //value of Q3
+      realValues.push(values[i][2][2]);
+  }
+
+  var maxVal = Math.max.apply(null, realValues);
+
+  if (maxVal < 10000) {
+    return 50;
+  } else if (maxVal < 100000) {
+    return 60;
+  } else if (maxVal < 1000000) {
+    return 70;
+  } else return 80;
 }

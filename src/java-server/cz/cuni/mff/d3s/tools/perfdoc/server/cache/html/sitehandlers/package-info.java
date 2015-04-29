@@ -14,27 +14,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example001;
-
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workloads;
-import java.util.LinkedList;
-
 /**
- * The extension of LinkedList\<T\> to provide performance measuring for its
- * contains method.
+ * This package contains classes maintaining web page interface to the database.
  *
- * @author Jakub Naplava
+ * The concrete implementations of SiteHandler interface are placed here, where
+ * each of this classes handles one web page using templates (stored in resourced
+ * folder).
  */
-public class MyLinkedList<T> extends LinkedList<T> {
-
-    private static final long serialVersionUID = 1L;
-
-    @Workloads({
-        @Workload("example001.MyLListGenerator#prepareDataBad"),
-        @Workload("example001.MyLListGenerator#prepareDataGood")})
-    @Override
-    public boolean contains(Object o) {
-        return super.contains(o);
-    }
-}
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers;

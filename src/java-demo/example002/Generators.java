@@ -30,7 +30,7 @@ import example002.enums.SomeOtherEnum;
  */
 public class Generators {
           
-      @Generator(description = "First waiting generator", genName = "First wait")   
+      @Generator(description = "First waiting generator", name = "First wait")   
       public void prepareData1
       (
               Workload workload,
@@ -58,7 +58,7 @@ public class Generators {
           }          
       }
       
-       @Generator(description = "Second waiting generator", genName = "Second wait")   
+       @Generator(description = "Second waiting generator", name = "Second wait")   
       public void prepareData1
       (
               Workload workload,

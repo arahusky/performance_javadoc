@@ -28,7 +28,7 @@ import java.util.Random;
  */
 public class Generator {
  
-    @cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator(description =  "Adds up two numbers", genName = "Add up")
+    @cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator(description =  "Adds up two numbers", name = "Add up")
     public void prepareDataAdd(
             Workload workload,
             ServiceWorkload service,

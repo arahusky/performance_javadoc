@@ -154,7 +154,7 @@ public class StatisticsUtils {
 
         double iqr = thirdQuartile - firstQuartile;
 
-        double outerFence = thirdQuartile + 3 * iqr;
+        double outerFence = thirdQuartile + 1.5 * iqr;
 
         for (int i = 0; i < values.size(); i++) {
             if (values.get(i) > outerFence) {

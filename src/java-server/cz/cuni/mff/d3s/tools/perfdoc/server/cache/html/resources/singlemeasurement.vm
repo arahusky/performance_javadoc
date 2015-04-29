@@ -3,8 +3,7 @@
 <head>
   <title>Single point measurement results</title>
 
-  <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
-  <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+  <script src="js?jquery-2.1.3.min.js"></script>
   <script src="js?dygraph-combined.js"></script>
 
   <script>$(document).ready(function()  { 
@@ -17,7 +16,7 @@
                     #end
                     ];        
                 
-        $("textarea").val(data.join("; "));
+        $("textarea").val(data.join(", "));
 
         var graphdata = [];
 
@@ -32,12 +31,32 @@
                           drawPoints: true,
                           strokeWidth: 0,
                           pointSize: 2,
+                          yAxisLabelWidth: getWidthYLabel(data),
                           //maxNumberWidth: 10,
                           labels: ['id', 'Time (ns)']
 });
+
+
         
 
         });
+
+  /**
+ * Computes the width of y-axis label (so that it does not interfere with values)
+ * @param {Object} values array of values to be plotted
+ */
+function getWidthYLabel(values) {
+  
+  var maxVal = Math.max.apply(null, values);
+
+  if (maxVal < 10000) {
+    return 50;
+  } else if (maxVal < 100000) {
+    return 60;
+  } else if (maxVal < 1000000) {
+    return 70;
+  } else return 80;
+}
   </script>
 </head>
 

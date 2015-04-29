@@ -29,7 +29,7 @@ import javax.swing.JFrame;
  */
 public class GralTestGenerator {
 
-    @Generator(description = "Generator to test the time of creating and showing of the scatter plot in the JFrame.", genName = "Test generator")
+    @Generator(description = "Generator to test the time of creating and showing of the scatter plot in the JFrame.", name = "Test generator")
     public void prepareDataPlotScatter(
             Workload workload,
             ServiceWorkload service,
@@ -44,7 +44,7 @@ public class GralTestGenerator {
         }
     }
     
-    @Generator(description = "Generator to test the time of creating and showing of the raster plot in the JFrame.", genName = "Test generator")
+    @Generator(description = "Generator to test the time of creating and showing of the raster plot in the JFrame.", name = "Test generator")
     public void prepareDataPlotRaster(
             Workload workload,
             ServiceWorkload service,

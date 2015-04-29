@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.javascript;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.resourceCodeHandler;
 
 import com.sun.net.httpserver.HttpExchange;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.ResultCacheForWeb;
@@ -28,22 +28,35 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.HttpExchangeUtils;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.SiteHandler;
 
 /**
- * Class that returns requested javascript files.
+ * Class that returns requested javascript/css files.
  *
  * @author Jakub Naplava
  */
-public class JavascriptCodeHandler implements SiteHandler {
+public class ResourceCodeHandler implements SiteHandler {
 
-    private static final Logger log = Logger.getLogger(JavascriptCodeHandler.class.getName());
+    private static final Logger log = Logger.getLogger(ResourceCodeHandler.class.getName());
 
-    //folder containing the javascript files
-    private static final String defaultFolder = "/cz/cuni/mff/d3s/tools/perfdoc/server/cache/js/resources/";
-
+    //folder containing the resource code files
+    private static final String defaultFolder = "/cz/cuni/mff/d3s/tools/perfdoc/server/cache/resources/";
+    
+    public ResourceCodeHandler(ResourceType type) {
+        switch (type) {
+            case CSS:
+                myFolder = defaultFolder + "css/";
+                break;
+            case JS:
+                myFolder = defaultFolder + "js/";
+                break;
+        }
+    }
+    
+    private  String myFolder = "";
+    
     @Override
     public void handle(HttpExchange exchange, ResultCacheForWeb res) {
         String fileName = exchange.getRequestURI().getQuery();
         
-        try (InputStream input = HttpExchangeUtils.class.getResourceAsStream(defaultFolder + fileName)) {
+        try (InputStream input = HttpExchangeUtils.class.getResourceAsStream(myFolder + fileName)) {
 
             //sending succesfull headers with length set 0, which means that arbitrary amount of data may be sent
             exchange.sendResponseHeaders(200, 0);

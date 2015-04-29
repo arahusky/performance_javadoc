@@ -53,7 +53,7 @@ public class DatabaseInsertGenerator {
         this.connection = connection;
     }
 
-    @Generator(description = "Generates table and records to be inserted into this table", genName = "Generator")
+    @Generator(description = "Generates table and records to be inserted into this table", name = "Generator")
     public static void generateInput(
             Workload workload,
             ServiceWorkload service,

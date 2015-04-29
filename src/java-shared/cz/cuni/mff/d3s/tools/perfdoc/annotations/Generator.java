@@ -32,5 +32,5 @@ public @interface Generator {
 
     String description();
 
-    String genName();
+    String name();
 }

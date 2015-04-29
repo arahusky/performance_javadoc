@@ -23,12 +23,12 @@ To compile and run the framework, the following software is required:
 
 <ul>
   <li>Java SDK >= 1.7.0</li>
-  <li>Apache ANT</li>
-  <li>Web browser with JQuery >= 2.0</li>
+  <li>Apache Ant</li>
+  <li>Web browser supporting JQuery >= 2.0</li>
 </ul>
 
 <h2>Compilation and run</h2>
-These ANT tasks are available:
+These Ant tasks are available:
 
 <ul>
   <li>main: compiles all sources (into out/classes folder ), creates project documentation (in out/javadoc) and two jar files (out/jars)</li>

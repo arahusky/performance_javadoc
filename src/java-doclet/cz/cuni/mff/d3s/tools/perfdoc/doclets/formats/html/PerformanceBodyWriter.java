@@ -117,7 +117,7 @@ public class PerformanceBodyWriter {
         //div, where the graph will be shown
         HtmlTree graph = new HtmlTree(HtmlTag.DIV);
         graph.addAttr(HtmlAttr.CLASS, "graph");
-        graph.addContent("Graph containing measured results.");
+        graph.addContent("Place, where the measured results will be shown.");
         rightSide.addContent(graph); 
         
         //div, where the table with results will be shown

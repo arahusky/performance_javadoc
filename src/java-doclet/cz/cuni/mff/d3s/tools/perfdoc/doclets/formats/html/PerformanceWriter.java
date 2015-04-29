@@ -136,10 +136,10 @@ public abstract class PerformanceWriter {
 
         for (Method m : list) {
             Generator gen = m.getAnnotation(cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator.class);
-            String genName = gen.genName();
+            String genName = gen.name();
 
             if (genNames.contains(genName)) {
-                //if for the measured method already exists generator, that has the genName 
+                //if for the measured method already exists generator, that has the name 
                 throw new GeneratorParameterException("The method: " + doc.qualifiedName() + " has two or more workloads that have the same genName. Therefore, no performance info for this method will be added.");
             } else {
                 genNames.add(genName);

@@ -16,6 +16,8 @@
  */
 package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 
+import java.io.File;
+
 /**
  * Class that contains all doclet specific arguments.
  *
@@ -46,7 +48,8 @@ public class DocletArguments {
     }
     
     private static void setWorkloadPath(String workloadPath) {
-        DocletArguments.workloadPath = workloadPath.split(";");
+        String separator = File.pathSeparator;
+        DocletArguments.workloadPath = workloadPath.split(separator);
     }
 
     public static String getServerAddress() {

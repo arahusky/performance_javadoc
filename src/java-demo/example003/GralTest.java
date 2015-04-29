@@ -29,7 +29,7 @@ public class GralTest {
 
     /**
      * Creates new ScatterPlot with given amount of points and shows it in the
-     * given frame
+     * given frame.
      *
      * @param frame JFrame, where the ScatterPlot will be displayed
      * @param howManyPoint how many points will be in the graph
