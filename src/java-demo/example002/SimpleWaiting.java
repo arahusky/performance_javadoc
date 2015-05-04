@@ -28,29 +28,27 @@ import java.util.Random;
 public class SimpleWaiting {
 
     /**
-     * Waits (first+second)*10 ms
+     * Waits (first)*10 ms
      * @param first
-     * @param second
      * @throws java.lang.InterruptedException
      */
     @Workload("example002.Generators#prepareData1")
-    public static void simpleWait(int first, int second) throws InterruptedException {
+    public static void simpleWait(int first) throws InterruptedException {
 
-        for (int i = 0; i < (first + second); i++) {
+        for (int i = 0; i < first; i++) {
             Thread.sleep(10);
         }
     }
 
     /**
-     * Waits a random piece of time, that increases with param length and param2
+     * Waits a random piece of time, that increases with param length 
      *
      * @param first
-     * @param second
      * @throws java.lang.InterruptedException
      */
     @Workload("example002.Generators#prepareData1")
-    public void randomWait(int first, int second) throws InterruptedException {
-        for (int i = 0; i < (first+second); i++) {
+    public void randomWait(int first) throws InterruptedException {
+        for (int i = 0; i < first; i++) {
             Random r = new Random();
             Thread.sleep(r.nextInt(10));
         }

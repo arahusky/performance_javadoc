@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." name="JavaPerfDoc" default="main">
+<project basedir="." name="PerfJavadoc" default="main">
 
 	<property environment="env"/>
 
@@ -127,7 +127,7 @@
 		</javac>
 	</target>
 			
-	<target name="refdoc" description="Build Javadoc documentation of the project.">
+	<target name="refdoc" depends="compile-server" description="Build Javadoc documentation of the project.">
 		<mkdir dir="${javadoc.build.dir}" />
 		<echo message="Running JavaDoc..." />
 		<javadoc
@@ -139,10 +139,11 @@
 				dir="${server.src.dir}"
 				defaultexcludes="yes" />
 			<classpath>
-				<pathelement path="${server.jar}"/>
 				<pathelement path="${velocity.jar}"/>
 				<pathelement path="${math.jar}"/>
 				<pathelement path="${json.parser.jar}"/>
+				<pathelement path="${perftools.src.dir}"/>
+				<pathelement path="${server.build.dir}"/>
 			</classpath>
 		</javadoc>
 		<echo message="Copying extra files..." />

@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example006;
+package example005;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import java.sql.Connection;
@@ -40,7 +40,7 @@ public class DatabaseInsert {
      * @param times array containing records
      * @throws SQLException
      */
-    @Workload("example006.DatabaseInsertGenerator#generateInput")
+    @Workload("example005.DatabaseInsertGenerator#generateInput")
     public static void insertIndividual(Connection conn, int id, Long[] times) throws SQLException {
 
         Statement stmt = conn.createStatement();
@@ -62,7 +62,7 @@ public class DatabaseInsert {
      * @param times array containing records
      * @throws SQLException
      */
-    @Workload("example006.DatabaseInsertGenerator#generateInput")
+    @Workload("example005.DatabaseInsertGenerator#generateInput")
     public static void insertBatch(Connection conn, int id, Long[] times) throws SQLException {
         //in order to increase performance of inserting multiple records, we turn the autocommit mode to false and commit transaction in the end
         String query = "INSERT INTO measurement_detailed (id, time) "

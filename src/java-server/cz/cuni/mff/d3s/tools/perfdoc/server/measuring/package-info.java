@@ -14,15 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.resourceCodeHandler;
-
 /**
- * This enum describes all possible resource type handled by
- * ResourceCodeHandler.
- *
- * @author Jakub Naplava
+ * This package contains classes that are responsible for performance measuring.
  */
-public enum ResourceType {
-
-    JS, CSS
-}
+package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;

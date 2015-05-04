@@ -531,10 +531,6 @@ public class HtmlDocletWriter extends HtmlDocWriter {
 
         //if there's any performance info, there must be some controling text 
         if (!JavascriptCodeBox.isEmpty()) {
-            head.addContent(HtmlTree.LINK("stylesheet", "text/css", "http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css", "Style"));
-            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/jquery-1.10.2.js\"></script>"));
-            head.addContent(new RawHtml("<script src=\"http://code.jquery.com/ui/1.10.4/jquery-ui.js\"></script>"));
-
             //counting the relative position of perfoStylesheet to our class
             int lengthFromMainFolder = configuration.currentcd.toString().split("\\.").length - 1;
             String pre = "";
@@ -542,7 +538,11 @@ public class HtmlDocletWriter extends HtmlDocWriter {
             for (int i = 0; i < lengthFromMainFolder; i++) {
                 pre += "../";
             }
-
+            
+            head.addContent(HtmlTree.LINK("stylesheet", "text/css", pre + "jquery-ui.min.css", "Style"));
+            head.addContent(new RawHtml("<script src=\"" + pre + "jquery-1.11.2.min.js\"></script>"));
+            head.addContent(new RawHtml("<script src=\"" + pre + "jquery-ui.min.js\"></script>"));
+            
             head.addContent(new RawHtml("<script src=\"" + pre + "dygraph-combined.js\"></script>"));
             head.addContent(HtmlTree.LINK("stylesheet", "text/css", pre + "perfoStylesheet.css", "Style"));
 

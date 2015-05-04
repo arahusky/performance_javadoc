@@ -98,7 +98,7 @@ public class CodeRunner {
         }
 
         if (errorMsg.length() != 0) {
-            log.log(Level.SEVERE, "An error occured when trying to run new JVM to run a measurement", errorMsg.toString());
+            log.log(Level.SEVERE, "An error occured when trying to run new JVM to perform measurement. ", errorMsg.toString());
         }
 
         process.waitFor();

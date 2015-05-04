@@ -14,26 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package example002;
-
 /**
- *
- * @author Jakub Naplava
+ * This package contains Apache StringEscapeUtils class, which is used for
+ * common String replacing.
  */
-public enum SomeEnum {
-    ONE(1), 
-    TWO(2),
-    THREE(3)    
-    ;
-    
-    private final int numberOfMillisToWait;
-    
-    SomeEnum(int numberOfMillisToWait) {
-        this.numberOfMillisToWait = numberOfMillisToWait;
-    }
-    
-    public int getNumberOfMillisToWait() {
-        return numberOfMillisToWait;
-    }
-}
+package org.apache.commons.lang;

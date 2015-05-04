@@ -27,7 +27,7 @@
         var g = new Dygraph(document.getElementById("graph"), graphdata,
                           {
                           ylabel: "Elapsed time (ns)",
-                          xlabel: "Measurement count",
+                          xlabel: "Index",
                           drawPoints: true,
                           strokeWidth: 0,
                           pointSize: 2,

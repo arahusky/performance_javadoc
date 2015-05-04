@@ -18,8 +18,8 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.resourceCodeHandler.ResourceCodeHandler;
-import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.resourceCodeHandler.ResourceType;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.rhandler.ResourceCodeHandler;
+import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.rhandler.ResourceType;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.ClassSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.DetailedSiteHandler;
 import cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.sitehandlers.FullDebugSiteHandler;

@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example006;
+package example005;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterBenchmark;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterMeasurement;
@@ -22,6 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,18 +30,14 @@ import java.sql.Statement;
 import java.util.Random;
 
 /**
- * Generator for DatabaseInsert.
- *
- * Note that because we're working with Derby embedded database, only one VM can
- * have access to it, thus no code generation with running code in another VM is
- * possible (codeGenerationFlag in measurement.properties must be set to false).
+ * Generator for DatabaseInsert class.
  *
  * @author Jakub Naplava
  */
 public class DatabaseInsertGenerator {
 
-    private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-    public static final String JDBC_URL = "jdbc:derby:testDatabase/cacheDB;create=true";
+    private static final String DRIVER = "org.sqlite.JDBC";
+    public static final String JDBC_URL = "jdbc:sqlite:test.db";
 
     private Connection connection;
 
@@ -121,8 +118,24 @@ public class DatabaseInsertGenerator {
                 // we got the expected exception
             }
         }
-        
-        //TODO delete folder
+
+        deleteDir(new File("./testDatabase"));
+    }
+
+    public void deleteDir(File directory) {
+        if (directory.exists()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        deleteDir(file);
+                    } else {
+                        file.delete();
+                    }
+                }
+            }
+        }
+        directory.delete();
     }
 
     private void dropTable() throws SQLException {

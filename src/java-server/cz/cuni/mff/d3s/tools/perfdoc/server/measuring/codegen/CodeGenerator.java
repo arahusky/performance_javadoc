@@ -30,10 +30,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -284,8 +282,6 @@ public class CodeGenerator {
     /**
      * Returns path to the folder (relatively to the main folder) containing
      * generated code.
-     *
-     * @return
      */
     public String getDirectory() {
         return compiledClassDestinationDir + directoryName;

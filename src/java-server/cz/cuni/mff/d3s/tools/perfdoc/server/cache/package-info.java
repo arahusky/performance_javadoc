@@ -14,19 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package example004;
-
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-
 /**
- *
- * @author Jakub Naplava
+ * This package contain classes that are responsible for showing cache (i.e.
+ * maintain /cache context).
  */
-public class SimpleOperations {
-    
-    @Workload("example004.Generator#prepareDataAdd")
-    public static int add(int x, int y) {
-        return (x + y);
-    }
-}
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache;

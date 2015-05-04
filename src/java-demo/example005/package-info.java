@@ -15,7 +15,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * This package contains code to manage files (respectively theirs streams) to
- * demonstrate functionality of AfterMeasurement and AfterBenchmark annotations.
+ * <p>
+ * This package contains code to show the effectivity of different approaches to
+ * inserting multiple records into SQLite database.</p>
  */
 package example005;

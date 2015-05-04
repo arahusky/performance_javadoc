@@ -75,7 +75,6 @@ public class MeasurementConfiguration {
      * performed.
      *
      * @param priority priority for which we want to get number of points
-     * @return
      * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public static int getNumberOfPoints(int priority) throws PropertiesBadFormatException {
@@ -98,7 +97,6 @@ public class MeasurementConfiguration {
      * warmup measuring of one point.
      *
      * @param priority priority for which we want to get number of warmup-measurements
-     * @return
      * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public static int getNumberOfWarmupMeasurements(int priority) throws PropertiesBadFormatException {
@@ -122,7 +120,6 @@ public class MeasurementConfiguration {
      * end warmup-measuring this point and move to another.
      *
      * @param priority priority for which we want to get warmup-time
-     * @return
      * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public static int getWarmupTime(int priority) throws PropertiesBadFormatException {
@@ -146,7 +143,6 @@ public class MeasurementConfiguration {
      * measuring of one point.
      *
      * @param priority priority for which we want to get number of measurements
-     * @return
      * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public static int getNumberOfMeasurementMeasurements(int priority) throws PropertiesBadFormatException {
@@ -170,7 +166,6 @@ public class MeasurementConfiguration {
      * measuring this point and move to another.
      *
      * @param priority priority for which we want to get time
-     * @return
      * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public static int getMeasurementTime(int priority) throws PropertiesBadFormatException {

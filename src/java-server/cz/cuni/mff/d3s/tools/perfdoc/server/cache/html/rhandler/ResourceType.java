@@ -14,26 +14,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package example002;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html.rhandler;
 
 /**
+ * This enum describes all possible resource type handled by
+ * ResourceCodeHandler.
  *
  * @author Jakub Naplava
  */
-public enum SomeEnum {
-    ONE(1), 
-    TWO(2),
-    THREE(3)    
-    ;
-    
-    private final int numberOfMillisToWait;
-    
-    SomeEnum(int numberOfMillisToWait) {
-        this.numberOfMillisToWait = numberOfMillisToWait;
-    }
-    
-    public int getNumberOfMillisToWait() {
-        return numberOfMillisToWait;
-    }
+public enum ResourceType {
+
+    JS, CSS
 }

@@ -92,7 +92,26 @@ public class StatisticsUtilsTest {
         
         values.remove(500L);
         values.remove(600L);
-        Assert.assertEquals(values, newList);
+        Assert.assertEquals(values, newList);        
+    }
+    
+    @Test
+    public void testGetRepresentativeSubset() {
+        MeasurementStatistics ms = new MeasurementStatistics();        
+        Assert.assertEquals(ms, StatisticsUtils.getRepresentativeSubset(ms, 100));
         
+        ms.addResult(100);        
+        Assert.assertEquals(ms, StatisticsUtils.getRepresentativeSubset(ms, 100));
+        
+        ms = new MeasurementStatistics();        
+        for (int i = 1; i<100; i++) {
+            ms.addResult(i);
+        }
+        
+        MeasurementStatistics expected = new MeasurementStatistics();
+        for (int i = 1; i<=50; i++) {
+            expected.addResult(1 + (i-1)*2);
+        }
+        Assert.assertEquals(expected, StatisticsUtils.getRepresentativeSubset(ms, 50));
     }
 }

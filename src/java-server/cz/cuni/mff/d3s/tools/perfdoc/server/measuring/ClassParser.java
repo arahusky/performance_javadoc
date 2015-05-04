@@ -124,9 +124,6 @@ public class ClassParser {
 
     /**
      * Returns array containing URL of all class paths.
-     *
-     * @return
-     * @throws IOException
      */
     private URL[] findClassPaths() throws IOException {
         List<URL> urls = new ArrayList<>();
@@ -146,8 +143,6 @@ public class ClassParser {
      *
      * Specifically reads all lines from Class_classPath.txt, where the paths
      * are stored.
-     *
-     * @return
      */
     private static List<String> prepareClassPaths() {
 
@@ -178,8 +173,6 @@ public class ClassParser {
     /**
      * Returns the class path, where the classes, which are needed for correct
      * run, are located.
-     *
-     * @return
      */
     public static List<String> getClassPaths() {
         //we do not want to share our private list, but only its copy
@@ -233,9 +226,7 @@ public class ClassParser {
     }
 
     /**
-     * Return class loaded by this ClassParser
-     *
-     * @return
+     * Return class loaded by this ClassParser.
      */
     public Class<?> getLoadedClass() {
         return clazz;

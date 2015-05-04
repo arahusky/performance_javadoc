@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example005;
+package example004;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import java.io.FileInputStream;
@@ -33,7 +33,7 @@ public class FileUtils {
      * @param stream stream to read from
      * @return against DCE
      */
-    @Workload("example005.FileGenerator#prepareStream")
+    @Workload("example004.FileGenerator#prepareStream")
     public static int read(FileInputStream stream) {
         int character;
         int sum = 0;
@@ -56,7 +56,7 @@ public class FileUtils {
      * @param array array to be written
      * @throws java.io.IOException
      */
-    @Workload("example005.FileGenerator#prepareStreamToWrite")
+    @Workload("example004.FileGenerator#prepareStreamToWrite")
     public static void writeIndividual(FileOutputStream fs, byte[] array) throws IOException {
         for (byte b : array) {
             fs.write(b);
@@ -73,7 +73,7 @@ public class FileUtils {
      * @param array array to be written
      * @throws java.io.IOException
      */
-    @Workload("example005.FileGenerator#prepareStreamToWrite")
+    @Workload("example004.FileGenerator#prepareStreamToWrite")
     public static void writeAll(FileOutputStream fs, byte[] array) throws IOException {
         fs.write(array);
         

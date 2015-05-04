@@ -14,15 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
- * <p>
- * This package contains code to show the effectivity of different approaches to
- * inserting multiple records into database.</p>
- *
- * <p>
- * Note that because we're working with Derby <b>embedded</b> database, only one
- * VM can have access to the database, thus no code generation with measuring
- * code in another VM is possible (<b>codeGenerationFlag in
- * measurement.properties must be set to false</b>).</p>
+ * This package contains basic measuring server classes.
  */
-package example006;
+package cz.cuni.mff.d3s.tools.perfdoc.server;

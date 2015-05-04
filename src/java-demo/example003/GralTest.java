@@ -22,6 +22,8 @@ import de.erichseifert.gral.examples.xyplot.ScatterPlot;
 import javax.swing.JFrame;
 
 /**
+ * This class contains method to measure the execution time of creating and
+ * plotting of two simple plots provided by Gral library.
  *
  * @author Jakub Naplava
  */
@@ -39,13 +41,14 @@ public class GralTest {
         ScatterPlot splot = new ScatterPlot(howManyPoint);
         frame.getContentPane().add(splot);
     }
-    
+
     /**
-      * Creates new RasterPlot with given size and zoom and shows it in the
-     * given frame
+     * Creates new RasterPlot with given size and zoom and shows it in the given
+     * frame
+     *
      * @param frame JFrame, where the ScatterPlot will be displayed
      * @param size
-     * @param zoom 
+     * @param zoom
      */
     @Workload("example003.GralTestGenerator#prepareDataPlotRaster")
     public static void plotSimpleRasterPlot(JFrame frame, int size, double zoom) {

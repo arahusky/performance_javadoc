@@ -62,6 +62,7 @@ public class ScatterPlot extends ExamplePanel {
 		add(new InteractivePanel(plot), BorderLayout.CENTER);
 	}
         
+        @SuppressWarnings("unchecked")
         public ScatterPlot(int samples) {
 		// Generate 100,000 data points
 		DataTable data = new DataTable(Double.class, Double.class);

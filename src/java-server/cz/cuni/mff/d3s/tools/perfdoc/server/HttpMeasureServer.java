@@ -216,17 +216,13 @@ public class HttpMeasureServer {
 
     /**
      * Returns number of port, on which the server runs.
-     *
-     * @return
-     */
+    */
     public static int getPort() {
         return port;
     }
 
     /**
      * Returns the path to the directory containing configuration files.
-     *
-     * @return
      */
     public static String getConfigurationDirectory() {
         return configurationDirectory;
@@ -234,8 +230,6 @@ public class HttpMeasureServer {
 
     /**
      * Returns the path of application root directory.
-     *
-     * @return
      */
     public static String getApplicationRootDir() {
         return applicationRootDir;

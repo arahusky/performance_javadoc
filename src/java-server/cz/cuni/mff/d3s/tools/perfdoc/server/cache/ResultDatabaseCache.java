@@ -22,6 +22,7 @@ import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.BenchmarkSetting;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.MeasurementQuality;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
+import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.StatisticsUtils;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -333,7 +334,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
        
         //and all times into measurement_detailed
         int id = getIDForGivenRecord(measuredMethodName, generatorName, generatorArguments);
-        insertDetailedResults(id, ((MeasurementStatistics) benResult.getStatistics()).getValues());
+        insertDetailedResults(id, ((MeasurementStatistics) benResult.getStatistics()));
         closeStatement(stmt);
     }
 
@@ -449,15 +450,17 @@ public class ResultDatabaseCache implements ResultAdminCache {
      * @param resultsToInsert
      * @throws SQLException
      */
-    private void insertDetailedResults(int id, Long[] resultsToInsert) throws SQLException {
+    private void insertDetailedResults(int id, MeasurementStatistics resultsToInsert) throws SQLException {
         //in order to increase performance of inserting multiple records, we turn the autocommit mode to false and commit transaction in the end
         String query = "INSERT INTO measurement_detailed (id, time) "
                 + "VALUES (" + id + ",?)";
 
         conn.setAutoCommit(false);
         PreparedStatement preparedStmt = conn.prepareStatement(query);
-
-        for (long val : resultsToInsert) {
+        
+        //from all results, we select just 100 of them to be stored in the database
+        Long[] values = StatisticsUtils.getRepresentativeSubset(resultsToInsert, 100).getValues();
+        for (long val : values) {
             preparedStmt.setLong(1, val);
             preparedStmt.addBatch();
         }

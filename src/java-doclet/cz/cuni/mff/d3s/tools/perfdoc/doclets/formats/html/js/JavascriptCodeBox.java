@@ -66,6 +66,10 @@ public class JavascriptCodeBox {
      * adds all global functions to the global code
      */
     private static void addGlobalCode() throws IOException {
+        //little trick to allow cross-site scripting
+        globalCode.append("$.support.cors = true; ");
+        
+        //adding the global functions
         globalCode.append(JSAjaxHandler.returnCallServerFunction(DocletArguments.getServerAddress() + "/measure"));
         globalCode.append(JSAjaxHandler.returnSuccessFunction());
         globalCode.append(JSAjaxHandler.returnErrorFunction());

@@ -170,14 +170,12 @@ public class DetailedSiteHandler implements SiteHandler {
         for (int i = 0; i < data.length; i++) {
             if (i != rangeValue) {
                 if (!data[i].equals(normalizedData[i])) {
-                    //TODO
                     return null;
                 }
             }
         }
         double value = Double.parseDouble(data[rangeValue].toString());
         if (value > max || value < min) {
-            //TODO
             return null;
         }
         

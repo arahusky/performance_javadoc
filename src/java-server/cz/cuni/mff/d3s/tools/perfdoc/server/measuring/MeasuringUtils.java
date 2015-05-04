@@ -227,10 +227,7 @@ public class MeasuringUtils {
     }
     
     /**
-     * 
-     * @param first
-     * @param second
-     * @return 
+     * Converts measurements in nanoseconds to other units if necessary.
      */
     public static String convertUnits(List<Long> first, List<Long>second) {
         //supported units (may be added more)
@@ -278,8 +275,6 @@ public class MeasuringUtils {
     
     /**
      * Checks whether first parameter of the method is Blackhole.
-     * 
-     * @return 
      */
     public static boolean hasMeasuredMethodBlackhole(Method method) {
         if (method.getParameterTypes().length == 0) {

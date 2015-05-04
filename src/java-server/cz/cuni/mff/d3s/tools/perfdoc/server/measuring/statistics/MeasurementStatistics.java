@@ -17,6 +17,7 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -101,8 +102,6 @@ public final class MeasurementStatistics implements Statistics {
 
     /**
      * Returns all values from the Statistics.
-     *
-     * @return
      */
     public Long[] getValues() {
         return measurementResults.toArray(new Long[measurementResults.size()]);
@@ -147,6 +146,19 @@ public final class MeasurementStatistics implements Statistics {
             return false;
         }
         MeasurementStatistics s = (MeasurementStatistics) o;
-        return s.measurementResults.equals(this.measurementResults);
+        
+        HashSet mine = new HashSet();
+        HashSet other = new HashSet();
+        
+        //we must compare just the set of values (order is not important)
+        for (Long l : this.getValues()) {
+            mine.add(l);
+        }
+        
+        for (Long l : s.getValues()) {
+            other.add(l);
+        }
+        
+        return mine.equals(other);
     }
 }

@@ -32,9 +32,6 @@ public class SiteHandlingUtils {
     /**
      * Encodes method (in database format), so that it can be easily passes as
      * an URL query Format: className&methodName&param1&param2&...&paramN
-     *
-     * @param method
-     * @return
      */
     public static String getQueryURL(String method) {
         String result = method.replaceAll("#@", "&").replaceAll("#", "&").replaceAll("@", "&");
@@ -89,7 +86,6 @@ public class SiteHandlingUtils {
     /**
      * Returns address of the site, from which the request has been performed.
      * @param exchange
-     * @return 
      */
     public static String getRemoteAddress(HttpExchange exchange) {
         InetAddress address = exchange.getRemoteAddress().getAddress();

@@ -17,8 +17,11 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
@@ -29,13 +32,15 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class StatisticsUtils {
 
+    private static final Logger log = Logger.getLogger(StatisticsUtils.class.getName());
+
     public static double getMean(List<Long> values) {
         if (values.isEmpty()) {
             return -1;
         }
-        
+
         DescriptiveStatistics ds = getDescriptiveStatisticsFromList(values);
-        
+
         return ds.getMean();
     }
 
@@ -43,19 +48,19 @@ public class StatisticsUtils {
         if (values.isEmpty()) {
             return -1;
         }
-        
+
         DescriptiveStatistics ds = getDescriptiveStatisticsFromList(values);
-        
+
         return ds.getPercentile(50);
     }
-    
+
     private static DescriptiveStatistics getDescriptiveStatisticsFromList(List<Long> values) {
         DescriptiveStatistics ds = new DescriptiveStatistics();
-        
+
         for (long l : values) {
             ds.addValue(l);
         }
-        
+
         return ds;
     }
 
@@ -63,9 +68,9 @@ public class StatisticsUtils {
         if (values.isEmpty()) {
             return -1;
         }
-        
+
         DescriptiveStatistics ds = getDescriptiveStatisticsFromList(values);
-        
+
         return ds.getStandardDeviation();
     }
 
@@ -74,17 +79,14 @@ public class StatisticsUtils {
      * under which (together with this number) 25% of all number lies.
      *
      * Supposes 'values' to be sorted.
-     *
-     * @param values
-     * @return
      */
     public static double getFirstQuartile(List<Long> values) {
         if (values.isEmpty()) {
             return -1;
         }
-        
+
         DescriptiveStatistics ds = getDescriptiveStatisticsFromList(values);
-        
+
         return ds.getPercentile(25);
     }
 
@@ -93,26 +95,20 @@ public class StatisticsUtils {
      * above which (together with this number) 25% of all number lies.
      *
      * Supposes 'values' to be sorted.
-     *
-     * @param values
-     * @return
      */
     public static double getThirdQuartile(List<Long> values) {
         if (values.isEmpty()) {
             return -1;
         }
-        
+
         DescriptiveStatistics ds = getDescriptiveStatisticsFromList(values);
-        
+
         return ds.getPercentile(75);
     }
 
     /**
      * Returns new list that comes from 'values' by removing outliers (values
      * that seem to be corrupted).
-     *
-     * @param values
-     * @return
      */
     public static List<Long> excludeOutliers(List<Long> values) {
 
@@ -126,6 +122,7 @@ public class StatisticsUtils {
 
         int numberOfOutliers = values.size() - outliersIndex;
         if (numberOfOutliers <= ((5D / 100) * values.size())) {
+            log.log(Level.CONFIG, "Removing outliers");
             return newList.subList(0, outliersIndex);
         }
 
@@ -146,7 +143,6 @@ public class StatisticsUtils {
      *
      * @param values <b>sorted list</b> from in which the suspicious items will
      * be searched
-     * @return
      */
     private static int getSuspicious(List<Long> values) {
         double firstQuartile = getFirstQuartile(values);
@@ -166,4 +162,29 @@ public class StatisticsUtils {
         return -1;
     }
 
+    /**
+     * Selects a subset of given MeasurementStatistics that is selected to cover
+     * whole interval of measured values.
+     */
+    public static MeasurementStatistics getRepresentativeSubset(MeasurementStatistics statistics, int howMany) {
+        Long[] values = statistics.getValues();
+        if (values.length == 0) {
+            return statistics;
+        }
+
+        Arrays.sort(values);
+
+        int index = (int) Math.ceil(((double) values.length) / howMany);
+        MeasurementStatistics newStatistics = new MeasurementStatistics();
+
+        if (howMany > values.length) {
+            howMany = values.length;
+        }
+        
+        for (int i = 0; i < howMany; i++) {
+            newStatistics.addResult(values[(index * i) % values.length]);
+        }
+
+        return newStatistics;
+    }
 }

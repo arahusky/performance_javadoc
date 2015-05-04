@@ -14,7 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example005;
+package example004;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterBenchmark;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AfterMeasurement;
@@ -63,7 +63,7 @@ public class FileGenerator {
         workload.setHooks(new MyHooks(file));
     }
 
-    @Generator(description = "Prepares file stream and array of given size to be written into it.", name = "Write stuff generator")
+    @Generator(description = "Prepares file stream and array of given size to be written into it.", name = "WriteGen")
     public void prepareStreamToWrite(
             Workload workload,
             ServiceWorkload service,
@@ -100,7 +100,7 @@ public class FileGenerator {
 
         @AfterMeasurement
         public void destroy(Object instance, Object[] objs) {
-            try {
+            try {                
                 ((Closeable) objs[0]).close();
             } catch (IOException ex) {
                 System.err.println("Unable to close file stream.");

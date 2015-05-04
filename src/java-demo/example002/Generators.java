@@ -35,24 +35,15 @@ public class Generators {
       (
               Workload workload,
               ServiceWorkload sw,
-              @ParamNum(description = "Waiting time (*3ms)", min = 0, max = 100) int wait,
-              @ParamNum(description = "Waiting time (*4ms)", min = 0, max = 100, step = 2) int wait2,
+              @ParamNum(description = "Waiting time (*2ms)", min = 1, max = 100, step = 2) int wait,
               @ParamDesc("Multiple waiting time by") SomeEnum en
               )
       {
           int times = 1;          
-          int multiply = 1;
-          
-          switch (en) {
-              case TWO:
-                  multiply = 2;
-                  break;
-              case THREE:
-                  multiply = 3;
-          }
+          int multiply = en.getNumberOfMillisToWait();
           
           SimpleWaiting simple = new SimpleWaiting();
-          Object[] args = new Object[] {wait * multiply, wait2*2 * multiply};
+          Object[] args = new Object[] {wait * multiply};
           for (int i = 0; i<times; i++) {          
                 workload.addCall(simple, args);
           }          
@@ -63,23 +54,15 @@ public class Generators {
       (
               Workload workload,
               ServiceWorkload sw,
-              @ParamNum(description = "Waiting time (*2ms)", min = 0, max = 100) int wait,
+              @ParamNum(description = "Waiting time (*3ms)", min = 1, max = 100) int wait,
               @ParamDesc("Multiple waiting time by") SomeOtherEnum en
               )
       {
           int times = 1;          
-          int multiply = 1;
-          
-          switch (en) {
-              case TWO:
-                  multiply = 2;
-                  break;
-              case FOUR:
-                  multiply = 4;
-          }
+          int multiply = en.getNumberOfMillisToWait();
           
           SimpleWaiting simple = new SimpleWaiting();
-          Object[] args = new Object[] {wait * multiply, 1};
+          Object[] args = new Object[] {wait * multiply};
           for (int i = 0; i<times; i++) {          
                 workload.addCall(simple, args);
           }           

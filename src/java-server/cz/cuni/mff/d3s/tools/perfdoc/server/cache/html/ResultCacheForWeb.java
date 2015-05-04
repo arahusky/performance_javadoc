@@ -32,8 +32,6 @@ public interface ResultCacheForWeb extends ResultCache {
     /**
      * Returns faked BenchmarkResults (with the Statistics containing only
      * computed results) obtained from the main table. .
-     *
-     * @return
      */
     Collection<BenchmarkResult> getMainTableResults();
 

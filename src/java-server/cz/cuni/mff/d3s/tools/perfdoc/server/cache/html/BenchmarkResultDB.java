@@ -28,7 +28,6 @@ public interface BenchmarkResultDB extends BenchmarkResult{
     
     /**
      * Gets ID, under which this measurement is saved in database.
-     * @return 
      */
     public int getIDMeasurement();
 }
