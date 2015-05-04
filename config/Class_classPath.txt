@@ -1,2 +1,3 @@
 out/classes/java-demo
 src/java-demo/gral-core-0.10.jar
+src/java-demo/sqlite-jdbc-3.8.7.jar

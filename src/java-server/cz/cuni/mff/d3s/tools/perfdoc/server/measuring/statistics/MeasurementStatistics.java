@@ -147,8 +147,8 @@ public final class MeasurementStatistics implements Statistics {
         }
         MeasurementStatistics s = (MeasurementStatistics) o;
         
-        HashSet mine = new HashSet();
-        HashSet other = new HashSet();
+        HashSet<Long> mine = new HashSet<>();
+        HashSet<Long> other = new HashSet<>();
         
         //we must compare just the set of values (order is not important)
         for (Long l : this.getValues()) {
