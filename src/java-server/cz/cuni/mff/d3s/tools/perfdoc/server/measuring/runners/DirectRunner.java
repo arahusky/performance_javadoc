@@ -65,7 +65,7 @@ public class DirectRunner extends MethodRunner {
 
             log.log(Level.FINE, "Deleting folder containing generated code.");
             //CodeGenerator created new folder, which should be (with all its content) deleted
-            codeGen.deleteGeneratedContent();
+            //codeGen.deleteGeneratedContent();
 
             return s;
         } catch (CompileException | IOException e) {

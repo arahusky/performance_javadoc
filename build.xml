@@ -32,7 +32,6 @@
 	<property name="derby.name.jar" value="derby.jar"/>
 	<property name="math.name.jar" value="commons-math3-3.4.1.jar"/>
 	<property name="velocity.name.jar" value="velocity-1.7-dep.jar"/>
-	<property name="sqlite.name.jar" value="sqlite-jdbc-3.8.7.jar"/>
 		<!-- locations -->
 	<property name="lib.dir" location="lib" />
 	<property name="jdk.tools.jar" location="${env.JAVA_HOME}/lib/tools.jar" />
@@ -41,7 +40,6 @@
 	<property name="math.jar" location="${lib.dir}/${math.name.jar}"/>
 	<property name="demo.graph.jar" location="${demo.src.dir}/gral-core-0.10.jar" />
 	<property name="velocity.jar" location="${lib.dir}/${velocity.name.jar}"/>
-	<property name="sqlite.jar" location="${lib.dir}/${sqlite.name.jar}"/>
 
 	<!-- external libraries used for unit-testing -->
 	<property name="junit.jar" location="lib/junit-4.11.jar"/>
@@ -182,6 +180,9 @@
 				<include name="**/GralTest.java"/>
 				<include name="**/FileUtils.java"/>
 				<include name="**/DatabaseInsert.java"/>
+				<include name="**/HashmapPerf.java"/>
+				<include name="**/ArrayListPerf.java"/>
+				<include name="**/LinkedListPerf.java"/>
 			</fileset>
 			<doclet
 				name="cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard"
