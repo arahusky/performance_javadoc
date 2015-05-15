@@ -91,25 +91,19 @@ public class ClassParser {
 
             if (cl == null) {
                 URL[] urls = findClassPaths();
-                
-                System.out.println("------");
-                for (URL u : urls) {
-                    System.out.println(u.getPath());
-                }
-                
+                                
                 cl = new URLClassLoader(urls);
-                
-                
+                                
                 clazz = cl.loadClass(className);
                 refCache.addClass(className, clazz);
-                log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
+                log.log(Level.CONFIG, "ClassName, clazz); {0} was found and saved.", className);
                 return;
             }
 
             if ((clazz = refCache.getClass(className)) == null) {
                 clazz = cl.loadClass(className);
                 refCache.addClass(className, clazz);
-                log.log(Level.CONFIG, "ClassssName, clazz); {0} was found and saved.", className);
+                log.log(Level.CONFIG, "ClassName, clazz); {0} was found and saved.", className);
             }
         } catch (ClassNotFoundException e) {
             System.out.println(e);
@@ -155,7 +149,6 @@ public class ClassParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 classPaths.add(line);
-                System.out.println(line);
             }
         } catch (FileNotFoundException ex) {
             log.log(Level.SEVERE, "File containing class paths was not found.", ex);

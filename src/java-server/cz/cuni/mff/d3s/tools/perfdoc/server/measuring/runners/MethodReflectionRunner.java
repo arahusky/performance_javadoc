@@ -79,11 +79,11 @@ public class MethodReflectionRunner extends MethodRunner {
         
         MeasurementStatistics statistics = new MeasurementStatistics();
 
-        String msg = "Starting to measure..." + ", tested Method:{0}" + methodInfo.getMethodName()
-                + "generator:{0}" + generatorInfo.getMethodName()
-                + "class Generator:{0}" + generatorInfo.getQualifiedClassName();
+        String msg = "New measurement: method: '" + methodInfo.getMethodName()
+                + "' generator: '" + generatorInfo.getMethodName()
+                + "' arguments: " + setting.getGeneratorArguments().getValuesDBFormat(true);
 
-        log.log(Level.FINE, msg);
+        log.log(Level.CONFIG, msg);
 
         //warmup
         long warmupMeasurementsDone = 0;

@@ -26,8 +26,10 @@ import java.util.HashMap;
  */
 public class HashmapPerf<T, Integer> extends HashMap<T, T> {
     
+    private static final long serialVersionUID = 1L;
+    
     @Workload("example006.HashmapPerfGenerator#prepare")
-    public boolean contains(Integer o) {
+    public boolean contains(int o) {
         return super.containsKey(o);
     }
 }

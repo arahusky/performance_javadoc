@@ -44,16 +44,21 @@ public class DirectRunner extends MethodRunner {
     public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {
         try {
             //generating code for measurement
-            log.log(Level.FINE, "Starting to generate benchmark code.");
+            log.log(Level.CONFIG, "Starting to generate benchmark code.");
             CodeGenerator codeGen = new CodeGenerator(setting);
             codeGen.generate();
-            log.log(Level.FINE, "Benchmark code generated.");
+            log.log(Level.CONFIG, "Benchmark code generated.");
 
             //running generated code
             CodeRunner codeRunner = new CodeRunner(codeGen.getDirectory());
-            log.log(Level.FINE, "Running benchmark code.");
+            
+            String msg = "Measurement: method: '" + setting.getMeasuredMethod().getMethodName()
+                + "' generator: '" + setting.getGenerator().getMethodName()
+                + "' arguments: " + setting.getGeneratorArguments().getValuesDBFormat(true);
+        
+            log.log(Level.CONFIG, "Running benchmark code. " + msg);
             codeRunner.run();
-            log.log(Level.FINE, "Benchmark code running done.");
+            log.log(Level.CONFIG, "Benchmark code running done.");
 
             //collecting generated results
             MeasurementStatistics s = collectResults(codeGen.getDirectory());
@@ -63,9 +68,9 @@ public class DirectRunner extends MethodRunner {
                 throw new MeasurementException("An exception occured while trying to measure results by direct call.");
             }
 
-            log.log(Level.FINE, "Deleting folder containing generated code.");
+            log.log(Level.CONFIG, "Deleting folder containing generated code.");
             //CodeGenerator created new folder, which should be (with all its content) deleted
-            //codeGen.deleteGeneratedContent();
+            codeGen.deleteGeneratedContent();
 
             return s;
         } catch (CompileException | IOException e) {

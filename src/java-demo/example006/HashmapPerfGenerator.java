@@ -31,7 +31,7 @@ public class HashmapPerfGenerator {
     
     @Generator(description = "asd", name = "as")
     public void prepare(Workload workload, ServiceWorkload service,
-            @ParamNum(description = "Collection size", min = 1, max = 5000000, step = 1) int collection_size
+            @ParamNum(description = "Collection size", min = 1, max = 1000000, step = 1) int collection_size
             ) {
         HashmapPerf<Integer, Integer> myList = new HashmapPerf<>();
         
@@ -41,7 +41,7 @@ public class HashmapPerfGenerator {
         }
         
         //we may use the collection multiple times
-        int times = service.getPriority() * 1000;        
+        int times = service.getPriority() * 100;        
         for (int i = 0; i < times; i++) {
             //every workload contains randomly chosen item of the collection
             workload.addCall(myList, new Object[]{random.nextInt(collection_size)});

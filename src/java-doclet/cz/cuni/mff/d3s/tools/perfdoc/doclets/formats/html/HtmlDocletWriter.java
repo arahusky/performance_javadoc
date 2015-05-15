@@ -28,7 +28,6 @@ package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
 import com.sun.javadoc.*;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.AnnotationParser;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import static cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriter.configuration;
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js.JavascriptCodeBox;
 
 import cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.markup.*;
@@ -39,8 +38,6 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class for the Html Format Code Generation specific to JavaDoc. This Class

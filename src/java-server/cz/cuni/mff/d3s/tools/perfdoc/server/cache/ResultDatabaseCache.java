@@ -101,10 +101,11 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + "UNIQUE (warmup_time, warmup_measurements, measurement_time, measurement_count)"
                     + ")";
             conn.createStatement().execute(query);
-            log.log(Level.INFO, "New table \"measurement_quality\" was created");
+            log.log(Level.CONFIG, "New table \"measurement_quality\" was created");
         }
 
-        //TODO index pres trojici (method, workload, workloadArgs)
+        //possibly good to make an index for (method, workload, workloadArgs)
+        
         //derby creates indexes automatically for columns declared as primary key or foreign key, therefore there is no need to create any other
         if (!contains(conn, "measurement_information")) {
             String query = "CREATE TABLE measurement_information ("
@@ -121,7 +122,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " FOREIGN KEY (idQuality) REFERENCES measurement_quality(idQuality)"
                     + ")";
             conn.createStatement().execute(query);
-            log.log(Level.INFO, "New table \"measurement_information\" was created");
+            log.log(Level.CONFIG, "New table \"measurement_information\" was created");
         }
 
         if (!contains(conn, "measurement_detailed")) {
@@ -131,7 +132,7 @@ public class ResultDatabaseCache implements ResultAdminCache {
                     + " FOREIGN KEY (id) REFERENCES measurement_information(id)"
                     + ")";
             conn.createStatement().execute(query);
-            log.log(Level.INFO, "New table \"measurement_detailed\" was created");
+            log.log(Level.CONFIG, "New table \"measurement_detailed\" was created");
         }
     }
 

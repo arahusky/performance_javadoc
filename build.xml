@@ -134,6 +134,7 @@
 				destdir="${javadoc.build.dir}"
 				author="true"
 				windowtitle="${ant.project.name}"
+				overview="${server.src.dir}/overview.html"
 				additionalparam="-Xdoclint:none">
 			<packageset
 				dir="${server.src.dir}"
@@ -180,9 +181,9 @@
 				<include name="**/GralTest.java"/>
 				<include name="**/FileUtils.java"/>
 				<include name="**/DatabaseInsert.java"/>
-				<include name="**/HashmapPerf.java"/>
+				<!-- <include name="**/HashmapPerf.java"/>
 				<include name="**/ArrayListPerf.java"/>
-				<include name="**/LinkedListPerf.java"/>
+				<include name="**/LinkedListPerf.java"/> -->
 			</fileset>
 			<doclet
 				name="cz.cuni.mff.d3s.tools.perfdoc.doclets.standard.Standard"

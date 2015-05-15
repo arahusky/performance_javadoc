@@ -76,6 +76,8 @@ public class MeasureRequestHandler implements HttpHandler {
             measurer = new MethodMeasurer(measureRequest, lockBase);
 
             JSONObject obj = measurer.measure();
+            log.log(Level.CONFIG, "The response is: {0}", obj.toString());
+            
             try {
                 exchange.sendResponseHeaders(200, obj.toString().getBytes().length);
                 responseBody.write(obj.toString().getBytes());

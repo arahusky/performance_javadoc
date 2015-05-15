@@ -14,22 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package example006;
-
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
-import java.util.LinkedList;
-
 /**
- *
- * @author Jakub Naplava
+ * This package shows the time differences between ArrayList, LinkedList and
+ * HashMap approach to contains method.
  */
-public class LinkedListPerf<T> extends LinkedList<T> {
-    
-    private static final long serialVersionUID = 1L;
-    
-    @Workload("example006.LinkedListPerfGenerator#prepare")
-    public boolean contains(Object o) {
-        return super.contains(o);
-    }
-}
+package example006;

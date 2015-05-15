@@ -1,0 +1,36 @@
+DOCLET classes
+---
+
+This file lists files that were modified or created new in the standard doclet.
+
+Changed:
+- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/doclet.xml
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.builders.MethodBuilder
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.internal.toolkit.MethodWriter
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.MethodWriterImpl
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.HtmlDocletWriter
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.HtmlDoclet
+- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.HtmlDocletWriter
+
+
+New:
+- packages:
+	- cz.cuni.mff.d3s.tools.perfdoc.exceptions
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.js
+	- cz.cuni.mff.d3s.tools.perfdoc.annotations
+- classes:
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.ClassParser
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.DocletArguments
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceBodyWriter
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceNamingUtils
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceOutput
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceOutputImpl
+	- cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html.PerformanceWriter
+- files:
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/js/*
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/*.png
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/perfoStylesheet.css
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/jquery-ui.min.js
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/jquery-ui.min.css
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/jquery-1.11.2.min.js
+	- cz/cuni/mff/d3s/tools/perfdoc/doclets/internal/toolkit/resources/dygraph-combined.js

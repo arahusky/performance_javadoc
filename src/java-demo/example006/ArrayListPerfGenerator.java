@@ -39,7 +39,7 @@ public class ArrayListPerfGenerator {
         }
         
         //we may use the collection multiple times
-        int times = service.getPriority() * 1000;
+        int times = service.getPriority() * 100;
         Random random = new Random();
         for (int i = 0; i < times; i++) {
             //every workload contains randomly chosen item of the collection

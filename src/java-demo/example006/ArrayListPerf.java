@@ -26,6 +26,8 @@ import java.util.ArrayList;
  */
 public class ArrayListPerf<T> extends ArrayList<T> {
     
+    private static final long serialVersionUID = 1L;
+    
     @Workload("example006.ArrayListPerfGenerator#prepare")
     public boolean contains(Object o) {
         return super.contains(o);

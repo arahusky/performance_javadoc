@@ -110,6 +110,9 @@ public class MethodMeasurer {
             //values in which the measurement will be performed
             double[] valuesToMeasure = valuesToMeasureList.get(0);
 
+            //wait until we can measure (there is no lock for our hash)
+            lockBase.waitUntilFree(measureRequest.getUserID());
+                
             //for every point, that should be measured, we perform a measurement
             for (int i = 0; i < valuesToMeasure.length; i++) {
 
@@ -142,9 +145,6 @@ public class MethodMeasurer {
                         break;
                 }
 
-                //wait until we can measure (there is no lock for our hash)
-                lockBase.waitUntilFree(measureRequest.getUserID());
-
                 try {
                     MeasurementStatistics statistics = runner.measure(benSetting);
                     statistics.removeOutliers();                    
@@ -175,11 +175,11 @@ public class MethodMeasurer {
                     throw new MeasurementException(msg);
                 }
 
-                lockBase.freeLock(measureRequest.getUserID());
-
                 //the result was not found in cache
                 resultsMask.add(false);
             }
+            
+            lockBase.freeLock(measureRequest.getUserID());
         }
 
         log.log(Level.CONFIG, "Measurement succesfully done");
@@ -328,7 +328,6 @@ public class MethodMeasurer {
             jsonResults.accumulate("error", "Wrong arguments were passed to measured method/generator during some measurement, thus just some points were measured.");
         }
 
-        System.out.println(jsonResults);
         return jsonResults;
     }
 

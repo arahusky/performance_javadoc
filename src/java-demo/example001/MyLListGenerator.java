@@ -55,7 +55,6 @@ public class MyLListGenerator {
     public void prepareDataBad(
             Workload workload,
             ServiceWorkload service,
-            @ParamDesc("asd") String s,
             @ParamNum(description = "Collection size", min = 1, max = 10000, step = 1) int collection_size) {
         
         //creating collection containing required number of elements

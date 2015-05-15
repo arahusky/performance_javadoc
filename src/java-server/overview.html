@@ -1,0 +1,36 @@
+<HTML>
+	<HEAD>
+		<TITLE>PerfJavaDoc</TITLE>
+	</HEAD>
+
+	<BODY>
+		<h2>PerfJavaDoc</h2>
+		<p>
+			The project adds performance extension into the Javadoc. The performance extension is generated for all methods having appropriate annotation. This tool comes with the separation of the measured method and the code (so called workload generator) that actually prepares arguments and instance, with which the measured method will be called.
+		</p>
+
+		<p>
+			The project consists of two tools:
+			<ul>
+				<li><b>Doclet:</b>
+					We extended Javadoc standard doclet to generate performance extension, too. This performance extension allows user to select particular workload generator with which he wants to test the particular method, set its arguments and send a measurement request to the measuring server. When the performance results (for this moment only method execution time is supported) are sent back, the graph and table containing results are generated, allowing user to easily read measured values.
+
+					The Javadoc with performance extension is interactive and also reflects the need for immediate results, which means that the preliminary (and possibly imprecise) results are sent back from the measuring server quickly, while the most precise results are sent after longer period of time.
+				</li>
+				<li>
+					<b>Measuring server:</b>
+
+					The measuring server measures performance of Java methods. While programming the measuring server, we concentrated especcialy on the accuracy of the measurement, which should now support quite precise measurements.
+
+					The server supports measuring of multiple methods at the same time, however, in order not to overload it, we allow only one measuring request per one browser at the same time.
+				</li>
+			</ul>
+		</p>
+
+		<p>
+			The project can be found on <a target="_blank" href="https://github.com/arahusky/performance_javadoc">Github</a>.
+		</p>
+
+
+	</BODY>
+</HTML>
