@@ -66,7 +66,7 @@ public class LockHashMapBase implements LockBase {
     @Override
     public void freeLock(String hash) {
         //object already exists and I hold the lock
-        //get the object from hashmap, free it and call notify() on it
+        //get the object from HashMap, free it and call notify() on it
         Lock o = lockBase.get(hash);
         o.unlock();
         log.log(Level.CONFIG, "The lock for \"{0}\" was unlocked", hash);

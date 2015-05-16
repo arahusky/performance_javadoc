@@ -23,7 +23,7 @@ import java.util.Objects;
  * Structure containing basic information about a method.
  *
  * This structure is used within whole project as parameter as well as the item
- * in database (toString).
+ * stored in the database (with toString method).
  *
  * @author Jakub Naplava
  */

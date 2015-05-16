@@ -90,7 +90,7 @@ public class WorkloadImpl implements Workload{
     }    
     
     /**
-     * Empties workload.
+     * Empties Workload for other use.
      */
     public void reset() {
         this.list.clear();

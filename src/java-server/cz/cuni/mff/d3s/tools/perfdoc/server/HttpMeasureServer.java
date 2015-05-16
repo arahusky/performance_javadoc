@@ -46,7 +46,7 @@ public class HttpMeasureServer {
     //path to the folder storing configuration files
     private static String configurationDirectory = "./config/";
 
-    //flag whether to empty tables (may be changed by command-line arguments)
+    //flag whether to empty caches (may be changed by command-line arguments)
     private static boolean emptyTable = false;
 
     //the root folder of all server packages
@@ -57,7 +57,7 @@ public class HttpMeasureServer {
      *
      * @param args the command line arguments
      * @throws java.io.IOException when the server could not been started on
-     * given port number
+     * the given port number
      */
     public static void main(String[] args) throws IOException {
 
@@ -100,7 +100,7 @@ public class HttpMeasureServer {
         try {
             ResultAdminCache res = new ResultDatabaseCache(ResultDatabaseCache.JDBC_URL);
 
-            //empty tables if requested
+            //empty cache tables if requested
             if (emptyTable) {
                 res.empty();
             }

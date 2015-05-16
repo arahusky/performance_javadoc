@@ -22,8 +22,9 @@ import cz.cuni.mff.d3s.tools.perfdoc.blackhole.Blackhole;
  * This class is the provider of Blackhole class.
  *
  * The main concern with Blackhole is that there should be as little of its
- * instance as possible, therefore we decided to provide just one instance of it
- * with singleton patter (Bill Pugh Singleton Implementation).
+ * instance as possible (to make the minimal system perturbation), therefore we
+ * decided to provide just one instance of it with singleton patter (Bill Pugh
+ * Singleton Implementation).
  *
  * @author Jakub Naplava
  */

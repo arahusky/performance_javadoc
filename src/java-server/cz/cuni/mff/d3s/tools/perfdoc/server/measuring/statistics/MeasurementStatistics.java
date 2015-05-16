@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  * This class contains measured results, from which the characteristics (as
- * described by Statistics interface) are counted.
+ * described by Statistics interface) are computed.
  *
  * @author Jakub Naplava
  */

@@ -17,6 +17,8 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 /**
+ * This interface defines basic operations to work with method arguments in the
+ * project.
  *
  * @author Jakub Naplava
  */

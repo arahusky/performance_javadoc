@@ -19,13 +19,14 @@ package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
- * Bind together benchmark settings and the resulting statistics. The statistic
+ * Binds together benchmark settings and the resulting Statistics. The statistic
  * loading can be lazy if the results are stored in multiple tables.
  *
  * @author Jakub Naplava
  */
 public interface BenchmarkResult {
+
     BenchmarkSetting getBenchmarkSetting();
-    
+
     Statistics getStatistics();
 }

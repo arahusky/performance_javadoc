@@ -31,7 +31,8 @@ public class MethodReflectionInfo extends MethodInfo {
     private final Class<?> containingClass;
     private final Method method;
 
-    /**     *
+    /**
+     * *
      * @param methodData data either from incoming json or another
      * MethodInfo.toString()
      * @throws ClassNotFoundException
@@ -44,16 +45,23 @@ public class MethodReflectionInfo extends MethodInfo {
         ClassParser cp = new ClassParser(containingClassQualifiedName);
         this.containingClass = cp.getLoadedClass();
         this.method = cp.findMethod(this);
-        
+
         if (this.method == null) {
             throw new NoSuchMethodException("The requested method: " + this.getMethodName() + " with requested parameters does not exist .");
         }
     }
 
+    /**
+     * Returns reflection representation of underlying method.
+     */
     public Method getMethod() {
         return method;
     }
 
+    /**
+     * Returns reflection representation of the class, where the method is
+     * placed.
+     */
     public Class<?> getContainingClass() {
         return containingClass;
     }

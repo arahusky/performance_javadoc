@@ -17,7 +17,6 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server;
 
 import com.sun.net.httpserver.HttpExchange;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

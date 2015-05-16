@@ -310,11 +310,11 @@ public class MethodMeasurer {
         
         for (int i = 0; i < computedMeans.size(); i++) {
             if (computedMeans.get(i) != -1) {
-                long mean = computedMeans.get(i).longValue();
-                long standardDeviation = computedStandardDeviations.get(i).longValue();
-                long median = computedMedians.get(i).longValue();
-                long firstQ = computetFirstQ.get(i).longValue();
-                long thirdQ = computetThirdQ.get(i).longValue();
+                long mean = computedMeans.get(i);
+                long standardDeviation = computedStandardDeviations.get(i);
+                long median = computedMedians.get(i);
+                long firstQ = computetFirstQ.get(i);
+                long thirdQ = computetThirdQ.get(i);
                 jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], 
                     new Object[] {mean - standardDeviation,mean, mean + standardDeviation},
                     new Object[] {firstQ,median, thirdQ}                        

@@ -17,7 +17,6 @@
 package cz.cuni.mff.d3s.tools.perfdoc.server.measuring;
 
 import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.MeasurementStatistics;
-import cz.cuni.mff.d3s.tools.perfdoc.server.measuring.statistics.Statistics;
 
 /**
  * Interface for performance-measurers.
