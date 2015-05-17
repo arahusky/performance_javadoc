@@ -24,7 +24,8 @@ import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import javax.swing.JFrame;
 
 /**
- *
+ * Workload generators for GralTest.
+ * 
  * @author Jakub Naplava
  */
 public class GralTestGenerator {
@@ -38,12 +39,12 @@ public class GralTestGenerator {
 
         int times = service.getPriority() * 3;
         JFrame frame = new JFrame();
-        prepareFrame(frame, size);
+        size.setSize(frame);
         for (int i = 0; i < times; i++) {
             workload.addCall(new GralTest(), new Object[]{frame, number_points});
         }
     }
-    
+
     @Generator(description = "Generator to test the time of creating and showing of the raster plot in the JFrame.", name = "Test generator")
     public void prepareDataPlotRaster(
             Workload workload,
@@ -52,35 +53,8 @@ public class GralTestGenerator {
             @ParamNum(description = "Zoom", min = 0.1, max = 5, step = 0.2) double zoom,
             @ParamDesc("Frame size (resolution)") Size size) {
 
-        int times = service.getPriority() * 3 ;
         JFrame frame = new JFrame();
-        prepareFrame(frame, size);
-        for (int i = 0; i < times; i++) {
-            workload.addCall(new GralTest(), new Object[]{frame, number_points, zoom});
-        }
-    }
-    
-    
-    private void prepareFrame(JFrame frame, Size size) {
-        switch (size) {
-            case QVGA:
-                frame.setSize(320, 240);
-                break;
-            case VGA:
-                frame.setSize(640, 480);
-                break;
-            case SVGA:
-                frame.setSize(800, 600);
-                break;
-            case XGA:
-                frame.setSize(1024, 768);
-                break;
-            case HD720:
-                frame.setSize(1280, 720);
-                break;
-            case HD1080:
-                frame.setSize(1920, 1080);
-                break;
-        }
+        size.setSize(frame);
+        workload.addCall(new GralTest(), new Object[]{frame, number_points, zoom});
     }
 }

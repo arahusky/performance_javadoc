@@ -14,33 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package example003;
-
-import javax.swing.JFrame;
 
 /**
- *
- * @author Jakub Naplava
+ * This package shows the basic usage of Enums on rather artificial examples.
  */
-public enum Size {
-
-    QVGA(320,240),
-    VGA(640,480),
-    SVGA(800,600),
-    XGA(1024,768),
-    HD720(1280,720),
-    HD1080(1920,1080)
-    ;
-        
-    private final int width;
-    private final int height;
-    
-    Size(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
-    
-    public void setSize(JFrame frame) {
-        frame.setSize(width, height);
-    }    
-}
+package example002;
