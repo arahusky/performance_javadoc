@@ -41,7 +41,7 @@ public class DirectRunner extends MethodRunner {
     private static final Logger log = Logger.getLogger(DirectRunner.class.getName());
 
     @Override
-    public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {
+    public MeasurementStatistics measure(BenchmarkSetting setting) throws Throwable {        
         try {
             //generating code for measurement
             log.log(Level.CONFIG, "Starting to generate benchmark code.");
@@ -51,21 +51,19 @@ public class DirectRunner extends MethodRunner {
 
             //running generated code
             CodeRunner codeRunner = new CodeRunner(codeGen.getDirectory());
-            
+
             String msg = "Measurement: method: '" + setting.getMeasuredMethod().getMethodName()
-                + "' generator: '" + setting.getGenerator().getMethodName()
-                + "' arguments: " + setting.getGeneratorArguments().getValuesDBFormat(true);
-        
-            log.log(Level.CONFIG, "Running benchmark code. " + msg);
-            codeRunner.run();
+                    + "' generator: '" + setting.getGenerator().getMethodName()
+                    + "' arguments: " + setting.getGeneratorArguments().getValuesDBFormat(true);
+
+            log.log(Level.CONFIG, "Running benchmark code. {0}", msg);
+            boolean noError = codeRunner.run();
             log.log(Level.CONFIG, "Benchmark code running done.");
 
-            //collecting generated results
-            MeasurementStatistics s = collectResults(codeGen.getDirectory());
-
-            //if no results were generated, some exception must have occured
-            if (s.isEmpty()) {
-                throw new MeasurementException("An exception occured while trying to measure results by direct call.");
+            MeasurementStatistics s = new MeasurementStatistics();
+            if (noError) {
+                //collecting generated results
+                s = collectResults(codeGen.getDirectory());
             }
 
             log.log(Level.CONFIG, "Deleting folder containing generated code.");

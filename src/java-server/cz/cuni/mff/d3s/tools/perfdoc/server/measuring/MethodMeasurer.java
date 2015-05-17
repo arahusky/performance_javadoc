@@ -76,7 +76,8 @@ public class MethodMeasurer {
      *
      * @return JSONObject that contains measured results.
      * @throws MeasurementException
-     * @throws cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
+     * @throws
+     * cz.cuni.mff.d3s.tools.perfdoc.server.measuring.exception.PropertiesBadFormatException
      */
     public JSONObject measure() throws MeasurementException, PropertiesBadFormatException {
         //requested measurement quality
@@ -112,7 +113,7 @@ public class MethodMeasurer {
 
             //wait until we can measure (there is no lock for our hash)
             lockBase.waitUntilFree(measureRequest.getUserID());
-                
+
             //for every point, that should be measured, we perform a measurement
             for (int i = 0; i < valuesToMeasure.length; i++) {
 
@@ -147,7 +148,7 @@ public class MethodMeasurer {
 
                 try {
                     MeasurementStatistics statistics = runner.measure(benSetting);
-                    statistics.removeOutliers();                    
+                    statistics.removeOutliers();
                     results.add(new BenchmarkResultImpl(statistics, benSetting));
                 } catch (IllegalAccessException ex) {
                     String msg = "An IllegalAccessException occured while measuring code.";
@@ -178,7 +179,7 @@ public class MethodMeasurer {
                 //the result was not found in cache
                 resultsMask.add(false);
             }
-            
+
             lockBase.freeLock(measureRequest.getUserID());
         }
 
@@ -260,8 +261,8 @@ public class MethodMeasurer {
         List<Long> computedMeans = new ArrayList<>();
         List<Long> computedStandardDeviations = new ArrayList<>();
         List<Long> computedMedians = new ArrayList<>();
-        List<Long> computetFirstQ = new ArrayList<>();
-        List<Long> computetThirdQ = new ArrayList<>();
+        List<Long> computedFirstQ = new ArrayList<>();
+        List<Long> computedThirdQ = new ArrayList<>();
 
         boolean corruptedMeasurement = true;
 
@@ -278,8 +279,8 @@ public class MethodMeasurer {
                 computedMeans.add(mean);
                 computedStandardDeviations.add(br.getStatistics().getStandardDeviation());
                 computedMedians.add(br.getStatistics().getMedian());
-                computetFirstQ.add(br.getStatistics().getFirstQuartile());
-                computetThirdQ.add(br.getStatistics().getThirdQuartile());
+                computedFirstQ.add(br.getStatistics().getFirstQuartile());
+                computedThirdQ.add(br.getStatistics().getThirdQuartile());
             } else {
                 computedMeans.add(-1L);
                 computedMedians.add(-1L);
@@ -293,31 +294,34 @@ public class MethodMeasurer {
 
         String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
         int divideBy = 1;
-        switch(units) {
-            case "s": divideBy = 1000 * 1000 * 1000;
+        switch (units) {
+            case "s":
+                divideBy = 1000 * 1000 * 1000;
                 break;
-            case "ms": divideBy = 1000 * 1000;
+            case "ms":
+                divideBy = 1000 * 1000;
                 break;
-            case "µs": divideBy = 1000;
+            case "µs":
+                divideBy = 1000;
                 break;
         }
-        
-        for (int i = 0; i<computetFirstQ.size(); i++) {
-            computetFirstQ.set(i, computetFirstQ.get(i) / divideBy);
-            computetThirdQ.set(i, computetThirdQ.get(i) / divideBy);
+
+        for (int i = 0; i < computedFirstQ.size(); i++) {
+            computedFirstQ.set(i, computedFirstQ.get(i) / divideBy);
+            computedThirdQ.set(i, computedThirdQ.get(i) / divideBy);
             computedStandardDeviations.set(i, computedStandardDeviations.get(i) / divideBy);
         }
-        
+
         for (int i = 0; i < computedMeans.size(); i++) {
             if (computedMeans.get(i) != -1) {
                 long mean = computedMeans.get(i);
                 long standardDeviation = computedStandardDeviations.get(i);
                 long median = computedMedians.get(i);
-                long firstQ = computetFirstQ.get(i);
-                long thirdQ = computetThirdQ.get(i);
-                jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i], 
-                    new Object[] {mean - standardDeviation,mean, mean + standardDeviation},
-                    new Object[] {firstQ,median, thirdQ}                        
+                long firstQ = computedFirstQ.get(i);
+                long thirdQ = computedThirdQ.get(i);
+                jsonResults.accumulate("data", new Object[]{valuesInWhichWasMeasured[i],
+                    new Object[]{mean - standardDeviation, mean, mean + standardDeviation},
+                    new Object[]{firstQ, median, thirdQ}
                 });
             }
         }
@@ -339,7 +343,10 @@ public class MethodMeasurer {
             BenchmarkResult benRes = results.get(i);
             //if the result was not obtained from cache
             if (resultsMask.get(i) == false) {
-                resultCache.insertResult(benRes);
+                //if there the Statistics is not empty
+                if (benRes.getStatistics().getMean() != -1) {
+                    resultCache.insertResult(benRes);
+                }
             }
         }
 

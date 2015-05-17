@@ -58,10 +58,14 @@ public class CodeRunner {
     /**
      * Runs the class (measurement).
      *
+     * @return if no error occurred than true; otherwise false
      * @throws InterruptedException
      * @throws IOException
      */
-    public void run() throws IOException, InterruptedException {
+    public boolean run() throws IOException, InterruptedException {
+        //whether no error occurred during the measurement
+        boolean noError = true;
+        
         //class path for the new JVM
         String classpath = getClassPath();
 
@@ -99,9 +103,12 @@ public class CodeRunner {
 
         if (errorMsg.length() != 0) {
             log.log(Level.SEVERE, "An error occured when trying to run new JVM to perform measurement. ", errorMsg.toString());
+            noError = false;
         }
 
         process.waitFor();
+        
+        return noError;
     }
 
     /**
