@@ -68,7 +68,7 @@ public class FileUtils {
     
     /**
      * Writes all bytes of an array into given stream in bulk.
-     * 
+     *  
      * @param fs stream to write in
      * @param array array to be written
      * @throws java.io.IOException

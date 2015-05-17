@@ -150,7 +150,7 @@ public class MeasuringUtils {
      */
     private static double[] getValuesInWhichToMeasure(double[] possibleValues, int howMany) {
         if (possibleValues.length < 2) {
-            log.log(Level.INFO, "Not enough possible values were passed to getValuesInWhichToMeasure." );
+            log.log(Level.INFO, "Not enough possible values were passed to getValuesInWhichToMeasure.");
             throw new IllegalArgumentException("Not enough possible values were passed to getValuesInWhichToMeasure.");
         }
         List<Double> list = new ArrayList<>();
@@ -225,31 +225,37 @@ public class MeasuringUtils {
 
         return -1; //some value to indicate non-succes
     }
-    
+
     /**
      * Converts measurements in nanoseconds to other units if necessary.
      */
-    public static String convertUnits(List<Long> first, List<Long>second) {
+    public static String convertUnits(List<Long> first, List<Long> second, boolean[] omitIthMeasurement) {
         //supported units (may be added more)
         String[] units = new String[]{"s", "ms", "µs", "ns"};
         //pointer to units array showing actual unit
         int index = 3;
 
-        double min = Double.MAX_VALUE;
+        long min = Long.MAX_VALUE;
 
         //computing minValue
-        for (double d : first) {
-            if (d < min) {
-                min = d;
+        for (int i = 0; i < first.size(); i++) {
+            if (!omitIthMeasurement[i]) {
+                long l = first.get(i);
+                if (l < min) {
+                    min = l;
+                }
             }
         }
-        
-        for (double d : second) {
-            if (d < min) {
-                min = d;
+
+        for (int i = 0; i < second.size(); i++) {
+            if (!omitIthMeasurement[i]) {
+                long l = second.get(i);
+                if (l < min) {
+                    min = l;
+                }
             }
         }
-        
+
         //10,000 was chosen constant so that the minValue is not bigger than it
         while (min >= 10000 && (index > 0)) {
             index--;
@@ -261,18 +267,18 @@ public class MeasuringUtils {
         for (int i = index; i < units.length - 1; i++) {
             divideBy *= 1000;
         }
-        
+
         //first.size() == second.size()
         for (int i = 0; i < first.size(); i++) {
             long newValueFirst = first.get(i) / divideBy;
             first.set(i, newValueFirst);
             long newValueSecond = second.get(i) / divideBy;
-            second.set(i, newValueSecond);            
+            second.set(i, newValueSecond);
         }
 
         return units[index];
     }
-    
+
     /**
      * Checks whether first parameter of the method is Blackhole.
      */
@@ -280,20 +286,20 @@ public class MeasuringUtils {
         if (method.getParameterTypes().length == 0) {
             return false;
         }
-        
+
         return method.getParameterTypes()[0].equals(Blackhole.class);
     }
-    
+
     public static Object[] pushBlackholeToBegin(Object[] args) {
         Blackhole bh = BlackholeFactory.getInstance();
-        
+
         Object[] newArgs = new Object[args.length + 1];
         newArgs[0] = bh;
-        
-        for (int i = 0; i<args.length; i++) {
-            newArgs[i+1] = args[i];
+
+        for (int i = 0; i < args.length; i++) {
+            newArgs[i + 1] = args[i];
         }
-        
+
         return newArgs;
     }
 }

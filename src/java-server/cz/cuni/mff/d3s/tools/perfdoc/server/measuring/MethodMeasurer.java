@@ -258,6 +258,9 @@ public class MethodMeasurer {
     private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured, int priority) throws MeasurementException {
         JSONObject jsonResults = new JSONObject();
 
+        //flag for each point of measurement telling, whether i-th measurement is empty, and, therefore, should not be reported
+        boolean[] emptyMeasurement = new boolean[valuesInWhichWasMeasured.length];
+
         List<Long> computedMeans = new ArrayList<>();
         List<Long> computedStandardDeviations = new ArrayList<>();
         List<Long> computedMedians = new ArrayList<>();
@@ -266,7 +269,9 @@ public class MethodMeasurer {
 
         boolean corruptedMeasurement = true;
 
-        for (BenchmarkResult br : results) {
+        for (int i = 0; i < results.size(); i++) {
+            BenchmarkResult br = results.get(i);
+
             //if current measurement is not corrupted
             if (br.getStatistics() != null) {
                 long mean = br.getStatistics().getMean();
@@ -274,6 +279,8 @@ public class MethodMeasurer {
                 //there's at least one good measurement
                 if (mean != -1) {
                     corruptedMeasurement = false;
+                } else {
+                    emptyMeasurement[i] = true;
                 }
 
                 computedMeans.add(mean);
@@ -282,6 +289,7 @@ public class MethodMeasurer {
                 computedFirstQ.add(br.getStatistics().getFirstQuartile());
                 computedThirdQ.add(br.getStatistics().getThirdQuartile());
             } else {
+                emptyMeasurement[i] = true;
                 computedMeans.add(-1L);
                 computedMedians.add(-1L);
             }
@@ -292,7 +300,7 @@ public class MethodMeasurer {
             throw new MeasurementException("Wrong arguments were passed to measured method/generator for all points, thus no results could be measured.");
         }
 
-        String units = MeasuringUtils.convertUnits(computedMeans, computedMedians);
+        String units = MeasuringUtils.convertUnits(computedMeans, computedMedians, emptyMeasurement);
         int divideBy = 1;
         switch (units) {
             case "s":
@@ -313,7 +321,7 @@ public class MethodMeasurer {
         }
 
         for (int i = 0; i < computedMeans.size(); i++) {
-            if (computedMeans.get(i) != -1) {
+            if (!emptyMeasurement[i]) {
                 long mean = computedMeans.get(i);
                 long standardDeviation = computedStandardDeviations.get(i);
                 long median = computedMedians.get(i);

@@ -76,21 +76,34 @@ public class MeasuringUtilsTest {
 
     @Test
     public void testConvertUnitsNoConversion() {
-        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L, 10000L, 20000L}), Arrays.asList(new Long[]{1000L, 10000L, 20000L})));
+        Assert.assertEquals("ns", MeasuringUtils.convertUnits(Arrays.asList(new Long[]{1000L, 10000L, 20000L}), Arrays.asList(new Long[]{1000L, 10000L, 20000L}), new boolean[3]));
     }
 
     @Test
     public void testConvertUnitsOneConversion() {
         List<Long> list = Arrays.asList(new Long[]{10000L, 20000L, 30000L});
-        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list, new ArrayList<>(list)));
+        Assert.assertEquals("µs", MeasuringUtils.convertUnits(list, new ArrayList<>(list), new boolean[3]));
         Assert.assertArrayEquals(new Object[]{10L, 20L, 30L}, list.toArray());
     }
 
     @Test
     public void testConvertUnitsMultipleConversions() {
         List<Long> list = Arrays.asList(new Long[]{10000000L, 20000000L, 30000000L});
-        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<>(list)));
+        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<>(list), new boolean[3]));
         Assert.assertArrayEquals(new Object[]{10L, 20L, 30L}, list.toArray());
+    }
+    
+    @Test
+    public void testConvertUnitsOmit() {
+        List<Long> list = Arrays.asList(new Long[]{10000000L, -1L, 30000000L});
+        
+        Assert.assertEquals("ns", MeasuringUtils.convertUnits(list, new ArrayList<>(list), new boolean[3]));
+        Assert.assertArrayEquals(new Object[]{10000000L, -1L, 30000000L}, list.toArray());
+        
+        boolean[] omit = new boolean[3];
+        omit[1] = true;
+        Assert.assertEquals("ms", MeasuringUtils.convertUnits(list, new ArrayList<>(list), omit));
+        Assert.assertArrayEquals(new Object[]{10L, 0L, 30L}, list.toArray());
     }
 
     @Test
