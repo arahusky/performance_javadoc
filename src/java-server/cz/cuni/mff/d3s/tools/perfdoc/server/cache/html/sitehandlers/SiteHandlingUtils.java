@@ -84,17 +84,10 @@ public class SiteHandlingUtils {
     }
     
     /**
-     * Returns address of the site, from which the request has been performed.
+     * Returns address of the measuring server against all the site-pages.
      * @param exchange
      */
     public static String getRemoteAddress(HttpExchange exchange) {
-        InetAddress address = exchange.getRemoteAddress().getAddress();
-        int port = HttpMeasureServer.getPort();
-        
-        if (address.isLoopbackAddress()) {
-            return "http://localhost:" + port;
-        }
-        
-        return address.getHostName() + ":" + port;
+        return "..";
     }
 }
