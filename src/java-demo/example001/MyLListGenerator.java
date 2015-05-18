@@ -17,7 +17,6 @@
 package example001;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
-import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamDesc;
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.ParamNum;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.ServiceWorkload;
 import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
@@ -34,7 +33,7 @@ public class MyLListGenerator {
     public void prepareDataGood(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Collection size", min = 1, max = 10000, step = 1) int collection_size) {
+            @ParamNum(description = "Collection size", min = 1, max = 1000000, step = 1) int collection_size) {
 
         //creating collection containing required number of elements
         MyLinkedList<Object> myList = new MyLinkedList<>();
@@ -55,7 +54,7 @@ public class MyLListGenerator {
     public void prepareDataBad(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Collection size", min = 1, max = 10000, step = 1) int collection_size) {
+            @ParamNum(description = "Collection size", min = 1, max = 1000000, step = 1) int collection_size) {
         
         //creating collection containing required number of elements
         MyLinkedList<Object> myList = new MyLinkedList<>();

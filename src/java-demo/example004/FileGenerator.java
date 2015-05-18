@@ -42,7 +42,7 @@ public class FileGenerator {
     public void prepareStream(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Size of file (bytes)", min = 1, max = 100000, step = 1) int fileSize
+            @ParamNum(description = "Size of file (bytes)", min = 1, max = 1000000, step = 1) int fileSize
     ) throws IOException {
         file.createNewFile();
 
@@ -67,7 +67,7 @@ public class FileGenerator {
     public void prepareStreamToWrite(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Size of array to be written", min = 1, max = 100000, step = 1) int arraySize
+            @ParamNum(description = "Size of array to be written", min = 1, max = 1000000, step = 1) int arraySize
     ) throws IOException {        
         file.createNewFile();
 

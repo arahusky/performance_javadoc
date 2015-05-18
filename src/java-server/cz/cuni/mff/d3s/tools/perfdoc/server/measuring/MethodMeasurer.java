@@ -168,7 +168,7 @@ public class MethodMeasurer {
                     throw new MeasurementException(msg);
                 } catch (InvocationTargetException ex) {
                     String msg = "An InvocationTargetException occured when trying to invoke generator/measured method";
-                    log.log(Level.SEVERE, msg, ex);
+                    log.log(Level.SEVERE, msg, ex.getCause());
                     throw new MeasurementException(msg);
                 } catch (Throwable ex) {
                     String msg = "An unknown exception occured when trying to measure results.";
@@ -257,7 +257,6 @@ public class MethodMeasurer {
      */
     private JSONObject processBenchmarkResults(double[] valuesInWhichWasMeasured, int priority) throws MeasurementException {
         JSONObject jsonResults = new JSONObject();
-
         //flag for each point of measurement telling, whether i-th measurement is empty, and, therefore, should not be reported
         boolean[] emptyMeasurement = new boolean[valuesInWhichWasMeasured.length];
 

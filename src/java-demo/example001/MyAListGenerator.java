@@ -33,7 +33,7 @@ public class MyAListGenerator {
     public void prepareDataGood(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Collection size", min = 1, max = 10000, step = 1) int collection_size) {
+            @ParamNum(description = "Collection size", min = 1, max = 1000000, step = 1) int collection_size) {
 
         //creating collection of requested size
         MyArrayList<Object> myList = new MyArrayList<>();
@@ -54,7 +54,7 @@ public class MyAListGenerator {
     public void prepareDataBad(
             Workload workload,
             ServiceWorkload service,
-            @ParamNum(description = "Collection size", min = 1, max = 10000, step = 1) int collection_size) {
+            @ParamNum(description = "Collection size", min = 1, max = 1000000, step = 1) int collection_size) {
 
         //creating collection of requested size
         MyArrayList<Object> myList = new MyArrayList<>();

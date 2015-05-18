@@ -100,8 +100,7 @@ public class MethodReflectionRunner extends MethodRunner {
             //preparing new arguments and instance for new calls
             generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
 
-            Thread.yield();
-
+            //Thread.yield();
             //arguments and instance on which the call will be performed should be now prepared in workload
             warmupMeasurementsDone += reflectionCallCycle(workload, null);
         }
@@ -112,7 +111,7 @@ public class MethodReflectionRunner extends MethodRunner {
         long measurementStartTime = System.currentTimeMillis() / 1000;
 
         //suggesting JVM that it could run garbagge collector
-        System.gc();
+        //System.gc();
         
         while (true) {
             measurementTimeSpent = (System.currentTimeMillis() / 1000) - measurementStartTime;
@@ -123,7 +122,7 @@ public class MethodReflectionRunner extends MethodRunner {
             workload.reset();
             //preparing new arguments and instance for new calls
             generator.invoke(generatorClass.newInstance(), setting.getGeneratorArguments().getValues());
-            Thread.yield();
+            //Thread.yield();
 
             //arguments and instance on which the call will be performed should be now prepared in workload
             measurementCyclesSpent += reflectionCallCycle(workload, statistics);
