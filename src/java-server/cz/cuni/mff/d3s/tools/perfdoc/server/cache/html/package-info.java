@@ -14,8 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
- * This package contains classes to show the contents of cache in HTML.
+ * This package contains classes that show the contents of cache in HTML format.
  */
-package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;
+package cz.cuni.mff.d3s.tools.perfdoc.server.cache.html;
