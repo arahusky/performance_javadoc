@@ -30,7 +30,7 @@ import java.sql.Statement;
 import java.util.Random;
 
 /**
- * Generator for DatabaseInsert class.
+ * Workload generator for DatabaseInsert class.
  *
  * @author Jakub Naplava
  */

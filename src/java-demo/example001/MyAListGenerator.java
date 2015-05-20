@@ -40,8 +40,8 @@ public class MyAListGenerator {
         for (int n = 0; n < collection_size; n++) {
             myList.add(n);
         }
-        
-        //we may use the collection multiple times
+
+        //we may use the same collection multiple times
         int times = service.getPriority() * 10;
         Random random = new Random();
         for (int i = 0; i < times; i++) {
@@ -64,8 +64,8 @@ public class MyAListGenerator {
 
         //the argument of the method is the item not contained in the collection
         Object[] args = new Object[]{collection_size};
-        
-        //we may use the collection multiple times
+
+        //we may use the same collection multiple times
         int times = service.getPriority() * 10;
         for (int i = 0; i < times; i++) {
             workload.addCall(myList, args);
@@ -78,7 +78,7 @@ public class MyAListGenerator {
             Workload workload,
             ServiceWorkload service,
             @ParamNum(description = "Collection size", min = 1, max = 100000, step = 100) int collection_size) {
-        
+
         //we will prepare more collections so that the generator does not have to call us multiple times
         int times = service.getPriority() * 5;
         Random random = new Random();
@@ -87,7 +87,7 @@ public class MyAListGenerator {
             for (int n = 0; n < collection_size; n++) {
                 myList.add(random.nextInt());
             }
-            //every call of sort method discard the collection for further calls
+            //every call of sort method discards the collection for further calls
             workload.addCall(myList, new Object[0]);
         }
     }
@@ -105,7 +105,7 @@ public class MyAListGenerator {
 
         //we will prepare more collections so that the generator does not have to call us multiple times
         int times = service.getPriority() * 3;
-        Object[] args = new Object[] {additions, removals, searches, iterations};
+        Object[] args = new Object[]{additions, removals, searches, iterations};
         Random random = new Random();
         for (int i = 0; i < times; i++) {
             MyArrayListMoreOps myList = new MyArrayListMoreOps();
@@ -113,6 +113,6 @@ public class MyAListGenerator {
                 myList.add(random.nextInt());
             }
             workload.addCall(myList, args);
-        }        
+        }
     }
 }

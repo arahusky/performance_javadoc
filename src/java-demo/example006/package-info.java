@@ -16,6 +16,6 @@
  */
 /**
  * This package shows the time differences between ArrayList, LinkedList and
- * HashMap approach to contains method.
+ * HashMap approach to <i>contains</i> method.
  */
 package example006;

@@ -48,10 +48,10 @@ public class FileUtils {
 
         return sum;
     }
-    
+
     /**
      * Writes all bytes of an array into given stream byte per byte.
-     * 
+     *
      * @param fs stream to write in
      * @param array array to be written
      * @throws java.io.IOException
@@ -61,14 +61,14 @@ public class FileUtils {
         for (byte b : array) {
             fs.write(b);
         }
-        
+
         //flush the stream (in case there are some buffers)
         fs.flush();
     }
-    
+
     /**
      * Writes all bytes of an array into given stream in bulk.
-     *  
+     *
      * @param fs stream to write in
      * @param array array to be written
      * @throws java.io.IOException
@@ -76,7 +76,7 @@ public class FileUtils {
     @Workload("example004.FileGenerator#prepareStreamToWrite")
     public static void writeAll(FileOutputStream fs, byte[] array) throws IOException {
         fs.write(array);
-        
+
         //flush the stream (in case there are some buffers)
         fs.flush();
     }

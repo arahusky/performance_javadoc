@@ -31,13 +31,14 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
+ * This class prepares workloads for FileUtils.
  *
  * @author Jakub Naplava
  */
 public class FileGenerator {
 
-    final File file = new File("fileThatDoesNotExist.txt"); 
-    
+    final File file = new File("fileThatDoesNotExist.txt");
+
     @Generator(description = "Prepares file stream of given file size.", name = "File stream preparer")
     public void prepareStream(
             Workload workload,
@@ -56,7 +57,7 @@ public class FileGenerator {
                 fw.write(b);
             }
         }
-        
+
         FileInputStream stream = new FileInputStream(file);
         workload.addCall(null, stream);
 
@@ -68,7 +69,7 @@ public class FileGenerator {
             Workload workload,
             ServiceWorkload service,
             @ParamNum(description = "Size of array to be written", min = 1, max = 1000000, step = 1) int arraySize
-    ) throws IOException {        
+    ) throws IOException {
         file.createNewFile();
 
         Random r = new Random();
@@ -100,7 +101,7 @@ public class FileGenerator {
 
         @AfterMeasurement
         public void destroy(Object instance, Object[] objs) {
-            try {                
+            try {
                 ((Closeable) objs[0]).close();
             } catch (IOException ex) {
                 System.err.println("Unable to close file stream.");

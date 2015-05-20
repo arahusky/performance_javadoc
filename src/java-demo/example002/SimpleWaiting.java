@@ -20,8 +20,8 @@ import cz.cuni.mff.d3s.tools.perfdoc.annotations.Workload;
 import java.util.Random;
 
 /**
- * Simple class to demonstrate the functionality of measurer and generators.
- * It shows the possibility of re-using one generator more times.
+ * Simple class to demonstrate the functionality of measurer and generators. It
+ * shows the possibility of re-using one generator multiple times.
  *
  * @author Jakub Naplava
  */
@@ -29,6 +29,7 @@ public class SimpleWaiting {
 
     /**
      * Waits (first)*10 ms
+     *
      * @param first
      * @throws java.lang.InterruptedException
      */
@@ -41,7 +42,7 @@ public class SimpleWaiting {
     }
 
     /**
-     * Waits a random piece of time, that increases with param length 
+     * Waits a random piece of time, that increases with param length
      *
      * @param first
      * @throws java.lang.InterruptedException

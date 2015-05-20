@@ -19,7 +19,8 @@ package example003;
 import javax.swing.JFrame;
 
 /**
- *
+ * Resolution enum.
+ * 
  * @author Jakub Naplava
  */
 public enum Size {

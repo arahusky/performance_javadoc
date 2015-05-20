@@ -54,7 +54,7 @@ public class MyArrayListMoreOps extends ArrayList {
      * (from operations having no side effect). This way is showed by this
      * method.
      *
-     * The second way is to change return type to (for example) int. Assuming
+     * The second way is to change return type to, for example, int. Assuming
      * that adding up integers is relatively cheap operation (compared to other
      * operations used in method), we sum up hash values of objects returned
      * from methods having no side effect, and then return counted value.

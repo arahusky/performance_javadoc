@@ -14,9 +14,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
- * <p>This package contains methods to show the basic functionality of the harness on collections.</p>
- * 
- * <p>The classes, which methods should be measured, are ArrayList and LinkedList.</p>
+ * This package contains classes to show the contents of cache in HTML.
  */
-package example001;
+package cz.cuni.mff.d3s.tools.perfdoc.doclets.formats.html;

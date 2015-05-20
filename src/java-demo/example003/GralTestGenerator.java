@@ -24,8 +24,8 @@ import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import javax.swing.JFrame;
 
 /**
- * Workload generators for GralTest.
- * 
+ * This class contains workload generators for GralTest.
+ *
  * @author Jakub Naplava
  */
 public class GralTestGenerator {

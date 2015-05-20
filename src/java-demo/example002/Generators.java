@@ -14,7 +14,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package example002;
 
 import cz.cuni.mff.d3s.tools.perfdoc.annotations.Generator;
@@ -25,48 +24,47 @@ import cz.cuni.mff.d3s.tools.perfdoc.workloads.Workload;
 import example002.enums.SomeOtherEnum;
 
 /**
+ * This class contains generators for SimpleWaiting.
+ *
+ * Both methods have the same name, therefore, both methods are considered being
+ * workload generator for SimpleWaiting.simpleWait as well as
+ * SimpleWaiting.randomWait, for which they prepare appropriate workloads.
  *
  * @author Jakub Naplava
  */
 public class Generators {
-          
-      @Generator(description = "First waiting generator", name = "First wait")   
-      public void prepareData1
-      (
-              Workload workload,
-              ServiceWorkload sw,
-              @ParamNum(description = "Waiting time (*2ms)", min = 1, max = 100, step = 2) int wait,
-              @ParamDesc("Multiple waiting time by") SomeEnum en
-              )
-      {
-          int times = 1;          
-          int multiply = en.getNumberOfMillisToWait();
-          
-          SimpleWaiting simple = new SimpleWaiting();
-          Object[] args = new Object[] {wait * multiply};
-          for (int i = 0; i<times; i++) {          
-                workload.addCall(simple, args);
-          }          
-      }
-      
-       @Generator(description = "Second waiting generator", name = "Second wait")   
-      public void prepareData1
-      (
-              Workload workload,
-              ServiceWorkload sw,
-              @ParamNum(description = "Waiting time (*3ms)", min = 1, max = 100) int wait,
-              @ParamDesc("Multiple waiting time by") SomeOtherEnum en
-              )
-      {
-          int times = 1;          
-          int multiply = en.getNumberOfMillisToWait();
-          
-          SimpleWaiting simple = new SimpleWaiting();
-          Object[] args = new Object[] {wait * multiply};
-          for (int i = 0; i<times; i++) {          
-                workload.addCall(simple, args);
-          }           
-      }
 
+    @Generator(description = "First waiting generator", name = "First wait")
+    public void prepareData1(
+            Workload workload,
+            ServiceWorkload sw,
+            @ParamNum(description = "Waiting time (*2ms)", min = 1, max = 100, step = 2) int wait,
+            @ParamDesc("Multiple waiting time by") SomeEnum en
+    ) {
+        int times = 1;
+        int multiply = en.getNumberOfMillisToWait();
+
+        SimpleWaiting simple = new SimpleWaiting();
+        Object[] args = new Object[]{wait * multiply};
+        for (int i = 0; i < times; i++) {
+            workload.addCall(simple, args);
+        }
+    }
+
+    @Generator(description = "Second waiting generator", name = "Second wait")
+    public void prepareData1(
+            Workload workload,
+            ServiceWorkload sw,
+            @ParamNum(description = "Waiting time (*3ms)", min = 1, max = 100) int wait,
+            @ParamDesc("Multiple waiting time by") SomeOtherEnum en
+    ) {
+        int times = 1;
+        int multiply = en.getNumberOfMillisToWait();
+
+        SimpleWaiting simple = new SimpleWaiting();
+        Object[] args = new Object[]{wait * multiply};
+        for (int i = 0; i < times; i++) {
+            workload.addCall(simple, args);
+        }
+    }
 }
-
